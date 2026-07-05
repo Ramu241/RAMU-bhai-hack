@@ -26,7 +26,8 @@ import {
   Trash2,
   CheckCircle,
   ShieldCheck,
-  Zap
+  Zap,
+  Key
 } from "lucide-react";
 import { playSound } from "./utils/audio";
 
@@ -283,6 +284,18 @@ export default function App() {
   const [panelVisible, setPanelVisible] = useState(true);
   const [appLang, setAppLang] = useState<"HINDI" | "ENGLISH">("HINDI");
   const [usingSimulation, setUsingSimulation] = useState(false);
+
+  // VIP Key purchase states
+  const [isBuyPasscodeOpen, setIsBuyPasscodeOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"1 Hour" | "1 Day" | "3 Days" | "7 Days">("1 Day");
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  const PLAN_PRICES = {
+    "1 Hour": 50,
+    "1 Day": 150,
+    "3 Days": 300,
+    "7 Days": 400
+  };
 
   const curTrans = t[appLang];
 
@@ -897,7 +910,7 @@ export default function App() {
   // Click handler to route Telegram link and trigger Phase 2
   const handleTelegramClick = () => {
     triggerSound("unlock");
-    window.open("https://t.me/+h5jDuTLxOEQ4NmVl", "_blank");
+    window.open("https://t.me/paneladhacksale001", "_blank");
     setAppLoadedState("loading2");
   };
 
@@ -1152,9 +1165,19 @@ export default function App() {
                     </button>
                   </div>
 
+                  {/* Buy VIP Passcode Header Button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); triggerSound("unlock"); setIsBuyPasscodeOpen(true); }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl border border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-900/40 text-yellow-400 hover:text-yellow-300 transition-all text-[10px] sm:text-xs font-black uppercase tracking-widest glow-yellow animate-pulse cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.2)]"
+                    id="header-buy-passcode-btn"
+                  >
+                    <Key className="w-3.5 h-3.5 text-yellow-400" />
+                    <span>{appLang === "HINDI" ? "की खरीदें" : "BUY VIP KEY"}</span>
+                  </button>
+
                   {/* Telegram Channel Link */}
                   <a 
-                    href="https://t.me/+h5jDuTLxOEQ4NmVl" 
+                    href="https://t.me/paneladhacksale001" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-900/40 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
@@ -1524,6 +1547,16 @@ export default function App() {
                       {curTrans.unlockBtn}
                     </button>
                   </div>
+
+                  <div className="pt-3 border-t border-purple-950/60 text-center">
+                    <button 
+                      onClick={() => { triggerSound("unlock"); setIsBuyPasscodeOpen(true); }}
+                      className="w-full py-2.5 rounded-xl border border-dashed border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-950/40 text-yellow-400 hover:text-yellow-200 transition-all text-[11px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-center gap-2 animate-pulse"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      {appLang === "HINDI" ? "पासकोड खरीदें / BUY VIP KEY" : "BUY VIP PASSCODE KEY"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1598,7 +1631,7 @@ export default function App() {
 
               {/* Join Telegram Button */}
               <a 
-                href="https://t.me/+h5jDuTLxOEQ4NmVl" 
+                href="https://t.me/paneladhacksale001" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/10 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
@@ -1931,6 +1964,139 @@ export default function App() {
                     {curTrans.sessionLocalOnly}
                   </p>
                 </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ----------------- BUY VIP PASSCODE MODAL (PAYMENT SCREEN) ----------------- */}
+          {isBuyPasscodeOpen && (
+            <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/90 backdrop-blur-md px-4 py-6 overflow-y-auto">
+              <div className="relative w-full max-w-md rounded-2xl border border-yellow-500/40 bg-[#0c0818] p-5 sm:p-6 shadow-[0_0_35px_rgba(234,179,8,0.25)] max-h-[95vh] flex flex-col overflow-y-auto scrollbar-none animate-in fade-in zoom-in-95 duration-200">
+                
+                {/* Modal Header */}
+                <div className="flex justify-between items-center border-b border-purple-900/40 pb-3 mb-4 shrink-0">
+                  <h3 className="text-sm font-black text-yellow-400 flex items-center gap-1.5 font-mono">
+                    <Key className="w-4 h-4 text-yellow-500 animate-pulse" />
+                    {appLang === "HINDI" ? "वीआईपी की खरीदें / GET VIP KEY" : "GET VIP PASSCODE KEY"}
+                  </h3>
+                  <button 
+                    onClick={() => { triggerSound("click"); setIsBuyPasscodeOpen(false); }}
+                    className="px-2.5 py-1.5 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900 text-[10px] font-bold uppercase cursor-pointer transition-colors"
+                  >
+                    {appLang === "HINDI" ? "बंद करें" : "CLOSE"}
+                  </button>
+                </div>
+
+                {/* Plan Selection Grid */}
+                <div className="shrink-0 mb-4">
+                  <span className="block text-[10px] font-mono text-purple-400 uppercase tracking-widest mb-2 font-black">
+                    {appLang === "HINDI" ? "१. वैधता प्लान चुनें / 1. SELECT VALIDITY PLAN" : "1. SELECT VALIDITY PLAN"}
+                  </span>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {(["1 Hour", "1 Day", "3 Days", "7 Days"] as const).map((plan) => {
+                      const price = PLAN_PRICES[plan];
+                      const isSelected = selectedPlan === plan;
+                      return (
+                        <button
+                          key={plan}
+                          onClick={() => { triggerSound("click"); setSelectedPlan(plan); }}
+                          className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                            isSelected 
+                              ? "bg-yellow-500/20 border-yellow-400 shadow-[0_0_12px_rgba(234,179,8,0.3)] scale-102" 
+                              : "bg-black/50 border-purple-950 hover:border-yellow-500/30"
+                          }`}
+                        >
+                          <span className={`text-[11px] font-black uppercase tracking-wider ${isSelected ? "text-yellow-400" : "text-gray-400"}`}>
+                            {plan === "1 Hour" ? (appLang === "HINDI" ? "1 घंटा" : "1 Hour") :
+                             plan === "1 Day" ? (appLang === "HINDI" ? "1 दिन" : "1 Day") :
+                             plan === "3 Days" ? (appLang === "HINDI" ? "3 दिन" : "3 Days") : 
+                             (appLang === "HINDI" ? "7 दिन" : "7 Days")}
+                          </span>
+                          <span className="text-base font-black text-white mt-1">₹{price}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* QR Code and Payment Details */}
+                <div className="bg-black/80 border border-purple-900/40 p-4 rounded-xl flex flex-col items-center text-center space-y-4 shadow-inner mb-4">
+                  <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-black">
+                    {appLang === "HINDI" ? "२. बारकोड स्कैन करके पेमेंट करें / 2. SCAN BARCODE TO PAY" : "2. SCAN BARCODE TO PAY"}
+                  </span>
+                  
+                  {/* Dynamic QR Code */}
+                  <div className="bg-white p-2.5 rounded-xl shadow-lg border border-yellow-500/20 glow-yellow flex items-center justify-center">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                        `upi://pay?pa=Shyamu6@fam&pn=RAMU%20BHAI%20VIP&am=${PLAN_PRICES[selectedPlan]}&cu=INR&tn=VIP%20Passcode%20${selectedPlan.replace(" ", "%20")}`
+                      )}`} 
+                      alt="Payment QR Code" 
+                      className="w-36 h-36 object-contain rounded"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="block text-xs text-yellow-400 font-black tracking-wide uppercase">
+                      {appLang === "HINDI" ? "चयनित:" : "SELECTED:"} {selectedPlan === "1 Hour" ? "1 Hour" : selectedPlan} PLAN - ₹{PLAN_PRICES[selectedPlan]}
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-mono block uppercase">
+                      RAMU BHAI SECURE MERCHANT GATEWAY
+                    </span>
+                  </div>
+                </div>
+
+                {/* UPI Copy Box */}
+                <div className="bg-black border border-purple-950 p-3 rounded-xl flex justify-between items-center mb-4 text-xs font-mono">
+                  <div className="flex flex-col text-left">
+                    <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">UPI ID (भुगतान पता)</span>
+                    <span className="text-white font-black tracking-wide">Shyamu6@fam</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText("Shyamu6@fam");
+                      setCopiedUpi(true);
+                      triggerSound("unlock");
+                      setTimeout(() => setCopiedUpi(false), 2000);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+                      copiedUpi 
+                        ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]" 
+                        : "bg-purple-950/80 border border-purple-500/30 text-purple-300 hover:bg-purple-900"
+                    }`}
+                  >
+                    {copiedUpi ? (appLang === "HINDI" ? "कॉपी हो गया!" : "COPIED!") : (appLang === "HINDI" ? "कॉपी करें" : "COPY ID")}
+                  </button>
+                </div>
+
+                {/* Instructions Text */}
+                <div className="bg-yellow-950/20 border border-yellow-500/20 p-3 rounded-xl text-left space-y-1.5 mb-5">
+                  <span className="block text-[10px] font-mono text-yellow-400 font-black uppercase tracking-wider">
+                    {appLang === "HINDI" ? "३. स्क्रीनशॉट भेजें / 3. SUBMIT RECEIPT" : "3. SUBMIT RECEIPT"}
+                  </span>
+                  <p className="text-[11px] text-gray-300 leading-relaxed font-bold">
+                    {appLang === "HINDI" 
+                      ? "पेमेंट करने के बाद, स्क्रीनशॉट हमारे टेलीग्राम यूजरनेम @Monu1359 पर भेजें। आपको तुरंत आपका वीआईपी पासकोड दे दिया जाएगा।" 
+                      : "After payment, send the transaction screenshot to our Telegram username @Monu1359 to receive your active VIP key passcode."}
+                  </p>
+                </div>
+
+                {/* Send Screenshot Link */}
+                <a
+                  href="https://t.me/Monu1359"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 glow-emerald cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0"
+                >
+                  <Send className="w-4 h-4 fill-current" />
+                  <span>{appLang === "HINDI" ? "टेलीग्राम पर स्क्रीनशॉट भेजें" : "SEND SCREENSHOT ON TELEGRAM"}</span>
+                </a>
+
+                <p className="text-[9px] text-gray-500 text-center font-mono mt-3 uppercase tracking-wider">
+                  TELEGRAM ADMIN USERNAME: @Monu1359
+                </p>
 
               </div>
             </div>
