@@ -793,77 +793,133 @@ export default function App() {
     setPasswordInput("");
     setPasswordError("");
   };
+  
+  // Helper to fetch keys list from central server database
+  const fetchServerKeys = async () => {
+    try {
+      const securePin = atob("UkFNVV9CSEFJX0FETUlOX1NFQ1VSRV9CWVBBU1NfOTA5MF8jQCE=");
+      const res = await fetch("/api/keys", {
+        headers: { "Authorization": securePin }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGeneratedKeys(data);
+        localStorage.setItem("ramu_bhai_generated_keys", JSON.stringify(data));
+      }
+    } catch (e) {
+      console.error("Failed to fetch keys from central server", e);
+    }
+  };
 
-  // Validate Key (Checks generated keys list with active expirations)
-  const handleVerifyPassword = () => {
+  // Validate Key (Checks dynamically on server to work on ALL client devices instantly!)
+  const handleVerifyPassword = async () => {
     const entered = passwordInput.trim();
+    if (!entered) return;
 
-    // Check custom generated keys first
-    const now = Date.now();
-    const matchedCustomKey = generatedKeys.find(
-      (k) => k.key === entered && (k.game === targetUnlockMode || k.game === "all") && k.expiresAt > now
-    );
+    try {
+      const response = await fetch("/api/keys/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: entered, game: targetUnlockMode })
+      });
 
-    if (matchedCustomKey) {
-      setPasswordError("");
-      setIsHacking(true);
-      setHackProgress(0);
-      setHackLogs([]);
+      if (response.ok) {
+        setPasswordError("");
+        setIsHacking(true);
+        setHackProgress(0);
+        setHackLogs([]);
 
-      const logTemplates = [
-        `[DECRYPT] 🎭 RAMU BHAI VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
-        `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
-        `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
-        `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
-        `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
-      ];
+        const logTemplates = [
+          `[DECRYPT] 🎭 RAMU BHAI VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
+          `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
+          `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
+          `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
+          `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
+        ];
 
-      const soundInterval = setInterval(() => {
-        triggerSound("verify");
-      }, 500);
+        const soundInterval = setInterval(() => {
+          triggerSound("verify");
+        }, 500);
 
-      let pct = 0;
-      const progressTimer = setInterval(() => {
-        pct += 2;
-        setHackProgress(pct);
+        let pct = 0;
+        const progressTimer = setInterval(() => {
+          pct += 2;
+          setHackProgress(pct);
 
-        const logIdx = Math.floor((pct / 100) * logTemplates.length);
-        if (logIdx < logTemplates.length) {
-          setHackLogs(prev => {
-            if (prev.includes(logTemplates[logIdx])) return prev;
-            return [...prev, logTemplates[logIdx]];
-          });
-        }
+          const logIdx = Math.floor((pct / 100) * logTemplates.length);
+          if (logIdx < logTemplates.length) {
+            setHackLogs(prev => {
+              if (prev.includes(logTemplates[logIdx])) return prev;
+              return [...prev, logTemplates[logIdx]];
+            });
+          }
 
-        if (pct >= 100) {
-          clearInterval(progressTimer);
-          clearInterval(soundInterval);
-          setTimeout(() => {
+          if (pct >= 100) {
+            clearInterval(progressTimer);
+            clearInterval(soundInterval);
+            setTimeout(() => {
+              setIsHacking(false);
+              setUnlockedMode(targetUnlockMode);
+              setTargetUnlockMode("none");
+              setActiveTab("game");
+              triggerSound("unlock");
+
+              // Init game parameters
+              if (targetUnlockMode === "mines") {
+                generateMinesPrediction();
+              } else if (targetUnlockMode === "aviator") {
+                startAviatorPredictor();
+              } else if (targetUnlockMode === "goal") {
+                generateGoalPrediction();
+              }
+            }, 500);
+          }
+        }, 40); // ~2s screen
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        setPasswordError(errData.error || "गड़बड़ पासवर्ड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
+        triggerSound("loss");
+      }
+    } catch (err) {
+      // Offline fallback: Check local keys in case server is temporarily down
+      const now = Date.now();
+      const matchedCustomKey = generatedKeys.find(
+        (k) => k.key === entered && (k.game === targetUnlockMode || k.game === "all") && k.expiresAt > now
+      );
+
+      if (matchedCustomKey) {
+        setPasswordError("");
+        setIsHacking(true);
+        setHackProgress(0);
+        setHackLogs([]);
+
+        const logTemplates = [
+          `[DECRYPT] 🎭 (LOCAL OFFLINE FALLBACK) RAMU BHAI टनल सक्रिय की जा रही है...`,
+          `[SUCCESS] स्थानीय रूप से पासकोड सत्यापित! `
+        ];
+        
+        let pct = 0;
+        const progressTimer = setInterval(() => {
+          pct += 5;
+          setHackProgress(pct);
+          if (pct >= 100) {
+            clearInterval(progressTimer);
             setIsHacking(false);
             setUnlockedMode(targetUnlockMode);
             setTargetUnlockMode("none");
             setActiveTab("game");
             triggerSound("unlock");
-
-            // Init game parameters
-            if (targetUnlockMode === "mines") {
-              generateMinesPrediction();
-            } else if (targetUnlockMode === "aviator") {
-              startAviatorPredictor();
-            } else if (targetUnlockMode === "goal") {
-              generateGoalPrediction();
-            }
-          }, 500);
-        }
-      }, 40); // ~2s screen
-    } else {
-      setPasswordError("गड़बड़ पासवर्ड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
-      triggerSound("loss");
+          }
+        }, 50);
+      } else {
+        setPasswordError("सर्वर अनुपलब्ध और कोई सक्रिय ऑफ़लाइन पासकोड नहीं मिला! / Server unavailable and no valid local passcode.");
+        triggerSound("loss");
+      }
     }
   };
 
-  // Admin Key Generation
-  const handleGenerateKey = () => {
+  // Admin Key Generation (Sends to central server)
+  const handleGenerateKey = async () => {
     triggerSound("click");
     if (!isAdminAuthenticated) return;
 
@@ -878,22 +934,60 @@ export default function App() {
     else if (genDuration === "7 Days") durationMs = 604800000;
     else if (genDuration === "1 Month") durationMs = 2592000000;
 
+    const expiresAt = Date.now() + durationMs;
     const newKey: GeneratedKey = {
       key: newKeyStr,
       game: genGame,
       duration: genDuration,
-      expiresAt: Date.now() + durationMs
+      expiresAt: expiresAt
     };
 
-    setGeneratedKeys([newKey, ...generatedKeys]);
+    try {
+      const securePin = atob("UkFNVV9CSEFJX0FETUlOX1NFQ1VSRV9CWVBBU1NfOTA5MF8jQCE=");
+      const res = await fetch("/api/keys", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": securePin
+        },
+        body: JSON.stringify(newKey)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGeneratedKeys(data.keys);
+        localStorage.setItem("ramu_bhai_generated_keys", JSON.stringify(data.keys));
+      } else {
+        setGeneratedKeys([newKey, ...generatedKeys]);
+      }
+    } catch (e) {
+      setGeneratedKeys([newKey, ...generatedKeys]);
+    }
+
     setNewlyCreatedKey(newKeyStr);
     triggerSound("unlock");
   };
 
-  // Remove individual Key
-  const handleRemoveKey = (keyToRemove: string) => {
+  // Remove individual Key (Sync with server)
+  const handleRemoveKey = async (keyToRemove: string) => {
     triggerSound("click");
-    setGeneratedKeys(generatedKeys.filter(k => k.key !== keyToRemove));
+    try {
+      const securePin = atob("UkFNVV9CSEFJX0FETUlOX1NFQ1VSRV9CWVBBU1NfOTA5MF8jQCE=");
+      const res = await fetch(`/api/keys/${encodeURIComponent(keyToRemove)}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": securePin
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGeneratedKeys(data.keys);
+        localStorage.setItem("ramu_bhai_generated_keys", JSON.stringify(data.keys));
+      } else {
+        setGeneratedKeys(generatedKeys.filter(k => k.key !== keyToRemove));
+      }
+    } catch (e) {
+      setGeneratedKeys(generatedKeys.filter(k => k.key !== keyToRemove));
+    }
   };
 
   // Verify Admin Login (Highly Secure, Uncrackable Admin Password Obfuscated)
@@ -904,6 +998,7 @@ export default function App() {
       setIsAdminAuthenticated(true);
       setAdminError("");
       triggerSound("unlock");
+      fetchServerKeys(); // Fetch keys list dynamically from the server upon login!
     } else {
       setAdminError("अमान्य एडमिन पासवर्ड! एक्सेस अस्वीकृत। / Invalid Admin Password! Access Denied.");
       triggerSound("loss");
