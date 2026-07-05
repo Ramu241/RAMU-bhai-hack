@@ -1304,15 +1304,10 @@ export default function App() {
               {/* Header Banner - RAMU BHAI VIP DESIGN (Perfected Font Alignment) */}
               <div className="flex justify-between items-center mb-8 border-b border-purple-900/40 pb-5">
                 <div className="flex items-center gap-3">
-                  {/* Secret Admin Panel Trigger Icon (Ramu Bhai Flame Badge) */}
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setIsAdminOpen(true); }}
-                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 border border-purple-500/50 flex items-center justify-center glow-purple hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                    title="एडमिन सेटिंग्स"
-                    id="admin-settings-trigger"
-                  >
-                    <Flame className="w-6 h-6 text-purple-400 animate-bounce" />
-                  </button>
+                  {/* Decorative Emblem Logo (Static, secure, non-clickable) */}
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.1)] select-none">
+                    <ShieldCheck className="w-5 h-5 text-purple-400" />
+                  </div>
                   
                   {/* Title Section (Perfect spacing alignment & emojis) */}
                   <div className="flex flex-col items-start justify-center leading-none">
@@ -1535,7 +1530,11 @@ export default function App() {
 
               </div>
 
-              <div className="mt-auto text-center py-6 border-t border-purple-950 text-[10px] text-gray-500 tracking-wider uppercase font-mono">
+              <div 
+                onClick={(e) => { e.stopPropagation(); setIsAdminOpen(true); triggerSound("unlock"); }}
+                className="mt-auto text-center py-6 border-t border-purple-950 text-[10px] text-gray-500/70 hover:text-gray-400/80 tracking-wider uppercase font-mono cursor-default select-none transition-all"
+                id="secret-footer-trigger"
+              >
                 🎭╰‿╯RAMUㅤᏴᎻᎪᏆ VIP PANEL - ADAPTIVE NEURAL OVERLAY v4.9
               </div>
 
