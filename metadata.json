@@ -1,0 +1,6 @@
+{
+  "name": "RAMU BHAI VIP LZR",
+  "description": "High-accuracy premium hacking and prediction overlay panel for multiple games like Wingo, Mines, Aviator, and Goal, integrated with live gaming.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
