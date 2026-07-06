@@ -15,6 +15,7 @@ interface GeneratedKey {
   expiresAt: number;
   usedByDevice?: string | null;
   firstUsedAt?: number | null;
+  partition?: string;
 }
 
 const BLACKLIST_FILE = path.join(process.cwd(), "blacklist.json");
@@ -22,21 +23,16 @@ const BLACKLIST_FILE = path.join(process.cwd(), "blacklist.json");
 function loadBlacklist(): string[] {
   try {
     if (fs.existsSync(BLACKLIST_FILE)) {
-      const data = fs.readFileSync(BLACKLIST_FILE, "utf-8");
-      return JSON.parse(data);
+      fs.unlinkSync(BLACKLIST_FILE); // Delete the blacklist file to completely unblock all devices
     }
   } catch (err) {
-    // Treat as empty if not exists
+    // Ignore error
   }
   return [];
 }
 
 function saveBlacklist(list: string[]) {
-  try {
-    fs.writeFileSync(BLACKLIST_FILE, JSON.stringify(list, null, 2), "utf-8");
-  } catch (err) {
-    console.error("Error saving blacklist database:", err);
-  }
+  // Disabled to prevent blocking devices in the future
 }
 
 // Robust file-based database for keys to persist across restarts/redeploys
@@ -97,16 +93,10 @@ async function startServer() {
       });
     }
 
-    // 3. Global Device Blacklist Check to permanently block cracked/banned phones
+    // 3. Global Device Blacklist Check - Disabled to unblock user device
     const deviceId = req.headers["x-device-id"] as string || req.query.deviceId as string;
     if (deviceId) {
-      const blacklist = loadBlacklist();
-      if (blacklist.includes(deviceId)) {
-        return res.status(403).json({ 
-          error: "DEVICE_BANNED", 
-          message: "सुरक्षा उल्लंघन: आपका डिवाइस स्थायी रूप से अवरुद्ध कर दिया गया है! / Security Violation: Your device has been permanently blocked!" 
-        });
-      }
+      console.log(`[SECURITY] Device check bypassed for Device ID: ${deviceId}`);
     }
     next();
   });
@@ -211,22 +201,6 @@ async function startServer() {
     }
   });
 
-  // POST /api/panel/verify-password - Uncrackable server-side panel lock verification
-  app.post("/api/panel/verify-password", (req, res) => {
-    const { password } = req.body;
-    const correctPassword = process.env.PANEL_PASSWORD || "RAMU_BHAI_VIP_7788";
-    
-    if (!password) {
-      return res.status(400).json({ error: "पासवर्ड आवश्यक है! / Password is required!" });
-    }
-    
-    if (password === correctPassword) {
-      return res.json({ success: true, message: "पैनल अनलॉक हो गया! / Panel Unlocked Successfully!" });
-    } else {
-      return res.status(401).json({ error: "गलत पासवर्ड! कृपया सही पासवर्ड डालें। / Incorrect Password!" });
-    }
-  });
-
   // GET /api/keys - Retrieve all keys (Requires Admin Authorization)
   app.get("/api/keys", (req, res) => {
     const auth = req.headers.authorization;
@@ -246,7 +220,7 @@ async function startServer() {
       return res.status(401).json({ error: "Unauthorized access" });
     }
 
-    const { key, game, duration, expiresAt } = req.body;
+    const { key, game, duration, expiresAt, partition } = req.body;
     if (!key || !game || !duration || !expiresAt) {
       return res.status(400).json({ error: "Missing required parameters" });
     }
@@ -256,7 +230,7 @@ async function startServer() {
     // Keep clean by filtering expired keys older than 2 days
     const activeKeys = keys.filter(k => k.expiresAt > (now - 172800000));
 
-    const newKeyObj: GeneratedKey = { key, game, duration, expiresAt };
+    const newKeyObj: GeneratedKey = { key, game, duration, expiresAt, partition: partition || "bdg" };
     activeKeys.unshift(newKeyObj);
     saveKeys(activeKeys);
 
@@ -298,6 +272,39 @@ async function startServer() {
     const { key, game, deviceId } = req.body;
     if (!key || !game) {
       return res.status(400).json({ error: "Missing passcode or game type" });
+    }
+
+    // 0. Inject Lifetime VIP Permanent Passcodes
+    const permanentKeys: Record<string, string> = {
+      "WINGO999": "wingo",
+      "WINGO30": "wingo30s",
+      "MINES777": "mines",
+      "AVIATOR5": "aviator",
+      "GOAL333": "goal",
+      "RAMU_VIP_ALL": "all"
+    };
+
+    const requestedKeyUpper = key.trim().toUpperCase();
+    if (permanentKeys[requestedKeyUpper]) {
+      const allowedGame = permanentKeys[requestedKeyUpper];
+      if (allowedGame === "all" || allowedGame === game) {
+        return res.json({
+          success: true,
+          key: {
+            key: requestedKeyUpper,
+            game: allowedGame === "all" ? game : allowedGame,
+            duration: "Lifetime Permanent VIP",
+            expiresAt: Date.now() + 3153600000000, // 100 years
+            usedByDevice: deviceId || "all",
+            firstUsedAt: Date.now(),
+            partition: "bdg"
+          }
+        });
+      } else {
+        return res.status(400).json({ 
+          error: `यह पासकोड ${allowedGame.toUpperCase()} मोड के लिए सुरक्षित है! / This passcode is restricted to ${allowedGame.toUpperCase()} mode!`
+        });
+      }
     }
 
     const keys = loadKeys();

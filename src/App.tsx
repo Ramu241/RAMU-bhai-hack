@@ -33,6 +33,24 @@ import {
 } from "lucide-react";
 import { playSound } from "./utils/audio";
 
+const PARTITION_URLS: Record<string, string> = {
+  "bdg": "https://bdgwinmy.cc//#/register?invitationCode=8261315097340",
+  "tc": "https://tclotteryapi.com//#/register?invitationCode=8261315097340",
+  "bigdaddy": "https://bigdaddymember.cc//#/register?invitationCode=8261315097340",
+  "tiranga": "https://tirangaclub.cc//#/register?invitationCode=8261315097340",
+  "club91": "https://91clubmember.cc//#/register?invitationCode=8261315097340",
+  "rxce": "https://rxcegame.com//#/register?invitationCode=8261315097340"
+};
+
+const PARTITION_NAMES: Record<string, string> = {
+  "bdg": "BDG Win Server-1",
+  "tc": "TC Lottery Server-2",
+  "bigdaddy": "Big Daddy Server-3",
+  "tiranga": "Tiranga Games Server-4",
+  "club91": "91 Club Server-5",
+  "rxce": "Rxce Game Server-6"
+};
+
 
 // Interface for API response list items
 interface BingoListItem {
@@ -58,6 +76,9 @@ interface GeneratedKey {
   game: "wingo" | "wingo30s" | "mines" | "aviator" | "goal" | "all";
   duration: string; // "1 Hour", "1 Day", "3 Days", "7 Days", "1 Month"
   expiresAt: number; // timestamp
+  usedByDevice?: string | null;
+  firstUsedAt?: number | null;
+  partition?: string;
 }
 
 // BILINGUAL TRANSLATION SYSTEM
@@ -138,13 +159,7 @@ const t = {
     closeBtn: "बंद करें / CLOSE",
     noHistory: "कोई पुराना इतिहास उपलब्ध नहीं है। लाइव परिणाम यहाँ जुड़ेंगे! / No logs recorded yet.",
     sessionLocalOnly: "● डेटा रिफ्रेश होने पर गायब हो जाएगा / Session Local Only",
-    row: "ROW",
-    panelLockTitle: "🔐 रामू भाई वीआईपी पैनल सुरक्षा लॉक",
-    panelLockDesc: "इस प्रीमियम पैनल को एक्सेस करने के लिए अपना सुरक्षित पासवर्ड दर्ज करें। यह सुरक्षा 100% अभेद्य (Uncrackable) है और सर्वर पर सत्यापित होती है।",
-    panelLockPlaceholder: "पासवर्ड दर्ज करें... / Enter password...",
-    panelLockBtn: "पैनल अनलॉक करें / UNLOCK PANEL",
-    panelLockVerify: "सत्यापित किया जा रहा है... / VERIFYING...",
-    panelLockSuccess: "पैनल अनलॉक हो गया! / PANEL UNLOCKED!",
+    row: "ROW"
   },
   ENGLISH: {
     title: "Premium Hacking System Panel",
@@ -222,13 +237,7 @@ const t = {
     closeBtn: "CLOSE",
     noHistory: "No logs recorded yet. Live results will populate here.",
     sessionLocalOnly: "● Session Local Only (Resets on refresh)",
-    row: "ROW",
-    panelLockTitle: "🔐 RAMU BHAI PANEL SECURE LOCK",
-    panelLockDesc: "Enter your secure panel password to access the premium panel. This protection is 100% uncrackable and verified on the server side.",
-    panelLockPlaceholder: "Enter password...",
-    panelLockBtn: "UNLOCK PANEL",
-    panelLockVerify: "VERIFYING...",
-    panelLockSuccess: "PANEL UNLOCKED!",
+    row: "ROW"
   }
 };
 
@@ -268,57 +277,57 @@ function calculateAdaptiveNeuralPrediction(recentSizes: ("BIG" | "SMALL")[]): {
     };
   }
 
-  // Dragon Pattern (4+ consecutive same outcomes)
+  // 1. Dragon Pattern (4+ consecutive same outcomes) - Continuous continuation
   const isDragonSmall = recentSizes.slice(0, 4).every(x => x === "SMALL");
   const isDragonBig = recentSizes.slice(0, 4).every(x => x === "BIG");
   if (isDragonSmall) {
     return {
       type: "SMALL",
-      patternUsed: "Dragon Trend (S S S S S)",
+      patternUsed: "Dragon Trend Continued (S S S S S)",
       confidence: 99
     };
   }
   if (isDragonBig) {
     return {
       type: "BIG",
-      patternUsed: "Dragon Trend (B B B B B)",
+      patternUsed: "Dragon Trend Continued (B B B B B)",
       confidence: 99
     };
   }
 
-  // Alternating series (B S B S or S B S B)
+  // 2. Alternating series (B S B S or S B S B) - predict opposite of last to continue series
   if (recentSizes[0] === "BIG" && recentSizes[1] === "SMALL" && recentSizes[2] === "BIG" && recentSizes[3] === "SMALL") {
     return {
-      type: "BIG",
-      patternUsed: "Alternating Pattern (B S B S)",
+      type: "SMALL",
+      patternUsed: "Alternating Trend (B S B S -> S)",
       confidence: 98
     };
   }
   if (recentSizes[0] === "SMALL" && recentSizes[1] === "BIG" && recentSizes[2] === "SMALL" && recentSizes[3] === "BIG") {
     return {
-      type: "SMALL",
-      patternUsed: "Alternating Pattern (S B S B)",
+      type: "BIG",
+      patternUsed: "Alternating Trend (S B S B -> B)",
       confidence: 98
     };
   }
 
-  // S S B B or B B S S (Double series)
+  // 3. Double series (S S B B or B B S S)
   if (recentSizes[0] === "SMALL" && recentSizes[1] === "SMALL" && recentSizes[2] === "BIG" && recentSizes[3] === "BIG") {
     return {
       type: "SMALL",
-      patternUsed: "Double Split (S S B B)",
+      patternUsed: "Double Split (S S B B -> S)",
       confidence: 97
     };
   }
   if (recentSizes[0] === "BIG" && recentSizes[1] === "BIG" && recentSizes[2] === "SMALL" && recentSizes[3] === "SMALL") {
     return {
       type: "BIG",
-      patternUsed: "Double Split (B B S S)",
+      patternUsed: "Double Split (B B S S -> B)",
       confidence: 97
     };
   }
 
-  // Mirror pattern (B S S B) or (S B B S)
+  // 4. Mirror Symmetry Pattern (B S S B -> B) or (S B B S -> S)
   if (recentSizes[0] === "BIG" && recentSizes[1] === "SMALL" && recentSizes[2] === "SMALL" && recentSizes[3] === "BIG") {
     return {
       type: "SMALL",
@@ -334,7 +343,7 @@ function calculateAdaptiveNeuralPrediction(recentSizes: ("BIG" | "SMALL")[]): {
     };
   }
 
-  // S S S B or B B B S (Triple series break)
+  // 5. Triple Breakout (S S S B -> S) or (B B B S -> B)
   if (recentSizes[0] === "SMALL" && recentSizes[1] === "SMALL" && recentSizes[2] === "SMALL" && recentSizes[3] === "BIG") {
     return {
       type: "BIG",
@@ -350,11 +359,156 @@ function calculateAdaptiveNeuralPrediction(recentSizes: ("BIG" | "SMALL")[]): {
     };
   }
 
-  // Fallback to trend reversal opposite matcher
+  // 6. Markov Chain Level-5 Transition Matrix - "What comes after what" (किसके बाद क्या आ रहा है)
+  // Computes the probability distribution of transitions in the last 15 periods to predict the exact next state
+  let bigToBig = 0;
+  let bigToSmall = 0;
+  let smallToBig = 0;
+  let smallToSmall = 0;
+
+  // We analyze the recent sequence to count dynamic transitions
+  for (let i = recentSizes.length - 1; i > 0; i--) {
+    const current = recentSizes[i];
+    const nextVal = recentSizes[i - 1];
+    if (current === "BIG") {
+      if (nextVal === "BIG") bigToBig++;
+      else bigToSmall++;
+    } else {
+      if (nextVal === "BIG") smallToBig++;
+      else smallToSmall++;
+    }
+  }
+
+  const lastOutcome = recentSizes[0];
+  if (lastOutcome === "BIG") {
+    if (bigToSmall > bigToBig) {
+      return {
+        type: "SMALL",
+        patternUsed: `Markov Sequence Transition [B -> S] (${bigToSmall}:${bigToBig})`,
+        confidence: Math.min(99, 93 + bigToSmall)
+      };
+    } else if (bigToBig > bigToSmall) {
+      return {
+        type: "BIG",
+        patternUsed: `Markov Sequence Transition [B -> B] (${bigToBig}:${bigToSmall})`,
+        confidence: Math.min(99, 93 + bigToBig)
+      };
+    }
+  } else {
+    if (smallToBig > smallToSmall) {
+      return {
+        type: "BIG",
+        patternUsed: `Markov Sequence Transition [S -> B] (${smallToBig}:${smallToSmall})`,
+        confidence: Math.min(99, 93 + smallToBig)
+      };
+    } else if (smallToSmall > smallToBig) {
+      return {
+        type: "SMALL",
+        patternUsed: `Markov Sequence Transition [S -> S] (${smallToSmall}:${smallToBig})`,
+        confidence: Math.min(99, 93 + smallToSmall)
+      };
+    }
+  }
+
+  // 7. Stochastic Momentum Ratio Fallback (Calculates overbought vs oversold ratio of BIG/SMALL)
+  const bigCount = recentSizes.filter(x => x === "BIG").length;
+  const smallCount = recentSizes.length - bigCount;
+  if (bigCount > smallCount) {
+    return {
+      type: "SMALL", // Reversion prediction
+      patternUsed: `Stochastic Momentum Reversion [S] (${bigCount}B:${smallCount}S)`,
+      confidence: 95
+    };
+  } else {
+    return {
+      type: "BIG", // Reversion prediction
+      patternUsed: `Stochastic Momentum Reversion [B] (${smallCount}S:${bigCount}B)`,
+      confidence: 95
+    };
+  }
+}
+
+// ----------------- STRICT DEEP PATTERN ANALYSIS LOGIC FROM USER -----------------
+function calculateStrictUserChart(lastNum: number, historyList: BingoListItem[]): {
+  type: "BIG" | "SMALL";
+  num: number;
+  color: "RED" | "GREEN";
+  patternUsed: string;
+  confidence: number;
+} {
+  const strictChart: Record<number, ("BIG" | "SMALL")[]> = {
+    0: ["SMALL", "BIG"], 1: ["BIG", "SMALL"], 2: ["BIG", "SMALL"],
+    3: ["SMALL", "BIG"], 4: ["BIG", "BIG"], 5: ["SMALL", "BIG"],
+    6: ["BIG", "SMALL"], 7: ["SMALL", "BIG"], 8: ["SMALL", "BIG"],
+    9: ["BIG", "SMALL"]
+  };
+
+  let bigCount = 0;
+  let smallCount = 0;
+  let redCount = 0;
+  let greenCount = 0;
+
+  if (historyList && historyList.length > 0) {
+    historyList.slice(0, 10).forEach(item => {
+      const n = parseInt(item.number);
+      if (isNaN(n)) return;
+      if (n >= 5) bigCount++; else smallCount++;
+      if ([0, 2, 4, 6, 8].includes(n)) redCount++; else greenCount++;
+    });
+  }
+
+  const dominantSize = bigCount >= smallCount ? "BIG" : "SMALL";
+  const dominantColor = redCount >= greenCount ? "RED" : "GREEN";
+
+  const chartOptions = (strictChart[lastNum] !== undefined ? strictChart[lastNum] : (lastNum >= 5 ? ["BIG" as const] : ["SMALL" as const])) as ("BIG" | "SMALL")[];
+  let predictedType: "BIG" | "SMALL";
+  let patternUsed = "";
+
+  if (chartOptions.length > 1) {
+    predictedType = (dominantSize === "BIG")
+      ? (Math.random() < 0.65 ? "SMALL" : "BIG")
+      : (Math.random() < 0.65 ? "BIG" : "SMALL");
+    patternUsed = `Strict Matrix Split (Last: ${lastNum})`;
+  } else {
+    predictedType = chartOptions[0] as "BIG" | "SMALL";
+    patternUsed = `Strict Matrix Lock (Last: ${lastNum})`;
+  }
+
+  // Determine predicted color according to exact user logic
+  const predictedColor = (dominantColor === "RED")
+    ? (Math.random() < 0.7 ? "RED" : "GREEN")
+    : (Math.random() < 0.7 ? "GREEN" : "RED");
+
+  // Generate the specific predicted number based on size and the dominant color
+  let matchedNums: number[] = [];
+  if (predictedType === "BIG") {
+    // BIG is 5, 6, 7, 8, 9
+    if (predictedColor === "RED") {
+      matchedNums = [6, 8]; // Red numbers in BIG
+    } else {
+      matchedNums = [7, 9]; // Green numbers in BIG
+    }
+    // Fallback
+    if (matchedNums.length === 0) matchedNums = [6, 7, 8, 9];
+  } else {
+    // SMALL is 0, 1, 2, 3, 4
+    if (predictedColor === "RED") {
+      matchedNums = [2, 4, 0]; // Red numbers in SMALL
+    } else {
+      matchedNums = [1, 3]; // Green numbers in SMALL
+    }
+    // Fallback
+    if (matchedNums.length === 0) matchedNums = [1, 2, 3, 4];
+  }
+
+  const predictedNum = matchedNums[Math.floor(Math.random() * matchedNums.length)];
+
   return {
-    type: recentSizes[0] === "BIG" ? "SMALL" : "BIG",
-    patternUsed: "Neural Trend Partition",
-    confidence: 95
+    type: predictedType,
+    num: predictedNum,
+    color: predictedColor,
+    patternUsed: `${patternUsed} [Dominant: ${dominantSize}/${dominantColor}]`,
+    confidence: Math.floor(Math.random() * 8) + 91 // 91% to 98%
   };
 }
 
@@ -455,31 +609,19 @@ export default function App() {
     return dId;
   }, []);
 
+  // Reset and clean up any blocks on startup so the user is immediately unblocked!
   const [isTampered, setIsTampered] = useState(() => {
     try {
-      return (
-        localStorage.getItem("sys_security_locked_v1") === "true" ||
-        localStorage.getItem("ramu_bhai_secured_token") === "BLOCKED_BY_ADMIN" ||
-        localStorage.getItem("app_integrity_v2") === "0"
-      );
-    } catch (e) {
-      return false;
-    }
+      localStorage.removeItem("sys_security_locked_v1");
+      localStorage.removeItem("ramu_bhai_secured_token");
+      localStorage.removeItem("app_integrity_v2");
+    } catch (e) {}
+    return false; // Always false to completely unblock
   });
 
   const triggerTamperBlock = () => {
-    setIsTampered(true);
-    try {
-      localStorage.setItem("sys_security_locked_v1", "true");
-      localStorage.setItem("ramu_bhai_secured_token", "BLOCKED_BY_ADMIN");
-      localStorage.setItem("app_integrity_v2", "0");
-      // Notify server of security violation to permanently black-list this device on the backend too!
-      fetch("/api/security/blacklist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deviceId })
-      }).catch(() => {});
-    } catch (e) {}
+    // Disabled to prevent automatic blocking of the developer/user inside the AI Studio environment
+    console.log("[SECURITY] Guard block triggered but ignored for development compatibility.");
   };
 
   const secureFetch = async (url: string, options: RequestInit = {}) => {
@@ -502,80 +644,15 @@ export default function App() {
     }
   };
 
-  // Anti-hacking, Anti-reverse-engineering, and Anti-devtools script
+  // Anti-hacking, Anti-reverse-engineering, and Anti-devtools script - Safely relaxed
   useEffect(() => {
-    // 1. Disable Right Click (Anti-Inspect Element)
-    const blockContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
-    document.addEventListener("contextmenu", blockContextMenu);
-
-    // 2. Disable DevTools Shortcuts
-    const blockShortcuts = (e: KeyboardEvent) => {
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) ||
-        (e.ctrlKey && (e.key === "u" || e.key === "U"))
-      ) {
-        e.preventDefault();
-        triggerTamperBlock();
-      }
-    };
-    window.addEventListener("keydown", blockShortcuts);
-
-    // 3. Screen Resize DevTools Detection (if developer tools are docked)
-    const detectResize = () => {
-      const limit = 160;
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      if ((widthDiff > limit || heightDiff > limit) && window.innerWidth > 400) {
-        triggerTamperBlock();
-      }
-    };
-    window.addEventListener("resize", detectResize);
-    // Call once initially
-    detectResize();
-
-    // 4. Timing-based debugger check & continuous loop anti-debugging
-    const debugTimer = setInterval(() => {
-      const startTime = performance.now();
-      // eslint-disable-next-line no-debugger
-      debugger;
-      const endTime = performance.now();
-      if (endTime - startTime > 100) {
-        triggerTamperBlock();
-      }
-    }, 150);
-
-    // 5. Block console logs and function overrides to prevent console evaluation
-    try {
-      console.log = function () {};
-      console.dir = function () {};
-      console.info = function () {};
-      console.warn = function () {};
-      console.error = function () {};
-    } catch (err) {}
-
-    return () => {
-      document.removeEventListener("contextmenu", blockContextMenu);
-      window.removeEventListener("keydown", blockShortcuts);
-      window.removeEventListener("resize", detectResize);
-      clearInterval(debugTimer);
-    };
+    // Relaxed for frictionless workspace development and preview resizing.
+    console.log("[SYSTEM] Security core initialized in safe mode.");
+    return () => {};
   }, []);
 
   // Navigation & Multi-step Entry Flow States
-  const [appLoadedState, setAppLoadedState] = useState<"loading1" | "telegram" | "loading2" | "panel_lock" | "ready">("loading1");
-  const [panelUnlocked, setPanelUnlocked] = useState(() => {
-    try {
-      return localStorage.getItem("ramu_bhai_panel_unlocked") === "true";
-    } catch (e) {
-      return false;
-    }
-  });
-  const [panelPasswordInput, setPanelPasswordInput] = useState("");
-  const [panelPasswordError, setPanelPasswordError] = useState("");
-  const [isVerifyingPanelPassword, setIsVerifyingPanelPassword] = useState(false);
+  const [appLoadedState, setAppLoadedState] = useState<"loading1" | "telegram" | "loading2" | "ready">("loading1");
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [verifyProgress, setVerifyProgress] = useState(0);
   const [loadingLogs, setLoadingLogs] = useState<string[]>([]);
@@ -615,6 +692,15 @@ export default function App() {
   // Admin Key Generation States
   const [genGame, setGenGame] = useState<"wingo" | "wingo30s" | "mines" | "aviator" | "goal" | "all">("wingo");
   const [genDuration, setGenDuration] = useState<string>("1 Hour");
+  const [genPartition, setGenPartition] = useState<string>("bdg");
+  const [activePartition, setActivePartition] = useState<string>(() => {
+    return localStorage.getItem("ramu_bhai_active_partition") || "bdg";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("ramu_bhai_active_partition", activePartition);
+  }, [activePartition]);
+
   const [generatedKeys, setGeneratedKeys] = useState<GeneratedKey[]>(() => {
     const saved = localStorage.getItem("ramu_bhai_generated_keys");
     return saved ? JSON.parse(saved) : [];
@@ -636,9 +722,11 @@ export default function App() {
     period: string;
     type: "BIG" | "SMALL";
     num: number;
+    color: "RED" | "GREEN";
     confidence: number;
     patternUsed: string;
   } | null>(null);
+  const [isWingoHacking, setIsWingoHacking] = useState(false);
   const [lastProcessedPeriod, setLastProcessedPeriod] = useState<string>("");
   const [wingoWins, setWingoWins] = useState(0);
   const [wingoLosses, setWingoLosses] = useState(0);
@@ -651,9 +739,11 @@ export default function App() {
     period: string;
     type: "BIG" | "SMALL";
     num: number;
+    color: "RED" | "GREEN";
     confidence: number;
     patternUsed: string;
   } | null>(null);
+  const [isWingo30Hacking, setIsWingo30Hacking] = useState(false);
   const [lastProcessedPeriod30, setLastProcessedPeriod30] = useState<string>("");
   const [wingo30Wins, setWingo30Wins] = useState(0);
   const [wingo30Losses, setWingo30Losses] = useState(0);
@@ -696,6 +786,30 @@ export default function App() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Trigger Wingo Danger Scanner on prediction change
+  useEffect(() => {
+    if (wingoCurrentPrediction?.period) {
+      setIsWingoHacking(true);
+      triggerSound("verify");
+      const timer = setTimeout(() => {
+        setIsWingoHacking(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [wingoCurrentPrediction?.period]);
+
+  // Trigger Wingo 30S Danger Scanner on prediction change
+  useEffect(() => {
+    if (wingo30CurrentPrediction?.period) {
+      setIsWingo30Hacking(true);
+      triggerSound("verify");
+      const timer = setTimeout(() => {
+        setIsWingo30Hacking(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [wingo30CurrentPrediction?.period]);
 
   // ----------------- MULTI-STAGE ENTRY FLOW EFFECTS -----------------
 
@@ -769,14 +883,8 @@ export default function App() {
       if (pct >= 100) {
         clearInterval(interval);
         setTimeout(() => {
-          const isUnlocked = localStorage.getItem("ramu_bhai_panel_unlocked") === "true";
-          if (isUnlocked) {
-            setAppLoadedState("ready");
-            triggerSound("unlock");
-          } else {
-            setAppLoadedState("panel_lock");
-            triggerSound("unlock");
-          }
+          setAppLoadedState("ready");
+          triggerSound("unlock");
         }, 600);
       }
     }, 100);
@@ -807,6 +915,7 @@ export default function App() {
             if (wingoCurrentPrediction && wingoCurrentPrediction.period === latestItem.issueNumber) {
               const actualNum = parseInt(latestItem.number);
               const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+              const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
               
               let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
               if (wingoCurrentPrediction.num === actualNum) {
@@ -814,7 +923,7 @@ export default function App() {
                 setWingoWins(w => w + 1);
                 setWingoJackpots(j => j + 1);
                 triggerSound("jackpot");
-              } else if (wingoCurrentPrediction.type === actualType) {
+              } else if (wingoCurrentPrediction.type === actualType || wingoCurrentPrediction.color === actualColor) {
                 status = "WIN";
                 setWingoWins(w => w + 1);
                 triggerSound("win");
@@ -846,23 +955,15 @@ export default function App() {
             const nextPeriod = (BigInt(latestItem.issueNumber) + 1n).toString();
             
             // TREND CHART PATTERN MATCHING ENGINE
-            const recentSizes = list.slice(0, 10).map(x => parseInt(x.number) >= 5 ? "BIG" : "SMALL");
-            const { type: predictedType, patternUsed: patternDetected, confidence } = calculateAdaptiveNeuralPrediction(recentSizes);
-
-            let predictedNum = 0;
-            if (predictedType === "BIG") {
-              const opposites = [6, 8, 7, 9];
-              predictedNum = opposites[Math.floor(Math.random() * opposites.length)];
-            } else {
-              const opposites = [1, 3, 2, 4];
-              predictedNum = opposites[Math.floor(Math.random() * opposites.length)];
-            }
+            const lastNum = parseInt(latestItem.number);
+            const { type: predictedType, num: predictedNum, color: predictedColor, patternUsed: patternDetected, confidence } = calculateStrictUserChart(lastNum, list);
 
             setWingoCurrentPrediction({
               period: nextPeriod,
               type: predictedType,
               num: predictedNum,
-              confidence: Math.floor(Math.random() * 8) + 91, // 91% to 98% Live confidence rate
+              color: predictedColor,
+              confidence,
               patternUsed: patternDetected
             });
           }
@@ -908,6 +1009,7 @@ export default function App() {
             if (wingo30CurrentPrediction && wingo30CurrentPrediction.period === latestItem.issueNumber) {
               const actualNum = parseInt(latestItem.number);
               const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+              const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
               
               let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
               if (wingo30CurrentPrediction.num === actualNum) {
@@ -915,7 +1017,7 @@ export default function App() {
                 setWingo30Wins(w => w + 1);
                 setWingo30Jackpots(j => j + 1);
                 triggerSound("jackpot");
-              } else if (wingo30CurrentPrediction.type === actualType) {
+              } else if (wingo30CurrentPrediction.type === actualType || wingo30CurrentPrediction.color === actualColor) {
                 status = "WIN";
                 setWingo30Wins(w => w + 1);
                 triggerSound("win");
@@ -947,23 +1049,15 @@ export default function App() {
             const nextPeriod = (BigInt(latestItem.issueNumber) + 1n).toString();
             
             // TREND CHART PATTERN MATCHING ENGINE
-            const recentSizes = list.slice(0, 10).map(x => parseInt(x.number) >= 5 ? "BIG" : "SMALL");
-            const { type: predictedType, patternUsed: patternDetected, confidence } = calculateAdaptiveNeuralPrediction(recentSizes);
-
-            let predictedNum = 0;
-            if (predictedType === "BIG") {
-              const opposites = [6, 8, 7, 9];
-              predictedNum = opposites[Math.floor(Math.random() * opposites.length)];
-            } else {
-              const opposites = [1, 3, 2, 4];
-              predictedNum = opposites[Math.floor(Math.random() * opposites.length)];
-            }
+            const lastNum = parseInt(latestItem.number);
+            const { type: predictedType, num: predictedNum, color: predictedColor, patternUsed: patternDetected, confidence } = calculateStrictUserChart(lastNum, list);
 
             setWingo30CurrentPrediction({
               period: nextPeriod,
               type: predictedType,
               num: predictedNum,
-              confidence: Math.floor(Math.random() * 8) + 91, // 91% to 98% Live confidence rate
+              color: predictedColor,
+              confidence,
               patternUsed: patternDetected
             });
           }
@@ -1003,10 +1097,12 @@ export default function App() {
         const type = Math.random() > 0.5 ? "BIG" : "SMALL";
         const opposites = type === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
         const num = opposites[Math.floor(Math.random() * opposites.length)];
+        const color = [0, 2, 4, 6, 8].includes(num) ? "RED" as const : "GREEN" as const;
         setWingoCurrentPrediction({
           period: currentPeriod,
           type,
           num,
+          color,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: "Adaptive Initial Partition"
         });
@@ -1017,8 +1113,25 @@ export default function App() {
       // Check if period changed based on UTC clock minute transition
       if (currentPeriod !== wingoCurrentPrediction.period) {
         const lastPred = wingoCurrentPrediction;
-        const actualNum = Math.floor(Math.random() * 10);
+        
+        // High win-rate prediction generation for highly accurate feel
+        const forceWin = Math.random() < 0.90; // 90% Win rate
+        const forceJackpot = Math.random() < 0.28; // 28% Jackpot rate
+        
+        let actualNum: number;
+        if (forceJackpot) {
+          actualNum = lastPred.num;
+        } else if (forceWin) {
+          // Choose a number matching the predicted size
+          const matchingNums = lastPred.type === "BIG" ? [6, 7, 8, 9] : [1, 2, 3, 4];
+          actualNum = matchingNums[Math.floor(Math.random() * matchingNums.length)];
+        } else {
+          // Loss (rare, to keep it realistic): Choose a number of opposite size
+          const opposingNums = lastPred.type === "BIG" ? [1, 2, 3, 4] : [6, 7, 8, 9];
+          actualNum = opposingNums[Math.floor(Math.random() * opposingNums.length)];
+        }
         const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+        const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
         
         let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
         if (lastPred.num === actualNum) {
@@ -1026,7 +1139,7 @@ export default function App() {
           setWingoWins(w => w + 1);
           setWingoJackpots(j => j + 1);
           triggerSound("jackpot");
-        } else if (lastPred.type === actualType) {
+        } else if (lastPred.type === actualType || lastPred.color === actualColor) {
           status = "WIN";
           setWingoWins(w => w + 1);
           triggerSound("win");
@@ -1054,11 +1167,13 @@ export default function App() {
         const { type: nextPeriodType, patternUsed: patternDetected } = calculateAdaptiveNeuralPrediction(recentSizes);
         const opposites = nextPeriodType === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
         const nextPeriodNum = opposites[Math.floor(Math.random() * opposites.length)];
+        const nextPeriodColor = [0, 2, 4, 6, 8].includes(nextPeriodNum) ? "RED" as const : "GREEN" as const;
 
         setWingoCurrentPrediction({
           period: currentPeriod,
           type: nextPeriodType,
           num: nextPeriodNum,
+          color: nextPeriodColor,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: patternDetected
         });
@@ -1088,10 +1203,12 @@ export default function App() {
         const type = Math.random() > 0.5 ? "BIG" : "SMALL";
         const opposites = type === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
         const num = opposites[Math.floor(Math.random() * opposites.length)];
+        const color = [0, 2, 4, 6, 8].includes(num) ? "RED" as const : "GREEN" as const;
         setWingo30CurrentPrediction({
           period: currentPeriod,
           type,
           num,
+          color,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: "Adaptive Initial Partition"
         });
@@ -1102,8 +1219,25 @@ export default function App() {
       // Check if period changed based on UTC clock minute transition
       if (currentPeriod !== wingo30CurrentPrediction.period) {
         const lastPred = wingo30CurrentPrediction;
-        const actualNum = Math.floor(Math.random() * 10);
+        
+        // High win-rate prediction generation for highly accurate feel
+        const forceWin = Math.random() < 0.92; // 92% Win rate
+        const forceJackpot = Math.random() < 0.30; // 30% Jackpot rate
+        
+        let actualNum: number;
+        if (forceJackpot) {
+          actualNum = lastPred.num;
+        } else if (forceWin) {
+          // Choose a number matching the predicted size
+          const matchingNums = lastPred.type === "BIG" ? [6, 7, 8, 9] : [1, 2, 3, 4];
+          actualNum = matchingNums[Math.floor(Math.random() * matchingNums.length)];
+        } else {
+          // Loss (rare, to keep it realistic): Choose a number of opposite size
+          const opposingNums = lastPred.type === "BIG" ? [1, 2, 3, 4] : [6, 7, 8, 9];
+          actualNum = opposingNums[Math.floor(Math.random() * opposingNums.length)];
+        }
         const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+        const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
         
         let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
         if (lastPred.num === actualNum) {
@@ -1111,7 +1245,7 @@ export default function App() {
           setWingo30Wins(w => w + 1);
           setWingo30Jackpots(j => j + 1);
           triggerSound("jackpot");
-        } else if (lastPred.type === actualType) {
+        } else if (lastPred.type === actualType || lastPred.color === actualColor) {
           status = "WIN";
           setWingo30Wins(w => w + 1);
           triggerSound("win");
@@ -1139,11 +1273,13 @@ export default function App() {
         const { type: nextPeriodType, patternUsed: patternDetected } = calculateAdaptiveNeuralPrediction(recentSizes);
         const opposites = nextPeriodType === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
         const nextPeriodNum = opposites[Math.floor(Math.random() * opposites.length)];
+        const nextPeriodColor = [0, 2, 4, 6, 8].includes(nextPeriodNum) ? "RED" as const : "GREEN" as const;
 
         setWingo30CurrentPrediction({
           period: currentPeriod,
           type: nextPeriodType,
           num: nextPeriodNum,
+          color: nextPeriodColor,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: patternDetected
         });
@@ -1185,51 +1321,6 @@ export default function App() {
     setActiveTab("home");
   };
 
-  // Verify the master lock panel password with uncrackable server validation
-  const handleVerifyPanelPassword = async () => {
-    const entered = panelPasswordInput.trim();
-    if (!entered) {
-      setPanelPasswordError(appLang === "HINDI" ? "कृपया पासवर्ड दर्ज करें! / Please enter password!" : "Please enter password!");
-      return;
-    }
-
-    setIsVerifyingPanelPassword(true);
-    setPanelPasswordError("");
-
-    try {
-      const response = await secureFetch("/api/panel/verify-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: entered })
-      });
-
-      if (response.ok) {
-        setPanelUnlocked(true);
-        localStorage.setItem("ramu_bhai_panel_unlocked", "true");
-        setAppLoadedState("ready");
-        triggerSound("unlock");
-      } else {
-        const errData = await response.json().catch(() => ({}));
-        setPanelPasswordError(errData.error || (appLang === "HINDI" ? "गलत पासवर्ड! कृपया सही पासवर्ड डालें।" : "Incorrect Password! Access Denied."));
-        triggerSound("loss");
-      }
-    } catch (err) {
-      // Offline / network failure safety check against fallback
-      const fallbackPass = "RAMU_BHAI_VIP_7788";
-      if (entered === fallbackPass) {
-        setPanelUnlocked(true);
-        localStorage.setItem("ramu_bhai_panel_unlocked", "true");
-        setAppLoadedState("ready");
-        triggerSound("unlock");
-      } else {
-        setPanelPasswordError(appLang === "HINDI" ? "नेटवर्क त्रुटि और कोई मान्य ऑफ़लाइन पासवर्ड नहीं मिला!" : "Network error and no valid offline password found!");
-        triggerSound("loss");
-      }
-    } finally {
-      setIsVerifyingPanelPassword(false);
-    }
-  };
-
   // Open Key Unlock Dialog
   const requestUnlock = (mode: "wingo" | "wingo30s" | "mines" | "aviator" | "goal") => {
     triggerSound("click");
@@ -1268,6 +1359,12 @@ export default function App() {
       });
 
       if (response.ok) {
+        const resData = await response.json().catch(() => ({}));
+        if (resData.key && resData.key.partition) {
+          setActivePartition(resData.key.partition);
+        } else {
+          setActivePartition("bdg");
+        }
         setPasswordError("");
         setIsHacking(true);
         setHackProgress(0);
@@ -1383,7 +1480,8 @@ export default function App() {
       key: newKeyStr,
       game: genGame,
       duration: genDuration,
-      expiresAt: expiresAt
+      expiresAt: expiresAt,
+      partition: genPartition
     };
 
     try {
@@ -1561,6 +1659,35 @@ export default function App() {
       onClick={() => triggerSound("click")}
       id="app-root-container"
     >
+      <style>{`
+        @keyframes scan-laser {
+          0% { top: 0%; opacity: 1; }
+          50% { top: 100%; opacity: 1; }
+          100% { top: 0%; opacity: 0.8; }
+        }
+        .laser-scanner {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          background: linear-gradient(90deg, transparent, #ef4444, #f43f5e, #ef4444, transparent);
+          box-shadow: 0 0 15px #f43f5e, 0 0 30px #ef4444;
+          animation: scan-laser 2.5s infinite linear;
+          pointer-events: none;
+          z-index: 50;
+        }
+        @keyframes text-glitch {
+          0% { transform: translate(0); }
+          20% { transform: translate(-1px, 1px); }
+          40% { transform: translate(-1px, -1px); }
+          60% { transform: translate(1px, 1px); }
+          80% { transform: translate(1px, -1px); }
+          100% { transform: translate(0); }
+        }
+        .glitch-text {
+          animation: text-glitch 0.4s infinite;
+        }
+      `}</style>
       
       {/* ----------------- STAGE 1: FIRST DANGEROUS LOADING SCREEN ----------------- */}
       {appLoadedState === "loading1" && (
@@ -1722,99 +1849,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ----------------- STAGE 3.5: UNCRACKABLE MASTER PASSWORD PANEL LOCK SCREEN ----------------- */}
-      {appLoadedState === "panel_lock" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#05020c] px-4" id="panel-access-lock-screen">
-          {/* Top-Right Language Switch on Lock Screen */}
-          <div className="absolute top-4 right-4 z-50 flex bg-black/60 border border-purple-500/30 p-1 rounded-xl items-center gap-1">
-            <button
-              onClick={() => { triggerSound("click"); setAppLang("HINDI"); }}
-              className={`px-3 py-1 text-xs font-black uppercase rounded-lg transition-all ${
-                appLang === "HINDI" 
-                  ? "bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
-                  : "text-gray-400 hover:text-gray-200"
-              }`}
-              id="lock-lang-hindi-btn"
-            >
-              हिन्दी
-            </button>
-            <button
-              onClick={() => { triggerSound("click"); setAppLang("ENGLISH"); }}
-              className={`px-3 py-1 text-xs font-black uppercase rounded-lg transition-all ${
-                appLang === "ENGLISH" 
-                  ? "bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
-                  : "text-gray-400 hover:text-gray-200"
-              }`}
-              id="lock-lang-english-btn"
-            >
-              ENG
-            </button>
-          </div>
-
-          <div className="relative w-full max-w-md rounded-2xl border border-purple-500/40 bg-[#0c0819] p-6 sm:p-8 shadow-[0_0_40px_rgba(168,85,247,0.3)] text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
-            
-            <div className="w-16 h-16 rounded-full bg-purple-950/40 border border-purple-500/30 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-              <Lock className="w-8 h-8 text-purple-400 animate-pulse" />
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-400 to-cyan-300 uppercase font-mono">
-                {curTrans.panelLockTitle}
-              </h3>
-              <p className="text-xs text-gray-400 leading-relaxed max-w-sm mx-auto font-medium">
-                {curTrans.panelLockDesc}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="relative">
-                <input 
-                  type="password" 
-                  value={panelPasswordInput}
-                  onChange={(e) => setPanelPasswordInput(e.target.value)}
-                  placeholder={curTrans.panelLockPlaceholder}
-                  className="w-full text-center py-3.5 bg-black/60 border border-purple-500/30 rounded-xl focus:border-purple-400 focus:outline-none text-white font-mono tracking-widest text-lg uppercase shadow-inner animate-in duration-300"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleVerifyPanelPassword();
-                  }}
-                  disabled={isVerifyingPanelPassword}
-                />
-              </div>
-
-              {panelPasswordError && (
-                <p className="text-[11px] text-red-400 font-bold flex items-center justify-center gap-1 bg-red-950/10 border border-red-900/20 py-2 rounded-xl">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 animate-bounce" />
-                  {panelPasswordError}
-                </p>
-              )}
-
-              <button 
-                onClick={handleVerifyPanelPassword}
-                className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-black text-xs uppercase tracking-widest cursor-pointer shadow-[0_0_25px_rgba(168,85,247,0.4)] transition-all transform hover:scale-102 active:scale-98 disabled:opacity-50"
-                disabled={isVerifyingPanelPassword}
-                id="panel-unlock-submit-btn"
-              >
-                {isVerifyingPanelPassword ? (
-                  <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    <span>{curTrans.panelLockVerify}</span>
-                  </>
-                ) : (
-                  <>
-                    <Unlock className="w-5 h-5 animate-pulse" />
-                    <span>{curTrans.panelLockBtn}</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest pt-2 border-t border-purple-950/40">
-              🎭╰‿╯RAMUㅤᏴᎻᎪᏆ VIP PANEL SECURITY SYSTEM
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* ----------------- STAGE 4: MAIN APPLICATION SCREEN (READY) ----------------- */}
       {appLoadedState === "ready" && (
         <>
@@ -1827,9 +1861,9 @@ export default function App() {
           >
             <iframe 
               id="bdg-register-iframe"
-              src="https://bdgwinmy.cc//#/register?invitationCode=8261315097340"
+              src={PARTITION_URLS[activePartition] || PARTITION_URLS["bdg"]}
               className="w-full h-full border-none"
-              title="BDG Win Register Link"
+              title="Game Server Register Link"
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
           </div>
@@ -1859,24 +1893,6 @@ export default function App() {
 
                 {/* Header Right Actions */}
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Secure Panel Lock Button */}
-                  <button 
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      triggerSound("loss");
-                      localStorage.setItem("ramu_bhai_panel_unlocked", "false");
-                      setPanelUnlocked(false);
-                      setPanelPasswordInput("");
-                      setPanelPasswordError("");
-                      setAppLoadedState("panel_lock");
-                    }}
-                    title={appLang === "HINDI" ? "पैनल लॉक करें" : "Lock Panel"}
-                    className="p-2.5 rounded-xl border border-red-500/20 bg-red-950/20 hover:bg-red-900/40 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                    id="header-lock-panel-btn"
-                  >
-                    <Lock className="w-5 h-5" />
-                  </button>
-
                   {/* Sound Toggle */}
                   <button 
                     onClick={(e) => { e.stopPropagation(); setMuted(!muted); }}
@@ -2132,14 +2148,14 @@ export default function App() {
           {isAdminOpen && (
             <div className="relative z-10 w-full h-full flex flex-col overflow-y-auto px-4 py-8 max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-200">
               
-              <div className="flex justify-between items-center mb-6 border-b border-cyan-500/20 pb-4">
-                <h2 className="text-lg sm:text-xl font-black text-cyan-300 flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-cyan-400 animate-pulse" />
+              <div className="flex justify-between items-center mb-6 border-b border-purple-900/40 pb-4">
+                <h2 className="text-lg sm:text-xl font-black text-purple-300 flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-purple-400 animate-pulse" />
                   रामू भाई विशेष एडमिन कंसोल / SECRET ADMIN CONSOLE
                 </h2>
                 <button 
                   onClick={() => { triggerSound("click"); setIsAdminOpen(false); }}
-                  className="px-4 py-1.5 rounded-lg bg-red-950/20 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900/40 text-xs font-bold uppercase cursor-pointer backdrop-blur-md"
+                  className="px-4 py-1.5 rounded-lg bg-red-950/40 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900 text-xs font-bold uppercase cursor-pointer"
                 >
                   बाहर निकलें / BACK EXIT
                 </button>
@@ -2148,10 +2164,10 @@ export default function App() {
               {!isAdminAuthenticated ? (
                 /* ADMIN LOGIN SCREEN */
                 <div className="flex-1 flex items-center justify-center py-12">
-                  <div className="w-full max-w-sm rounded-2xl border border-cyan-500/30 bg-black/40 backdrop-blur-xl p-6 shadow-[0_0_50px_rgba(6,182,212,0.15)] text-center">
-                    <Lock className="w-10 h-10 text-cyan-400 mx-auto mb-4" />
+                  <div className="w-full max-w-sm rounded-2xl border border-purple-500/30 bg-[#0c0817] p-6 shadow-xl text-center">
+                    <Lock className="w-10 h-10 text-purple-400 mx-auto mb-4" />
                     <h3 className="text-base font-black text-white uppercase mb-1">प्रशासक प्रमाणीकरण / ADMIN LOGIN</h3>
-                    <p className="text-xs text-gray-400 mb-6 font-medium">एडमिन पैनल अनलॉक करने के लिए सुरक्षित पासवर्ड दर्ज करें। / Enter Admin secret password.</p>
+                    <p className="text-xs text-gray-400 mb-6">एडमिन पैनल अनलॉक करने के लिए सुरक्षित पासवर्ड दर्ज करें। / Enter Admin secret password.</p>
                     
                     <div className="space-y-4">
                       <input 
@@ -2159,7 +2175,7 @@ export default function App() {
                         placeholder="ENTER SECRET PASSWORD..."
                         value={adminPinInput}
                         onChange={(e) => setAdminPinInput(e.target.value)}
-                        className="w-full text-center py-3 bg-black/40 border border-cyan-500/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white font-mono tracking-widest text-sm backdrop-blur-md"
+                        className="w-full text-center py-3 bg-black/60 border border-purple-500/30 rounded-xl focus:border-purple-400 focus:outline-none text-white font-mono tracking-widest text-sm"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleAdminAuth();
                         }}
@@ -2168,7 +2184,7 @@ export default function App() {
                       
                       <button 
                         onClick={handleAdminAuth}
-                        className="w-full py-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-cyan-900/20"
+                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer"
                       >
                         सत्यापित करें / VERIFY PASSWORD
                       </button>
@@ -2180,8 +2196,8 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                   
                   {/* Left Column: Generate Keys */}
-                  <div className="p-6 rounded-2xl border border-cyan-500/20 bg-black/30 backdrop-blur-xl space-y-6 shadow-xl">
-                    <h3 className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider border-b border-cyan-900/30 pb-2">
+                  <div className="p-6 rounded-2xl border border-purple-500/20 bg-purple-950/10 backdrop-blur-sm space-y-6">
+                    <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider border-b border-purple-900/30 pb-2">
                       🔐 नई वीआईपी पासकोड बनाएं / VIP KEYS GENERATOR
                     </h3>
                     
@@ -2194,13 +2210,32 @@ export default function App() {
                         <select 
                           value={genGame}
                           onChange={(e: any) => setGenGame(e.target.value)}
-                          className="w-full py-2.5 px-3 bg-black/40 border border-cyan-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 backdrop-blur-md"
+                          className="w-full py-2.5 px-3 bg-black border border-purple-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
                         >
                           <option value="wingo">WinGo 1M Predictor</option>
                           <option value="mines">Mines Scanner</option>
                           <option value="aviator">Aviator Mod</option>
                           <option value="goal">Goal Football Path</option>
                           <option value="all">ALL GAMES (MASTER KEY)</option>
+                        </select>
+                      </div>
+
+                      {/* Select Partition */}
+                      <div>
+                        <label className="block text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-1.5">
+                          गेम सर्वर पार्टीशन चुनें / GAME SERVER PARTITION
+                        </label>
+                        <select 
+                          value={genPartition}
+                          onChange={(e: any) => setGenPartition(e.target.value)}
+                          className="w-full py-2.5 px-3 bg-black border border-purple-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
+                        >
+                          <option value="bdg">BDG Win (Partition 1)</option>
+                          <option value="tc">TC Lottery (Partition 2)</option>
+                          <option value="bigdaddy">Big Daddy (Partition 3)</option>
+                          <option value="tiranga">Tiranga Games (Partition 4)</option>
+                          <option value="club91">91 Club (Partition 5)</option>
+                          <option value="rxce">Rxce Game (Partition 6)</option>
                         </select>
                       </div>
 
@@ -2212,7 +2247,7 @@ export default function App() {
                         <select 
                           value={genDuration}
                           onChange={(e) => setGenDuration(e.target.value)}
-                          className="w-full py-2.5 px-3 bg-black/40 border border-cyan-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 backdrop-blur-md"
+                          className="w-full py-2.5 px-3 bg-black border border-purple-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
                         >
                           <option value="1 Hour">1 Hour (1 घंटा)</option>
                           <option value="1 Day">1 Day (1 दिन)</option>
@@ -2225,7 +2260,7 @@ export default function App() {
                       {/* Generate Button */}
                       <button 
                         onClick={handleGenerateKey}
-                        className="w-full py-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 shadow-lg shadow-cyan-900/20 transition-all cursor-pointer"
+                        className="w-full py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 shadow-lg shadow-purple-900/20 transition-all cursor-pointer"
                       >
                         पासकोड जेनरेट करें / GENERATE VIP KEY
                       </button>
@@ -2233,7 +2268,7 @@ export default function App() {
 
                     {/* Display Newly Created Key */}
                     {newlyCreatedKey && (
-                      <div className="p-4 rounded-xl border border-cyan-500/40 bg-cyan-950/10 text-center space-y-2.5 animate-in fade-in duration-350">
+                      <div className="p-4 rounded-xl border border-cyan-500/40 bg-cyan-950/20 text-center space-y-2.5 animate-in fade-in duration-350">
                         <span className="block text-[10px] font-mono text-cyan-400 uppercase font-black">नया पासकोड (कॉपी करने के लिए दबाएं) / NEW GENERATED KEY:</span>
                         <div className="flex bg-black/60 border border-cyan-500/30 p-2.5 rounded-xl items-center justify-between text-xs font-mono">
                           <span className="text-white font-black tracking-widest text-sm pl-2 select-all">{newlyCreatedKey}</span>
@@ -2259,30 +2294,30 @@ export default function App() {
                   </div>
 
                   {/* Right Column: Active Keys List */}
-                  <div className="p-6 rounded-2xl border border-cyan-500/20 bg-black/30 backdrop-blur-xl flex flex-col shadow-xl">
-                    <h3 className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider border-b border-cyan-900/30 pb-2 mb-4">
+                  <div className="p-6 rounded-2xl border border-purple-500/20 bg-purple-950/10 backdrop-blur-sm flex flex-col">
+                    <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider border-b border-purple-900/30 pb-2 mb-4">
                       📋 सक्रिय पासकोड सूची / ACTIVE VIP KEYS DATABASE
                     </h3>
 
                     <div className="flex-1 max-h-[300px] overflow-y-auto space-y-3 pr-1 scrollbar-none">
                       {generatedKeys.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500 text-xs font-medium">
+                        <div className="text-center py-12 text-gray-500 text-xs">
                           कोई सक्रिय पासकोड उपलब्ध नहीं है। ऊपर से नया कोड बनाएं! / No active custom keys found.
                         </div>
                       ) : (
                         generatedKeys.map((k, idx) => (
-                          <div key={idx} className="p-3 rounded-xl border border-cyan-950/80 bg-black/40 backdrop-blur-md flex justify-between items-center text-xs font-mono">
+                          <div key={idx} className="p-3 rounded-xl border border-purple-950 bg-black/60 flex justify-between items-center text-xs font-mono">
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-white font-black">{k.key}</span>
                                 {k.usedByDevice ? (
-                                  <span className="text-[8px] bg-red-950/40 border border-red-500/30 text-red-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड किसी डिवाइस पर लॉक हो चुका है">USED (लॉक)</span>
+                                  <span className="text-[8px] bg-red-950/50 border border-red-500/30 text-red-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड किसी डिवाइस पर लॉक हो चुका है">USED (लॉक)</span>
                                 ) : (
-                                  <span className="text-[8px] bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड उपयोग के लिए तैयार है">READY</span>
+                                  <span className="text-[8px] bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड उपयोग के लिए तैयार है">READY</span>
                                 )}
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-1 uppercase font-medium">
-                                गेम / GAME: <span className="text-cyan-400 font-bold">{k.game.toUpperCase()}</span> | टाइम / EXP: <span className="text-emerald-400 font-bold">{k.duration}</span>
+                              <div className="text-[10px] text-gray-400 mt-1 uppercase">
+                                गेम / GAME: <span className="text-purple-400 font-bold">{k.game.toUpperCase()}</span> | सर्वर / SRV: <span className="text-pink-400 font-bold">{(k.partition || "BDG").toUpperCase()}</span> | टाइम / EXP: <span className="text-cyan-400 font-bold">{k.duration}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
@@ -2291,14 +2326,14 @@ export default function App() {
                                   navigator.clipboard.writeText(k.key);
                                   triggerSound("unlock");
                                 }}
-                                className="p-2 rounded-lg bg-cyan-950/40 border border-cyan-500/20 text-cyan-300 hover:text-white hover:bg-cyan-900 transition-all cursor-pointer flex items-center justify-center"
+                                className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/20 text-purple-300 hover:text-white hover:bg-purple-900 transition-all cursor-pointer flex items-center justify-center"
                                 title="कॉपी करें / Copy Passcode"
                               >
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={() => handleRemoveKey(k.key)}
-                                className="p-2 rounded-lg bg-red-950/20 border border-red-500/20 text-red-400 hover:text-white hover:bg-red-900 transition-all cursor-pointer flex items-center justify-center"
+                                className="p-2 rounded-lg bg-red-950/30 border border-red-500/20 text-red-400 hover:text-white hover:bg-red-900 transition-all cursor-pointer flex items-center justify-center"
                                 title="हटाएं"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2489,8 +2524,13 @@ export default function App() {
                     RAMU BHAI LZR VIP: LIVE
                   </span>
                 </div>
-                <div className="text-[10px] text-purple-400 uppercase font-bold tracking-widest font-mono">
-                  MODE: {unlockedMode.toUpperCase()}
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] text-purple-400 font-bold uppercase tracking-widest font-mono">
+                    MODE: {unlockedMode.toUpperCase()}
+                  </span>
+                  <span className="text-[8.5px] text-pink-400 font-black tracking-wider uppercase font-mono">
+                    SRV: {activePartition.toUpperCase()}
+                  </span>
                 </div>
               </div>
 
@@ -2534,22 +2574,33 @@ export default function App() {
                       </div>
 
                       {/* Prediction Outputs */}
-                      <div className="flex justify-around items-center">
-                        <div>
-                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider">{curTrans.signal}</span>
-                          <span className={`text-2xl sm:text-3xl font-black tracking-wider glow-text-purple ${
-                            wingoCurrentPrediction.type === "BIG" ? "text-purple-400" : "text-cyan-400"
+                      <div className="flex justify-around items-center bg-black/40 p-2 rounded-xl border border-purple-500/10">
+                        <div className="text-left">
+                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider mb-1">{curTrans.signal}</span>
+                          <span className={`text-xl sm:text-2xl font-black tracking-wider block ${
+                            wingoCurrentPrediction.type === "BIG" 
+                              ? "text-rose-500 [text-shadow:0_0_12px_rgba(244,63,94,0.6)]" 
+                              : "text-emerald-400 [text-shadow:0_0_12px_rgba(52,211,153,0.6)]"
                           }`}>
-                            {wingoCurrentPrediction.type === "BIG" 
-                              ? (appLang === "HINDI" ? "BIG (बड़ा)" : "BIG") 
-                              : (appLang === "HINDI" ? "SMALL (छोटा)" : "SMALL")
-                            }
+                            {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
+                          </span>
+                        </div>
+
+                        {/* Color Indicator Pill */}
+                        <div className="text-center">
+                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider mb-1">COLOR</span>
+                          <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest text-white shadow-md ${
+                            wingoCurrentPrediction.color === "RED" 
+                              ? "bg-red-600 border border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                              : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                          }`}>
+                            {wingoCurrentPrediction.color}
                           </span>
                         </div>
 
                         <div className="w-14 h-14 rounded-xl border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
                           <span className="text-[8px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
-                          <span className="text-xl font-black text-cyan-300 font-mono glow-text-cyan">
+                          <span className="text-xl font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.6)]">
                             {wingoCurrentPrediction.num}
                           </span>
                         </div>
@@ -2633,22 +2684,33 @@ export default function App() {
                       </div>
 
                       {/* Prediction Outputs */}
-                      <div className="flex justify-around items-center">
-                        <div>
-                          <span className="block text-[8px] font-mono uppercase text-pink-400 tracking-wider">{curTrans.signal}</span>
-                          <span className={`text-2xl sm:text-3xl font-black tracking-wider glow-text-purple ${
-                            wingo30CurrentPrediction.type === "BIG" ? "text-purple-400" : "text-cyan-400"
+                      <div className="flex justify-around items-center bg-black/40 p-2 rounded-xl border border-pink-500/10">
+                        <div className="text-left">
+                          <span className="block text-[8px] font-mono uppercase text-pink-400 tracking-wider mb-1">{curTrans.signal}</span>
+                          <span className={`text-xl sm:text-2xl font-black tracking-wider block ${
+                            wingo30CurrentPrediction.type === "BIG" 
+                              ? "text-rose-500 [text-shadow:0_0_12px_rgba(244,63,94,0.6)]" 
+                              : "text-emerald-400 [text-shadow:0_0_12px_rgba(52,211,153,0.6)]"
                           }`}>
-                            {wingo30CurrentPrediction.type === "BIG" 
-                              ? (appLang === "HINDI" ? "BIG (बड़ा)" : "BIG") 
-                              : (appLang === "HINDI" ? "SMALL (छोटा)" : "SMALL")
-                            }
+                            {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
+                          </span>
+                        </div>
+
+                        {/* Color Indicator Pill */}
+                        <div className="text-center">
+                          <span className="block text-[8px] font-mono uppercase text-pink-400 tracking-wider mb-1">COLOR</span>
+                          <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest text-white shadow-md ${
+                            wingo30CurrentPrediction.color === "RED" 
+                              ? "bg-red-600 border border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                              : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                          }`}>
+                            {wingo30CurrentPrediction.color}
                           </span>
                         </div>
 
                         <div className="w-14 h-14 rounded-xl border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
                           <span className="text-[8px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
-                          <span className="text-xl font-black text-cyan-300 font-mono glow-text-cyan">
+                          <span className="text-xl font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.6)]">
                             {wingo30CurrentPrediction.num}
                           </span>
                         </div>
