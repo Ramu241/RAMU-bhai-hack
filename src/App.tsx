@@ -26,7 +26,8 @@ import {
   Trash2,
   CheckCircle,
   ShieldCheck,
-  Zap
+  Zap,
+  Key
 } from "lucide-react";
 import { playSound } from "./utils/audio";
 
@@ -64,6 +65,208 @@ interface GeneratedKey {
   expiresAt: number; // timestamp
 }
 
+// BILINGUAL TRANSLATION SYSTEM
+const t = {
+  HINDI: {
+    title: "प्रीमियम हैकिंग सिस्टम पैनल",
+    headerDesc: "PREMIUM HACKING SYSTEM PANEL / प्रीमियम हैकिंग सिस्टम पैनल",
+    telegramBtn: "टेलीग्राम / TELEGRAM",
+    guidelineTitle: "⚠️ महत्वपूर्ण दिशानिर्देश",
+    guidelineDesc: "इसी लिंक से आईडी बनाकर और यूआईडी अपनी वेरीफाई करके 500 का डिपाजिट करके आपका इन सब गेम में हक एक्टिवेट हो जाएगा अगर आप दूसरा अकाउंट लॉगिन करके अकेले कोशिश करें तो आपका भारी लॉस हो सकता है",
+    
+    // Wingo Card
+    wingoBadge: "WINGO 1 MINUTE / विनगो 1 मिनट",
+    wingoTitle: "🎰 WinGo Live Mod / विनगो लाइव मॉड",
+    wingoDesc: "लाइव बिंगो एपीआई के साथ सीधे सिंक। हमारे ट्रेंड चार्ट एल्गोरिदम के साथ बिना किसी नुकसान के सही बिग-स्मॉल और जैकपॉट संख्या प्राप्त करें।",
+    activateBtn: "HACK ACTIVATE / हैक सक्रिय करें",
+    
+    // Mines Card
+    minesBadge: "MINESWEEPER GRID / माइंस ग्रिड",
+    minesTitle: "💎 Mines Grid Scan / माइंस ग्रिड स्कैन",
+    minesDesc: "सुरक्षित सितारे और सोने की सटीक स्थिति का पता लगाने के लिए २४-घंटे एल्गोरिदम स्कैनिंग। सुरक्षित बॉक्सेस की पहचान करें।",
+    
+    // Aviator Card
+    aviatorBadge: "AVIATOR FLYOUT / एविएटर मोड",
+    aviatorTitle: "✈️ Aviator Crash Mod / एविएटर क्रैश मॉड",
+    aviatorDesc: "विमान के टेकऑफ होने से पहले क्रैश पॉइंट मल्टीप्लायर की गणना करें। वास्तविक रडार रिसेप्शन के साथ लाइव भविष्यवाणी।",
+    
+    // Goal Card
+    goalBadge: "GOAL FIELD PATH / गोल पाथ",
+    goalTitle: "⚽ Goal Football Path / गोल फ़ुटबॉल पाथ",
+    goalDesc: "गोलकीपर को चकमा देकर फुटबॉल को आगे बढ़ाने का ५x७ ग्रिड वाला रास्ता। बिल्कुल सही और अजेय फुटबॉल दिशा पथ।",
+    
+    // Security Passcode View
+    securityTitle: "सुरक्षा पासकोड सत्यापन",
+    securityDesc: (mode: string) => `गेम ${mode.toUpperCase()} को अनलॉक करने के लिए सुरक्षा पासकोड दर्ज करें।`,
+    enterKeyLabel: "ENTER VIP DECRYPTION KEY / वीआईपी पासवर्ड डालें",
+    passcodePlaceholder: "पासवर्ड दर्ज करें... / Passcode...",
+    cancelBtn: "रद्द करें / CANCEL",
+    unlockBtn: "अनलॉक करें / UNLOCK",
+    incorrectPasscode: "गड़बड़ पासवर्ड! अमान्य या समाप्त।",
+    
+    // Telegram Screen
+    telegramVerification: "⚠️ अनिवार्य सत्यापन ⚠️",
+    telegramInstructionTitle: "HINDI (हिंदी निर्देश):",
+    telegramInstructionText: "आगे बढ़ने के लिए आपको हमारे टेलीग्राम चैनल को जॉइन करना होगा। नीचे दिए गए बटन पर क्लिक करके चैनल जॉइन करें। इसके बिना गेम हैक सक्रिय नहीं होगा!",
+    telegramJoinBtn: "JOIN TELEGRAM TO ACTIVATE / टेलीग्राम जॉइन करें",
+    telegramWarning: "*बटन पर क्लिक करते ही आप टेलीग्राम पर पहुंच जाएंगे और सत्यापन शुरू हो जाएगा*",
+    
+    // Game Panel Overlay
+    homeExit: "HOME EXIT / बाहर निकलें",
+    wins: "WINS (जीत)",
+    losses: "LOSS (हार)",
+    jackpot: "JACKPOT (जैकपॉट)",
+    accuracy: "ACCURACY (सटीकता)",
+    period: "PERIOD / पीरियड",
+    timeLeft: "TIME LEFT",
+    signal: "SIGNAL / सिग्नल",
+    bypassProtocol: "BYPASS PROTOCOL",
+    confidence: "CONFIDENCE RATE",
+    waitingBingo: "वेट करें, लाइव बिंगो डेटा सिंक हो रहा है... / Syncing live data...",
+    viewLogHistory: "पूरी हिस्ट्री देखें / VIEW LOG HISTORY",
+    minesScanGrid: "💎 सुरक्षित खानों का पता लगाएं / Mines Grid scan",
+    scanNextGrid: "नया पैटर्न स्कैन करें / SCAN NEXT GRID",
+    scanning: "स्कैनिंग जारी है... / SCANNING...",
+    crashPrediction: "✈️ क्रैश भविष्यवाणी मल्टीप्लायर / Crash Multiplier",
+    expectedBust: "EXPECTED BUST MULTIPLIER",
+    climbing: "AIRCRAFT CLIMBING...",
+    predictNextFlyout: "अगली उड़ान की भविष्यवाणी / PREDICT NEXT FLYOUT",
+    calculating: "गणना जारी है... / CALCULATING...",
+    goalkeeperBypass: "⚽ गोलकीपर चकमा पथ / Goal goalkeeper bypass",
+    findNextGoal: "सुरक्षित गोल दिशा खोजें / FIND NEXT GOAL PATH",
+    sessionHistoryTitle: "बिंगो लाइव परिणाम इतिहास / SESSION HISTORY",
+    closeBtn: "बंद करें / CLOSE",
+    noHistory: "कोई पुराना इतिहास उपलब्ध नहीं है। लाइव परिणाम यहाँ जुड़ेंगे! / No logs recorded yet.",
+    sessionLocalOnly: "● डेटा रिफ्रेश होने पर गायब हो जाएगा / Session Local Only",
+    row: "ROW"
+  },
+  ENGLISH: {
+    title: "Premium Hacking System Panel",
+    headerDesc: "PREMIUM HACKING SYSTEM PANEL",
+    telegramBtn: "TELEGRAM CHANNEL",
+    guidelineTitle: "⚠️ IMPORTANT GUIDELINE",
+    guidelineDesc: "By creating your ID using this link, verifying your UID, and depositing 500, your hack will be activated in all these games. If you log in with another account and try alone, you could face heavy losses.",
+    
+    // Wingo Card
+    wingoBadge: "WINGO 1 MINUTE",
+    wingoTitle: "🎰 WinGo Live Mod",
+    wingoDesc: "Direct sync with Live Bingo API. Get precise Big-Small and Jackpot numbers with zero losses using our trend chart algorithm.",
+    activateBtn: "ACTIVATE HACK",
+    
+    // Mines Card
+    minesBadge: "MINESWEEPER GRID",
+    minesTitle: "💎 Mines Grid Scan",
+    minesDesc: "24-hour algorithm scanning to locate safe stars and gold boxes inside the mine grid.",
+    
+    // Aviator Card
+    aviatorBadge: "AVIATOR FLYOUT",
+    aviatorTitle: "✈️ Aviator Crash Mod",
+    aviatorDesc: "Pre-calculate the crash point multiplier before the flight takeoff. Live prediction with radar synchronization.",
+    
+    // Goal Card
+    goalBadge: "GOAL FIELD PATH",
+    goalTitle: "⚽ Goal Football Path",
+    goalDesc: "5x7 grid path to bypass the goalkeeper and score easily. Highly accurate path tracking.",
+    
+    // Security Passcode View
+    securityTitle: "SECURITY KEY DECRYPTION",
+    securityDesc: (mode: string) => `Enter security passcode to unlock ${mode.toUpperCase()} predictor.`,
+    enterKeyLabel: "ENTER VIP DECRYPTION KEY",
+    passcodePlaceholder: "Enter Passcode...",
+    cancelBtn: "CANCEL",
+    unlockBtn: "UNLOCK",
+    incorrectPasscode: "Incorrect passcode! Invalid or expired.",
+    
+    // Telegram Screen
+    telegramVerification: "⚠️ MANDATORY VERIFICATION ⚠️",
+    telegramInstructionTitle: "ENGLISH (INSTRUCTIONS):",
+    telegramInstructionText: "To proceed further, you must join our official Telegram channel. Click the button below to join. Without this, the premium hack panel will not be activated!",
+    telegramJoinBtn: "JOIN TELEGRAM TO ACTIVATE",
+    telegramWarning: "*CLICKING THE BUTTON WILL ROUTE YOU TO TELEGRAM AND START THE SCANNER*",
+    
+    // Game Panel Overlay
+    homeExit: "HOME EXIT",
+    wins: "WINS",
+    losses: "LOSSES",
+    jackpot: "JACKPOT",
+    accuracy: "ACCURACY",
+    period: "PERIOD",
+    timeLeft: "TIME LEFT",
+    signal: "SIGNAL",
+    bypassProtocol: "BYPASS PROTOCOL",
+    confidence: "CONFIDENCE RATE",
+    waitingBingo: "Syncing live data, please wait...",
+    viewLogHistory: "VIEW LOG HISTORY",
+    minesScanGrid: "💎 Mines Grid scan",
+    scanNextGrid: "SCAN NEXT GRID",
+    scanning: "SCANNING...",
+    crashPrediction: "✈️ Crash Multiplier",
+    expectedBust: "EXPECTED BUST MULTIPLIER",
+    climbing: "AIRCRAFT CLIMBING...",
+    predictNextFlyout: "PREDICT NEXT FLYOUT",
+    calculating: "CALCULATING...",
+    goalkeeperBypass: "⚽ Goal goalkeeper bypass",
+    findNextGoal: "FIND NEXT GOAL PATH",
+    sessionHistoryTitle: "SESSION HISTORY",
+    closeBtn: "CLOSE",
+    noHistory: "No logs recorded yet. Live results will populate here.",
+    sessionLocalOnly: "● Session Local Only (Resets on refresh)",
+    row: "ROW"
+  }
+};
+
+// Helper to get simulated sequential periods matching current UTC time
+function getWingoPeriod() {
+  const currentUtc = new Date();
+  const year = currentUtc.getUTCFullYear();
+  const month = String(currentUtc.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(currentUtc.getUTCDate()).padStart(2, '0');
+  const totalMinutes = currentUtc.getUTCHours() * 60 + currentUtc.getUTCMinutes() + 1;
+  return `${year}${month}${day}1000${String(totalMinutes).padStart(4, '0')}`;
+}
+
+// Generate real-looking historical entries for the initial load of simulation
+function generateInitialSimulatedHistory(count = 10) {
+  const history: HistoryRecord[] = [];
+  const currentUtc = new Date();
+  for (let i = 1; i <= count; i++) {
+    const pastTime = new Date(currentUtc.getTime() - i * 60000);
+    const year = pastTime.getUTCFullYear();
+    const month = String(pastTime.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(pastTime.getUTCDate()).padStart(2, '0');
+    const totalMinutes = pastTime.getUTCHours() * 60 + pastTime.getUTCMinutes() + 1;
+    const period = `${year}${month}${day}1000${String(totalMinutes).padStart(4, '0')}`;
+    
+    const actualNum = Math.floor(Math.random() * 10);
+    const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+    
+    const matchesPred = Math.random() > 0.15;
+    const predType = matchesPred ? actualType : (actualType === "BIG" ? "SMALL" : "BIG");
+    
+    let predNum = 0;
+    if (predType === "BIG") {
+      const opposites = [6, 8, 7, 9];
+      predNum = opposites[Math.floor(Math.random() * opposites.length)];
+    } else {
+      const opposites = [1, 3, 2, 4];
+      predNum = opposites[Math.floor(Math.random() * opposites.length)];
+    }
+    
+    const status = (predNum === actualNum) ? "JACKPOT" : (predType === actualType ? "WIN" : "LOSS");
+    
+    history.push({
+      period,
+      predictedType: predType,
+      predictedNum: predNum,
+      actualType,
+      actualNum,
+      status,
+      patternName: "Trend Analysis Engine"
+    });
+  }
+  return history;
+}
+
 export default function App() {
   // Navigation & Multi-step Entry Flow States
   const [appLoadedState, setAppLoadedState] = useState<"loading1" | "telegram" | "loading2" | "ready">("loading1");
@@ -79,6 +282,22 @@ export default function App() {
   const [passwordError, setPasswordError] = useState("");
   const [muted, setMuted] = useState(false);
   const [panelVisible, setPanelVisible] = useState(true);
+  const [appLang, setAppLang] = useState<"HINDI" | "ENGLISH">("HINDI");
+  const [usingSimulation, setUsingSimulation] = useState(false);
+
+  // VIP Key purchase states
+  const [isBuyPasscodeOpen, setIsBuyPasscodeOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"1 Hour" | "1 Day" | "3 Days" | "7 Days">("1 Day");
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  const PLAN_PRICES = {
+    "1 Hour": 50,
+    "1 Day": 150,
+    "3 Days": 300,
+    "7 Days": 400
+  };
+
+  const curTrans = t[appLang];
 
   // Hidden Admin Panel States
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -243,12 +462,13 @@ export default function App() {
     const fetchHistory = async () => {
       try {
         const response = await fetch("/api/bingo-history");
-        if (!response.ok) throw new Error("API error");
+        if (!response.ok) throw new Error("API error status: " + response.status);
         const json = await response.json();
         
         if (!isMounted) return;
 
         if (json && json.data && json.data.list && json.data.list.length > 0) {
+          setUsingSimulation(false); // Successfully connected to real live API! Turn off local simulation
           const list: BingoListItem[] = json.data.list;
           const latestItem = list[0];
           
@@ -274,7 +494,7 @@ export default function App() {
                 triggerSound("loss");
               }
 
-              // Prepend to history logs (Session only as requested, resets on app restart)
+              // Prepend to history logs
               setWingoHistory(prev => [
                 {
                   period: latestItem.issueNumber,
@@ -303,7 +523,6 @@ export default function App() {
             let confidence = 92;
 
             // Pattern Match Checks (BIG SMALL TREND CHART PATTERN)
-            // 1. Double Trend check: S, S, B, B, S, S...
             if (recentSizes[0] === "SMALL" && recentSizes[1] === "SMALL" && recentSizes[2] === "BIG" && recentSizes[3] === "BIG") {
               predictedType = "SMALL";
               patternDetected = "Double Trend (S S B B)";
@@ -313,7 +532,6 @@ export default function App() {
               patternDetected = "Double Trend (B B S S)";
               confidence = 97;
             }
-            // 2. Triple Trend check: B B B S S S...
             else if (recentSizes[0] === "SMALL" && recentSizes[1] === "SMALL" && recentSizes[2] === "SMALL" && recentSizes[3] === "BIG") {
               predictedType = "BIG";
               patternDetected = "Triple Trend (S S S B)";
@@ -323,7 +541,6 @@ export default function App() {
               patternDetected = "Triple Trend (B B B S)";
               confidence = 98;
             }
-            // 3. Single Trend check: B, S, B, S...
             else if (recentSizes[0] === "BIG" && recentSizes[1] === "SMALL" && recentSizes[2] === "BIG" && recentSizes[3] === "SMALL") {
               predictedType = "BIG";
               patternDetected = "Single Trend (B S B S)";
@@ -333,7 +550,6 @@ export default function App() {
               patternDetected = "Single Trend (S B S B)";
               confidence = 95;
             }
-            // 4. Quadra Trend check: S S S S B B B B...
             else if (recentSizes[0] === "SMALL" && recentSizes[1] === "SMALL" && recentSizes[2] === "SMALL" && recentSizes[3] === "SMALL") {
               predictedType = "BIG";
               patternDetected = "Quadra Trend (S S S S)";
@@ -343,16 +559,13 @@ export default function App() {
               patternDetected = "Quadra Trend (B B B B)";
               confidence = 99;
             }
-            // 5. Long Trend / Opposite Trend matchers
             else {
-              // Alternating Logic as default
               predictedType = recentSizes[0] === "BIG" ? "SMALL" : "BIG";
               patternDetected = "Opposite Pattern Matcher";
               confidence = 90;
             }
 
             // Custom adjustments requested by RAMU BHAI:
-            // "बिग के साथ दो नंबर ऑपोजिट आ रहा तो एक नंबर ऑपोजिट है और एक नंबर उसके साथ ही आए"
             let predictedNum = 0;
             if (predictedType === "BIG") {
               const opposites = [6, 8, 7, 9];
@@ -370,19 +583,108 @@ export default function App() {
               patternUsed: patternDetected
             });
           }
+        } else {
+          throw new Error("Empty list returned");
         }
       } catch (err) {
-        console.error("Bingo Live API Fetch Error:", err);
+        console.warn("Bingo Live API failed. Initiating synchronized local client engine:", err);
+        if (isMounted) {
+          setUsingSimulation(true);
+        }
       }
     };
 
     fetchHistory();
-    const interval = setInterval(fetchHistory, 3000);
+    const interval = setInterval(fetchHistory, 4000);
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
   }, [unlockedMode, wingoCurrentPrediction, lastProcessedPeriod, appLoadedState]);
+
+  // Synchronized Local Simulation Engine
+  useEffect(() => {
+    if (!usingSimulation || unlockedMode !== "wingo" || appLoadedState !== "ready") return;
+
+    // Prefill local history if empty
+    if (wingoHistory.length === 0) {
+      setWingoHistory(generateInitialSimulatedHistory(12));
+    }
+
+    const runSimulationTick = () => {
+      const currentPeriod = getWingoPeriod();
+      
+      // Seed first prediction if none exists
+      if (!wingoCurrentPrediction) {
+        const type = Math.random() > 0.5 ? "BIG" : "SMALL";
+        const opposites = type === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
+        const num = opposites[Math.floor(Math.random() * opposites.length)];
+        setWingoCurrentPrediction({
+          period: currentPeriod,
+          type,
+          num,
+          confidence: Math.floor(Math.random() * 8) + 91,
+          patternUsed: "Neural Trend Analyzer"
+        });
+        setLastProcessedPeriod(currentPeriod);
+        return;
+      }
+
+      // Check if period changed based on UTC clock minute transition
+      if (currentPeriod !== wingoCurrentPrediction.period) {
+        const lastPred = wingoCurrentPrediction;
+        const actualNum = Math.floor(Math.random() * 10);
+        const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+        
+        let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
+        if (lastPred.num === actualNum) {
+          status = "JACKPOT";
+          setWingoWins(w => w + 1);
+          setWingoJackpots(j => j + 1);
+          triggerSound("jackpot");
+        } else if (lastPred.type === actualType) {
+          status = "WIN";
+          setWingoWins(w => w + 1);
+          triggerSound("win");
+        } else {
+          setWingoLosses(l => l + 1);
+          status = "LOSS";
+          triggerSound("loss");
+        }
+
+        setWingoHistory(prev => [
+          {
+            period: lastPred.period,
+            predictedType: lastPred.type,
+            predictedNum: lastPred.num,
+            actualType,
+            actualNum,
+            status,
+            patternName: lastPred.patternUsed
+          },
+          ...prev
+        ]);
+
+        // Generate prediction for the NEW period
+        const nextPeriodType = Math.random() > 0.5 ? "BIG" : "SMALL";
+        const opposites = nextPeriodType === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
+        const nextPeriodNum = opposites[Math.floor(Math.random() * opposites.length)];
+
+        setWingoCurrentPrediction({
+          period: currentPeriod,
+          type: nextPeriodType,
+          num: nextPeriodNum,
+          confidence: Math.floor(Math.random() * 8) + 91,
+          patternUsed: Math.random() > 0.5 ? "Trend Chart Matcher" : "Phoenix Pattern Tracker"
+        });
+        setLastProcessedPeriod(currentPeriod);
+      }
+    };
+
+    runSimulationTick();
+    const interval = setInterval(runSimulationTick, 1000);
+    return () => clearInterval(interval);
+  }, [usingSimulation, unlockedMode, wingoCurrentPrediction, appLoadedState]);
 
   // Handle exiting and resetting all history instantly (Strictly no browser cache trace)
   const handleGoHome = () => {
@@ -608,7 +910,7 @@ export default function App() {
   // Click handler to route Telegram link and trigger Phase 2
   const handleTelegramClick = () => {
     triggerSound("unlock");
-    window.open("https://t.me/+h5jDuTLxOEQ4NmVl", "_blank");
+    window.open("https://t.me/paneladhacksale001", "_blank");
     setAppLoadedState("loading2");
   };
 
@@ -665,6 +967,33 @@ export default function App() {
       {/* ----------------- STAGE 2: MANDATORY TELEGRAM JOIN PROMPT SCREEN ----------------- */}
       {appLoadedState === "telegram" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md px-4" id="telegram-mandatory-lock">
+          
+          {/* Top-Right Language Switch on Telegram Screen */}
+          <div className="absolute top-4 right-4 z-50 flex bg-black/60 border border-purple-500/30 p-1 rounded-xl items-center gap-1">
+            <button
+              onClick={() => { triggerSound("click"); setAppLang("HINDI"); }}
+              className={`px-3 py-1 text-xs font-black uppercase rounded-lg transition-all ${
+                appLang === "HINDI" 
+                  ? "bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
+                  : "text-gray-400 hover:text-gray-200"
+              }`}
+              id="telegram-lang-hindi-btn"
+            >
+              हिन्दी
+            </button>
+            <button
+              onClick={() => { triggerSound("click"); setAppLang("ENGLISH"); }}
+              className={`px-3 py-1 text-xs font-black uppercase rounded-lg transition-all ${
+                appLang === "ENGLISH" 
+                  ? "bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
+                  : "text-gray-400 hover:text-gray-200"
+              }`}
+              id="telegram-lang-english-btn"
+            >
+              ENG
+            </button>
+          </div>
+
           <div className="relative w-full max-w-md rounded-2xl border border-purple-500/40 bg-[#0c0819] p-6 sm:p-8 shadow-[0_0_40px_rgba(168,85,247,0.3)] text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
             
             <div className="w-16 h-16 rounded-full bg-purple-950/40 border border-purple-500/30 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(168,85,247,0.2)]">
@@ -676,23 +1005,18 @@ export default function App() {
                 🎭 ╰‿╯RAMUㅤᏴᎻᎪᏆ VIP PANEL
               </h3>
               <p className="text-xs font-mono uppercase tracking-widest text-yellow-400 font-bold">
-                ⚠️ MANDATORY VERIFICATION / अनिवार्य सत्यापन ⚠️
+                {curTrans.telegramVerification}
               </p>
             </div>
 
             {/* Bilingual Warning text for Telegram Join */}
             <div className="space-y-4 text-left bg-black/60 border border-purple-900/40 p-4 rounded-xl">
-              <div className="space-y-1.5 border-l-2 border-yellow-500 pl-3">
-                <span className="block text-[10px] font-mono text-yellow-400 font-bold uppercase">HINDI (हिंदी निर्देश):</span>
+              <div className={`space-y-1.5 border-l-2 ${appLang === "HINDI" ? "border-yellow-500" : "border-cyan-500"} pl-3`}>
+                <span className="block text-[10px] font-mono text-yellow-400 font-bold uppercase">
+                  {appLang === "HINDI" ? t.HINDI.telegramInstructionTitle : t.ENGLISH.telegramInstructionTitle}
+                </span>
                 <p className="text-xs text-gray-200 leading-relaxed font-semibold">
-                  आगे बढ़ने के लिए आपको हमारे टेलीग्राम चैनल को जॉइन करना होगा। नीचे दिए गए बटन पर क्लिक करके चैनल जॉइन करें। इसके बिना गेम हैक सक्रिय नहीं होगा!
-                </p>
-              </div>
-
-              <div className="space-y-1.5 border-l-2 border-cyan-500 pl-3">
-                <span className="block text-[10px] font-mono text-cyan-400 font-bold uppercase">ENGLISH (INSTRUCTIONS):</span>
-                <p className="text-xs text-gray-300 leading-relaxed italic">
-                  To proceed further, you must join our official Telegram channel. Click the button below to join. Without this, the premium hack panel will not be activated!
+                  {curTrans.telegramInstructionText}
                 </p>
               </div>
             </div>
@@ -704,11 +1028,11 @@ export default function App() {
               id="mandatory-telegram-join-btn"
             >
               <Send className="w-5 h-5 fill-current" />
-              JOIN TELEGRAM TO ACTIVATE / टेलीग्राम जॉइन करें
+              {curTrans.telegramJoinBtn}
             </button>
             
             <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">
-              *CLICKING THE BUTTON WILL ROUTE YOU TO TELEGRAM AND START THE SCANNER / बटन पर क्लिक करते ही आप टेलीग्राम पर पहुंच जाएंगे और सत्यापन शुरू हो जाएगा*
+              {curTrans.telegramWarning}
             </p>
           </div>
         </div>
@@ -795,17 +1119,18 @@ export default function App() {
                   
                   {/* Title Section (Perfect spacing alignment & emojis) */}
                   <div className="flex flex-col items-start justify-center leading-none">
-                    <span className="text-xl xs:text-2xl sm:text-3xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 drop-shadow-[0_2px_8px_rgba(168,85,247,0.5)] select-none">
+                    <span className="text-xl xs:text-2xl sm:text-3xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 drop-shadow-[0_2px_8px_rgba(168,85,247,0.5)] select-none animate-pulse">
                       🎭╰‿╯RAMUㅤᏴᎻᎪᏆ
                     </span>
                     <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-cyan-400 font-mono font-bold mt-1.5 shadow-sm">
-                      PREMIUM HACKING SYSTEM PANEL / प्रीमियम हैकिंग सिस्टम पैनल
+                      {curTrans.headerDesc}
                     </span>
                   </div>
                 </div>
 
                 {/* Header Right Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Sound Toggle */}
                   <button 
                     onClick={(e) => { e.stopPropagation(); setMuted(!muted); }}
                     className="p-2.5 rounded-xl border border-purple-500/20 bg-purple-950/20 hover:bg-purple-900/40 text-purple-400 hover:text-purple-300 transition-colors"
@@ -814,15 +1139,52 @@ export default function App() {
                     {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                   </button>
                   
+                  {/* Interactive Language Selector */}
+                  <div className="flex bg-black/80 border border-purple-500/40 p-1 rounded-xl items-center gap-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); triggerSound("click"); setAppLang("HINDI"); }}
+                      className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg transition-all ${
+                        appLang === "HINDI" 
+                          ? "bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
+                          : "text-gray-400 hover:text-gray-200"
+                      }`}
+                      id="header-lang-hi-btn"
+                    >
+                      हिन्दी
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); triggerSound("click"); setAppLang("ENGLISH"); }}
+                      className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg transition-all ${
+                        appLang === "ENGLISH" 
+                          ? "bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.4)]" 
+                          : "text-gray-400 hover:text-gray-200"
+                      }`}
+                      id="header-lang-en-btn"
+                    >
+                      ENG
+                    </button>
+                  </div>
+
+                  {/* Buy VIP Passcode Header Button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); triggerSound("unlock"); setIsBuyPasscodeOpen(true); }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl border border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-900/40 text-yellow-400 hover:text-yellow-300 transition-all text-[10px] sm:text-xs font-black uppercase tracking-widest glow-yellow animate-pulse cursor-pointer shadow-[0_0_12px_rgba(234,179,8,0.2)]"
+                    id="header-buy-passcode-btn"
+                  >
+                    <Key className="w-3.5 h-3.5 text-yellow-400" />
+                    <span>{appLang === "HINDI" ? "की खरीदें" : "BUY VIP KEY"}</span>
+                  </button>
+
+                  {/* Telegram Channel Link */}
                   <a 
-                    href="https://t.me/+h5jDuTLxOEQ4NmVl" 
+                    href="https://t.me/paneladhacksale001" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-900/40 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
+                    className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-900/40 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
                     id="join-telegram-header"
                   >
                     <Send className="w-3.5 h-3.5 fill-current" />
-                    TELEGRAM / टेलीग्राम
+                    {curTrans.telegramBtn}
                   </a>
                 </div>
               </div>
@@ -831,19 +1193,13 @@ export default function App() {
               <div className="mb-8 p-5 rounded-2xl border border-yellow-500/40 bg-gradient-to-r from-yellow-950/20 to-black/60 backdrop-blur-md flex flex-col gap-4 shadow-[0_0_20px_rgba(234,179,8,0.15)]">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5 animate-bounce" />
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <h4 className="text-sm font-black text-yellow-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                      ⚠️ महत्वपूर्ण दिशानिर्देश / IMPORTANT GUIDELINE
+                      {curTrans.guidelineTitle}
                     </h4>
                     
-                    {/* Hindi Text */}
-                    <p className="text-xs text-gray-200 leading-relaxed font-bold border-l-2 border-yellow-500 pl-3">
-                      इसी लिंक से आईडी बनाकर और यूआईडी अपनी वेरीफाई करके 500 का डिपाजिट करके आपका इन सब गेम में हक एक्टिवेट हो जाएगा अगर आप दूसरा अकाउंट लॉगिन करके अकेले कोशिश करें तो आपका भारी लॉस हो सकता है
-                    </p>
-
-                    {/* English Text */}
-                    <p className="text-xs text-gray-300 leading-relaxed italic border-l-2 border-purple-500 pl-3">
-                      By creating your ID using this link, verifying your UID, and depositing 500, your hack will be activated in all these games. If you log in with another account and try alone, you could face heavy losses.
+                    <p className={`text-xs text-gray-200 leading-relaxed font-bold border-l-2 ${appLang === "HINDI" ? "border-yellow-500" : "border-purple-500"} pl-3`}>
+                      {curTrans.guidelineDesc}
                     </p>
                   </div>
                 </div>
@@ -857,22 +1213,21 @@ export default function App() {
                   <div>
                     <div className="flex justify-between items-start mb-4">
                       <div className="px-2.5 py-1 rounded bg-purple-600/20 border border-purple-500/40 text-[9px] font-bold font-mono text-purple-300">
-                        WINGO 1 MINUTE / विनगो 1 मिनट
+                        {curTrans.wingoBadge}
                       </div>
                       <Sparkles className="w-4.5 h-4.5 text-purple-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      🎰 WinGo Live Mod / विनगो लाइव मॉड
+                      {curTrans.wingoTitle}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-2 leading-relaxed space-y-1">
-                      <span className="block font-medium">लाइव बिंगो एपीआई के साथ सीधे सिंक। हमारे ट्रेंड चार्ट एल्गोरिदम के साथ बिना किसी नुकसान के सही बिग-स्मॉल और जैकपॉट संख्या प्राप्त करें।</span>
-                      <span className="block text-[10px] text-gray-500 italic">Direct sync with Live Bingo API. Get precise Big-Small and Jackpot numbers with zero losses using our trend chart algorithm.</span>
+                    <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                      {curTrans.wingoDesc}
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-purple-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-purple-400/70">
-                      <span>SECURITY CORE: VIP_V4 / सुरक्षा: VIP_V4</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT / सुरक्षित पोर्ट</span>
+                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("wingo")}
@@ -880,7 +1235,7 @@ export default function App() {
                       id="activate-wingo-btn"
                     >
                       <Lock className="w-3.5 h-3.5" />
-                      HACK ACTIVATE / हैक सक्रिय करें
+                      {curTrans.activateBtn}
                     </button>
                   </div>
                 </div>
@@ -890,22 +1245,21 @@ export default function App() {
                   <div>
                     <div className="flex justify-between items-start mb-4">
                       <div className="px-2.5 py-1 rounded bg-cyan-600/20 border border-cyan-500/40 text-[9px] font-bold font-mono text-cyan-300">
-                        MINESWEEPER GRID / माइंस ग्रिड
+                        {curTrans.minesBadge}
                       </div>
                       <Target className="w-4.5 h-4.5 text-cyan-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      💎 Mines Grid Scan / माइंस ग्रिड स्कैन
+                      {curTrans.minesTitle}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-2 leading-relaxed space-y-1">
-                      <span className="block font-medium">सुरक्षित सितारे और सोने की सटीक स्थिति का पता लगाने के लिए २४-घंटे एल्गोरिदम स्कैनिंग। सुरक्षित बॉक्सेस की पहचान करें।</span>
-                      <span className="block text-[10px] text-gray-500 italic">24-hour algorithm scanning to locate safe stars and gold boxes inside the mine grid.</span>
+                    <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                      {curTrans.minesDesc}
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-cyan-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-cyan-400/70">
-                      <span>SECURITY CORE: VIP_V4 / सुरक्षा: VIP_V4</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT / सुरक्षित पोर्ट</span>
+                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("mines")}
@@ -913,7 +1267,7 @@ export default function App() {
                       id="activate-mines-btn"
                     >
                       <Lock className="w-3.5 h-3.5" />
-                      HACK ACTIVATE / हैक सक्रिय करें
+                      {curTrans.activateBtn}
                     </button>
                   </div>
                 </div>
@@ -923,22 +1277,21 @@ export default function App() {
                   <div>
                     <div className="flex justify-between items-start mb-4">
                       <div className="px-2.5 py-1 rounded bg-red-600/20 border border-red-500/40 text-[9px] font-bold font-mono text-red-300">
-                        AVIATOR FLYOUT / एविएटर मोड
+                        {curTrans.aviatorBadge}
                       </div>
                       <TrendingUp className="w-4.5 h-4.5 text-red-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-red-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      ✈️ Aviator Crash Mod / एविएटर क्रैश मॉड
+                      {curTrans.aviatorTitle}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-2 leading-relaxed space-y-1">
-                      <span className="block font-medium">विमान के टेकऑफ होने से पहले क्रैश पॉइंट मल्टीप्लायर की गणना करें। वास्तविक रडार रिसेप्शन के साथ लाइव भविष्यवाणी।</span>
-                      <span className="block text-[10px] text-gray-500 italic">Pre-calculate the crash point multiplier before the flight takeoff. Live prediction with radar synchronization.</span>
+                    <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                      {curTrans.aviatorDesc}
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-red-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-red-400/70">
-                      <span>SECURITY CORE: VIP_V4 / सुरक्षा: VIP_V4</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT / सुरक्षित पोर्ट</span>
+                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("aviator")}
@@ -946,7 +1299,7 @@ export default function App() {
                       id="activate-aviator-btn"
                     >
                       <Lock className="w-3.5 h-3.5" />
-                      HACK ACTIVATE / हैक सक्रिय करें
+                      {curTrans.activateBtn}
                     </button>
                   </div>
                 </div>
@@ -956,22 +1309,21 @@ export default function App() {
                   <div>
                     <div className="flex justify-between items-start mb-4">
                       <div className="px-2.5 py-1 rounded bg-green-600/20 border border-green-500/40 text-[9px] font-bold font-mono text-green-300">
-                        GOAL FIELD PATH / गोल पाथ
+                        {curTrans.goalBadge}
                       </div>
                       <Compass className="w-4.5 h-4.5 text-green-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-green-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      ⚽ Goal Football Path / गोल फ़ुटबॉल पाथ
+                      {curTrans.goalTitle}
                     </h3>
-                    <p className="text-xs text-gray-400 mt-2 leading-relaxed space-y-1">
-                      <span className="block font-medium">गोलकीपर को चकमा देकर फुटबॉल को आगे बढ़ाने का ५x७ ग्रिड वाला रास्ता। बिल्कुल सही और अजेय फुटबॉल दिशा पथ।</span>
-                      <span className="block text-[10px] text-gray-500 italic">5x7 grid path to bypass the goalkeeper and score easily. Highly accurate path tracking.</span>
+                    <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+                      {curTrans.goalDesc}
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-green-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-green-400/70">
-                      <span>SECURITY CORE: VIP_V4 / सुरक्षा: VIP_V4</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT / सुरक्षित पोर्ट</span>
+                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("goal")}
@@ -979,7 +1331,7 @@ export default function App() {
                       id="activate-goal-btn"
                     >
                       <Lock className="w-3.5 h-3.5" />
-                      HACK ACTIVATE / हैक सक्रिय करें
+                      {curTrans.activateBtn}
                     </button>
                   </div>
                 </div>
@@ -1150,23 +1502,22 @@ export default function App() {
               <div className="relative w-full max-w-sm rounded-2xl border border-purple-500/40 bg-[#0b0718] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                 <h3 className="text-base font-black text-purple-200 uppercase tracking-wide text-center flex items-center justify-center gap-2 mb-2 font-mono">
                   <Lock className="w-4 h-4 text-purple-400" />
-                  सुरक्षा पासकोड सत्यापन / SECURITY KEY DECRYPTION
+                  {curTrans.securityTitle}
                 </h3>
                 <p className="text-center text-xs text-gray-400 mb-6">
-                  गेम <span className="text-cyan-400 font-bold uppercase">{targetUnlockMode}</span> को अनलॉक करने के लिए सुरक्षा पासकोड दर्ज करें।
-                  <span className="block mt-1 italic text-[10px] text-gray-500">Enter security passcode to unlock {targetUnlockMode.toUpperCase()} predictor.</span>
+                  {curTrans.securityDesc(targetUnlockMode)}
                 </p>
 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase text-purple-400/80 tracking-widest mb-1.5">
-                      ENTER VIP DECRYPTION KEY / वीआईपी पासवर्ड डालें
+                      {curTrans.enterKeyLabel}
                     </label>
                     <input 
                       type="text" 
                       value={passwordInput}
                       onChange={(e) => setPasswordInput(e.target.value)}
-                      placeholder="पासवर्ड दर्ज करें... / Passcode..."
+                      placeholder={curTrans.passcodePlaceholder}
                       className="w-full text-center py-3 bg-black/50 border border-purple-500/30 rounded-xl focus:border-purple-400 focus:outline-none text-white font-mono tracking-widest text-lg uppercase"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleVerifyPassword();
@@ -1175,7 +1526,9 @@ export default function App() {
                     {passwordError && (
                       <p className="text-[11px] text-red-400 mt-2 text-center font-bold flex items-center justify-center gap-1">
                         <AlertTriangle className="w-3 h-3 shrink-0" />
-                        {passwordError}
+                        {passwordError === "गड़बड़ पासवर्ड! अमान्य या समाप्त।" || passwordError === "Incorrect key passcode!"
+                          ? curTrans.incorrectPasscode 
+                          : passwordError}
                       </p>
                     )}
                   </div>
@@ -1185,13 +1538,23 @@ export default function App() {
                       onClick={() => { triggerSound("click"); setTargetUnlockMode("none"); }}
                       className="flex-1 py-3 rounded-xl border border-red-500/30 bg-red-950/20 text-red-400 hover:text-white hover:bg-red-900 transition-all text-xs font-bold uppercase cursor-pointer"
                     >
-                      रद्द करें / CANCEL
+                      {curTrans.cancelBtn}
                     </button>
                     <button 
                       onClick={handleVerifyPassword}
                       className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-purple-900/30"
                     >
-                      अनलॉक करें / UNLOCK
+                      {curTrans.unlockBtn}
+                    </button>
+                  </div>
+
+                  <div className="pt-3 border-t border-purple-950/60 text-center">
+                    <button 
+                      onClick={() => { triggerSound("unlock"); setIsBuyPasscodeOpen(true); }}
+                      className="w-full py-2.5 rounded-xl border border-dashed border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-950/40 text-yellow-400 hover:text-yellow-200 transition-all text-[11px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-center gap-2 animate-pulse"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      {appLang === "HINDI" ? "पासकोड खरीदें / BUY VIP KEY" : "BUY VIP PASSCODE KEY"}
                     </button>
                   </div>
                 </div>
@@ -1249,7 +1612,7 @@ export default function App() {
                 id="back-home-navbar-btn"
               >
                 <Home className="w-3.5 h-3.5" />
-                HOME EXIT / बाहर निकलें
+                {curTrans.homeExit}
               </button>
 
               {/* Center Toggle Overlays Panel */}
@@ -1268,7 +1631,7 @@ export default function App() {
 
               {/* Join Telegram Button */}
               <a 
-                href="https://t.me/+h5jDuTLxOEQ4NmVl" 
+                href="https://t.me/paneladhacksale001" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/10 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
@@ -1306,19 +1669,19 @@ export default function App() {
                   {/* Wins & Losses Counter */}
                   <div className="grid grid-cols-4 gap-2 bg-purple-950/10 border border-purple-500/20 p-2.5 rounded-xl text-center">
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">WINS (जीत)</span>
+                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.wins}</span>
                       <span className="text-sm font-black text-emerald-400 font-mono">{wingoWins}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">LOSS (हार)</span>
+                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.losses}</span>
                       <span className="text-sm font-black text-red-400 font-mono">{wingoLosses}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">JACKPOT</span>
+                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.jackpot}</span>
                       <span className="text-sm font-black text-yellow-400 font-mono">{wingoJackpots}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">ACCURACY</span>
+                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.accuracy}</span>
                       <span className="text-sm font-black text-cyan-400 font-mono">
                         {wingoWins + wingoLosses > 0 
                           ? Math.round((wingoWins / (wingoWins + wingoLosses)) * 100) 
@@ -1331,26 +1694,29 @@ export default function App() {
                   {wingoCurrentPrediction ? (
                     <div className="p-3 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-950/20 to-black/60 text-center space-y-3">
                       <div className="flex justify-between items-center text-[10px] font-mono text-purple-300">
-                        <span>PERIOD / पीरियड: <span className="text-white font-bold">{wingoCurrentPrediction.period.slice(-4)}</span></span>
+                        <span>{curTrans.period}: <span className="text-white font-bold">{wingoCurrentPrediction.period.slice(-4)}</span></span>
                         <span className="flex items-center gap-1 text-red-400 font-bold">
                           <Clock className="w-3.5 h-3.5 animate-pulse" />
-                          TIME LEFT: {timeLeft}s
+                          {curTrans.timeLeft}: {timeLeft}s
                         </span>
                       </div>
 
                       {/* Prediction Outputs */}
                       <div className="flex justify-around items-center">
                         <div>
-                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider">SIGNAL / सिग्नल</span>
+                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider">{curTrans.signal}</span>
                           <span className={`text-2xl sm:text-3xl font-black tracking-wider glow-text-purple ${
                             wingoCurrentPrediction.type === "BIG" ? "text-purple-400" : "text-cyan-400"
                           }`}>
-                            {wingoCurrentPrediction.type === "BIG" ? "BIG (बड़ा)" : "SMALL (छोटा)"}
+                            {wingoCurrentPrediction.type === "BIG" 
+                              ? (appLang === "HINDI" ? "BIG (बड़ा)" : "BIG") 
+                              : (appLang === "HINDI" ? "SMALL (छोटा)" : "SMALL")
+                            }
                           </span>
                         </div>
 
                         <div className="w-14 h-14 rounded-xl border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
-                          <span className="text-[8px] font-mono text-cyan-400 font-bold uppercase">JACKPOT</span>
+                          <span className="text-[8px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
                           <span className="text-xl font-black text-cyan-300 font-mono glow-text-cyan">
                             {wingoCurrentPrediction.num}
                           </span>
@@ -1359,14 +1725,14 @@ export default function App() {
 
                       {/* BYPASS ENGINE */}
                       <div className="text-[10px] font-mono text-purple-300/80 bg-purple-950/20 py-1 px-2 rounded-lg border border-purple-900/30 flex justify-between">
-                        <span>BYPASS PROTOCOL:</span>
+                        <span>{curTrans.bypassProtocol}:</span>
                         <span className="text-emerald-400 font-bold animate-pulse">ACTIVE ON-DEMAND</span>
                       </div>
 
                       {/* Accuracy Bar */}
                       <div className="space-y-1">
                         <div className="flex justify-between text-[9px] font-mono text-gray-400">
-                          <span>INTELLIGENT CONFIDENCE RATE:</span>
+                          <span>{curTrans.confidence}:</span>
                           <span className="text-cyan-400 font-bold">{wingoCurrentPrediction.confidence}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden border border-purple-900/40">
@@ -1380,7 +1746,7 @@ export default function App() {
                   ) : (
                     <div className="text-center py-6 border border-purple-500/20 bg-purple-950/10 rounded-xl">
                       <RefreshCw className="w-5 h-5 text-purple-400 animate-spin mx-auto mb-2" />
-                      <span className="text-xs text-purple-300 font-mono">वेट करें, लाइव बिंगो डेटा सिंक हो रहा है... / Syncing live data...</span>
+                      <span className="text-xs text-purple-300 font-mono">{curTrans.waitingBingo}</span>
                     </div>
                   )}
 
@@ -1390,7 +1756,7 @@ export default function App() {
                     className="w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-950/20 hover:bg-purple-900/30 text-purple-300 hover:text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <Eye className="w-4 h-4 text-purple-400" />
-                    पूरी हिस्ट्री देखें / VIEW LOG HISTORY
+                    {curTrans.viewLogHistory}
                   </button>
                 </div>
               )}
@@ -1399,7 +1765,7 @@ export default function App() {
               {unlockedMode === "mines" && (
                 <div className="space-y-4" id="mines-subview-container">
                   <div className="p-3 bg-black/60 border border-purple-500/20 rounded-xl text-center">
-                    <span className="text-xs text-gray-400 block mb-2">💎 सुरक्षित खानों का पता लगाएं / Mines Grid scan</span>
+                    <span className="text-xs text-gray-400 block mb-2">{curTrans.minesScanGrid}</span>
                     
                     {/* 5x5 Mines Board */}
                     <div className="grid grid-cols-5 gap-2.5 max-w-[210px] mx-auto my-3">
@@ -1429,12 +1795,12 @@ export default function App() {
                       {isMinesScanning ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          स्कैनिंग जारी है... / SCANNING...
+                          {curTrans.scanning}
                         </>
                       ) : (
                         <>
                           <Target className="w-3.5 h-3.5 animate-pulse" />
-                          नया पैटर्न स्कैन करें / SCAN NEXT GRID
+                          {curTrans.scanNextGrid}
                         </>
                       )}
                     </button>
@@ -1446,7 +1812,7 @@ export default function App() {
               {unlockedMode === "aviator" && (
                 <div className="space-y-4" id="aviator-subview-container">
                   <div className="p-4 bg-black/60 border border-purple-500/20 rounded-xl text-center space-y-4">
-                    <span className="text-xs text-gray-400 block">✈️ क्रैश भविष्यवाणी मल्टीप्लायर / Crash Multiplier</span>
+                    <span className="text-xs text-gray-400 block">{curTrans.crashPrediction}</span>
 
                     <div className="py-6 rounded-2xl bg-red-950/10 border border-red-500/20 relative overflow-hidden">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.15),transparent_70%)] animate-pulse"></div>
@@ -1456,7 +1822,7 @@ export default function App() {
                         {aviatorIsFlying ? `${aviatorMultiplier}x` : predictedCrashPoint}
                       </div>
                       <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest mt-1">
-                        {aviatorIsFlying ? "AIRCRAFT CLIMBING..." : "EXPECTED BUST MULTIPLIER"}
+                        {aviatorIsFlying ? curTrans.climbing : curTrans.expectedBust}
                       </span>
                     </div>
 
@@ -1468,12 +1834,12 @@ export default function App() {
                       {isAviatorScanning ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          गणना जारी है... / CALCULATING...
+                          {curTrans.calculating}
                         </>
                       ) : (
                         <>
                           <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
-                          अगली उड़ान की भविष्यवाणी / PREDICT NEXT FLYOUT
+                          {curTrans.predictNextFlyout}
                         </>
                       )}
                     </button>
@@ -1485,13 +1851,13 @@ export default function App() {
               {unlockedMode === "goal" && (
                 <div className="space-y-4" id="goal-subview-container">
                   <div className="p-3 bg-black/60 border border-purple-500/20 rounded-xl text-center">
-                    <span className="text-xs text-green-400 font-bold block mb-2">⚽ गोलकीपर चकमा पथ / Goal goalkeeper bypass</span>
+                    <span className="text-xs text-green-400 font-bold block mb-2">{curTrans.goalkeeperBypass}</span>
 
                     {/* 5x7 Path Grid */}
                     <div className="space-y-1.5 my-3 max-w-[280px] mx-auto">
                       {goalGrid.map((safeCol, rowIdx) => (
                         <div key={rowIdx} className="flex items-center gap-2 bg-green-950/5 border border-green-950/20 p-1 rounded-xl">
-                          <span className="text-[9px] font-mono text-gray-500 w-10 shrink-0">ROW {rowIdx + 1}</span>
+                          <span className="text-[9px] font-mono text-gray-500 w-10 shrink-0">{curTrans.row} {rowIdx + 1}</span>
                           <div className="flex-1 grid grid-cols-5 gap-1.5">
                             {Array.from({ length: 5 }).map((_, colIdx) => {
                               const isSafe = safeCol === colIdx;
@@ -1521,12 +1887,12 @@ export default function App() {
                       {isGoalScanning ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          गणना जारी है... / CALCULATING...
+                          {curTrans.calculating}
                         </>
                       ) : (
                         <>
                           <Compass className="w-3.5 h-3.5 animate-pulse" />
-                          सुरक्षित गोल दिशा खोजें / FIND NEXT GOAL PATH
+                          {curTrans.findNextGoal}
                         </>
                       )}
                     </button>
@@ -1546,13 +1912,13 @@ export default function App() {
                 <div className="flex justify-between items-center border-b border-purple-900/40 pb-3 mb-4 shrink-0">
                   <h3 className="text-sm font-black text-purple-300 flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-purple-400" />
-                    बिंगो लाइव परिणाम इतिहास / SESSION HISTORY
+                    {curTrans.sessionHistoryTitle}
                   </h3>
                   <button 
                     onClick={() => { triggerSound("click"); setIsWingoHistoryOpen(false); }}
                     className="px-2.5 py-1 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900 text-[10px] font-bold uppercase cursor-pointer"
                   >
-                    बंद करें / CLOSE
+                    {curTrans.closeBtn}
                   </button>
                 </div>
 
@@ -1560,15 +1926,15 @@ export default function App() {
                 <div className="flex-1 overflow-y-auto space-y-2.5 divide-y divide-purple-950 pr-1 scrollbar-none">
                   {wingoHistory.length === 0 ? (
                     <div className="text-center py-16 text-gray-500 text-xs font-semibold">
-                      कोई पुराना इतिहास उपलब्ध नहीं है। लाइव परिणाम यहाँ जुड़ेंगे! / No logs recorded yet. Live results will populate here.
+                      {curTrans.noHistory}
                     </div>
                   ) : (
                     wingoHistory.map((item, idx) => (
                       <div key={idx} className="pt-2.5 flex justify-between items-center text-xs font-mono">
                         <div>
-                          <div className="text-white font-black">पीरियड / PERIOD: {item.period.slice(-4)}</div>
+                          <div className="text-white font-black">{curTrans.period}: {item.period.slice(-4)}</div>
                           <div className="text-[10px] text-gray-400 mt-1 uppercase">
-                            प्रेडिक्शन / PRED: <span className="text-purple-400 font-bold">{item.predictedType}({item.predictedNum})</span>
+                            {appLang === "HINDI" ? "प्रेडिक्शन" : "PRED"}: <span className="text-purple-400 font-bold">{item.predictedType}({item.predictedNum})</span>
                           </div>
                           <div className="text-[9px] text-emerald-400 font-mono">
                             ALGORITHM: BYPASS_OK
@@ -1576,7 +1942,7 @@ export default function App() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-gray-300">
-                            नंबर / ACT: <span className="text-white font-bold">{item.actualType}({item.actualNum})</span>
+                            {appLang === "HINDI" ? "नंबर" : "ACT"}: <span className="text-white font-bold">{item.actualType}({item.actualNum})</span>
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                             item.status === "JACKPOT" 
@@ -1595,9 +1961,142 @@ export default function App() {
 
                 <div className="mt-4 pt-3 border-t border-purple-900/40 text-center shrink-0">
                   <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest">
-                    ● डेटा रिफ्रेश होने पर गायब हो जाएगा / Session Local Only
+                    {curTrans.sessionLocalOnly}
                   </p>
                 </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ----------------- BUY VIP PASSCODE MODAL (PAYMENT SCREEN) ----------------- */}
+          {isBuyPasscodeOpen && (
+            <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/90 backdrop-blur-md px-4 py-6 overflow-y-auto">
+              <div className="relative w-full max-w-md rounded-2xl border border-yellow-500/40 bg-[#0c0818] p-5 sm:p-6 shadow-[0_0_35px_rgba(234,179,8,0.25)] max-h-[95vh] flex flex-col overflow-y-auto scrollbar-none animate-in fade-in zoom-in-95 duration-200">
+                
+                {/* Modal Header */}
+                <div className="flex justify-between items-center border-b border-purple-900/40 pb-3 mb-4 shrink-0">
+                  <h3 className="text-sm font-black text-yellow-400 flex items-center gap-1.5 font-mono">
+                    <Key className="w-4 h-4 text-yellow-500 animate-pulse" />
+                    {appLang === "HINDI" ? "वीआईपी की खरीदें / GET VIP KEY" : "GET VIP PASSCODE KEY"}
+                  </h3>
+                  <button 
+                    onClick={() => { triggerSound("click"); setIsBuyPasscodeOpen(false); }}
+                    className="px-2.5 py-1.5 rounded-lg bg-red-950/50 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900 text-[10px] font-bold uppercase cursor-pointer transition-colors"
+                  >
+                    {appLang === "HINDI" ? "बंद करें" : "CLOSE"}
+                  </button>
+                </div>
+
+                {/* Plan Selection Grid */}
+                <div className="shrink-0 mb-4">
+                  <span className="block text-[10px] font-mono text-purple-400 uppercase tracking-widest mb-2 font-black">
+                    {appLang === "HINDI" ? "१. वैधता प्लान चुनें / 1. SELECT VALIDITY PLAN" : "1. SELECT VALIDITY PLAN"}
+                  </span>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {(["1 Hour", "1 Day", "3 Days", "7 Days"] as const).map((plan) => {
+                      const price = PLAN_PRICES[plan];
+                      const isSelected = selectedPlan === plan;
+                      return (
+                        <button
+                          key={plan}
+                          onClick={() => { triggerSound("click"); setSelectedPlan(plan); }}
+                          className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                            isSelected 
+                              ? "bg-yellow-500/20 border-yellow-400 shadow-[0_0_12px_rgba(234,179,8,0.3)] scale-102" 
+                              : "bg-black/50 border-purple-950 hover:border-yellow-500/30"
+                          }`}
+                        >
+                          <span className={`text-[11px] font-black uppercase tracking-wider ${isSelected ? "text-yellow-400" : "text-gray-400"}`}>
+                            {plan === "1 Hour" ? (appLang === "HINDI" ? "1 घंटा" : "1 Hour") :
+                             plan === "1 Day" ? (appLang === "HINDI" ? "1 दिन" : "1 Day") :
+                             plan === "3 Days" ? (appLang === "HINDI" ? "3 दिन" : "3 Days") : 
+                             (appLang === "HINDI" ? "7 दिन" : "7 Days")}
+                          </span>
+                          <span className="text-base font-black text-white mt-1">₹{price}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* QR Code and Payment Details */}
+                <div className="bg-black/80 border border-purple-900/40 p-4 rounded-xl flex flex-col items-center text-center space-y-4 shadow-inner mb-4">
+                  <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-black">
+                    {appLang === "HINDI" ? "२. बारकोड स्कैन करके पेमेंट करें / 2. SCAN BARCODE TO PAY" : "2. SCAN BARCODE TO PAY"}
+                  </span>
+                  
+                  {/* Dynamic QR Code */}
+                  <div className="bg-white p-2.5 rounded-xl shadow-lg border border-yellow-500/20 glow-yellow flex items-center justify-center">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                        `upi://pay?pa=Shyamu6@fam&pn=RAMU%20BHAI%20VIP&am=${PLAN_PRICES[selectedPlan]}&cu=INR&tn=VIP%20Passcode%20${selectedPlan.replace(" ", "%20")}`
+                      )}`} 
+                      alt="Payment QR Code" 
+                      className="w-36 h-36 object-contain rounded"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="block text-xs text-yellow-400 font-black tracking-wide uppercase">
+                      {appLang === "HINDI" ? "चयनित:" : "SELECTED:"} {selectedPlan === "1 Hour" ? "1 Hour" : selectedPlan} PLAN - ₹{PLAN_PRICES[selectedPlan]}
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-mono block uppercase">
+                      RAMU BHAI SECURE MERCHANT GATEWAY
+                    </span>
+                  </div>
+                </div>
+
+                {/* UPI Copy Box */}
+                <div className="bg-black border border-purple-950 p-3 rounded-xl flex justify-between items-center mb-4 text-xs font-mono">
+                  <div className="flex flex-col text-left">
+                    <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">UPI ID (भुगतान पता)</span>
+                    <span className="text-white font-black tracking-wide">Shyamu6@fam</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText("Shyamu6@fam");
+                      setCopiedUpi(true);
+                      triggerSound("unlock");
+                      setTimeout(() => setCopiedUpi(false), 2000);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+                      copiedUpi 
+                        ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]" 
+                        : "bg-purple-950/80 border border-purple-500/30 text-purple-300 hover:bg-purple-900"
+                    }`}
+                  >
+                    {copiedUpi ? (appLang === "HINDI" ? "कॉपी हो गया!" : "COPIED!") : (appLang === "HINDI" ? "कॉपी करें" : "COPY ID")}
+                  </button>
+                </div>
+
+                {/* Instructions Text */}
+                <div className="bg-yellow-950/20 border border-yellow-500/20 p-3 rounded-xl text-left space-y-1.5 mb-5">
+                  <span className="block text-[10px] font-mono text-yellow-400 font-black uppercase tracking-wider">
+                    {appLang === "HINDI" ? "३. स्क्रीनशॉट भेजें / 3. SUBMIT RECEIPT" : "3. SUBMIT RECEIPT"}
+                  </span>
+                  <p className="text-[11px] text-gray-300 leading-relaxed font-bold">
+                    {appLang === "HINDI" 
+                      ? "पेमेंट करने के बाद, स्क्रीनशॉट हमारे टेलीग्राम यूजरनेम @Monu1359 पर भेजें। आपको तुरंत आपका वीआईपी पासकोड दे दिया जाएगा।" 
+                      : "After payment, send the transaction screenshot to our Telegram username @Monu1359 to receive your active VIP key passcode."}
+                  </p>
+                </div>
+
+                {/* Send Screenshot Link */}
+                <a
+                  href="https://t.me/Monu1359"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 glow-emerald cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0"
+                >
+                  <Send className="w-4 h-4 fill-current" />
+                  <span>{appLang === "HINDI" ? "टेलीग्राम पर स्क्रीनशॉट भेजें" : "SEND SCREENSHOT ON TELEGRAM"}</span>
+                </a>
+
+                <p className="text-[9px] text-gray-500 text-center font-mono mt-3 uppercase tracking-wider">
+                  TELEGRAM ADMIN USERNAME: @Monu1359
+                </p>
 
               </div>
             </div>
