@@ -211,6 +211,22 @@ async function startServer() {
     }
   });
 
+  // POST /api/panel/verify-password - Uncrackable server-side panel lock verification
+  app.post("/api/panel/verify-password", (req, res) => {
+    const { password } = req.body;
+    const correctPassword = process.env.PANEL_PASSWORD || "RAMU_BHAI_VIP_7788";
+    
+    if (!password) {
+      return res.status(400).json({ error: "पासवर्ड आवश्यक है! / Password is required!" });
+    }
+    
+    if (password === correctPassword) {
+      return res.json({ success: true, message: "पैनल अनलॉक हो गया! / Panel Unlocked Successfully!" });
+    } else {
+      return res.status(401).json({ error: "गलत पासवर्ड! कृपया सही पासवर्ड डालें। / Incorrect Password!" });
+    }
+  });
+
   // GET /api/keys - Retrieve all keys (Requires Admin Authorization)
   app.get("/api/keys", (req, res) => {
     const auth = req.headers.authorization;
