@@ -13,6 +13,30 @@ interface GeneratedKey {
   game: string;
   duration: string;
   expiresAt: number;
+  usedByDevice?: string | null;
+  firstUsedAt?: number | null;
+}
+
+const BLACKLIST_FILE = path.join(process.cwd(), "blacklist.json");
+
+function loadBlacklist(): string[] {
+  try {
+    if (fs.existsSync(BLACKLIST_FILE)) {
+      const data = fs.readFileSync(BLACKLIST_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    // Treat as empty if not exists
+  }
+  return [];
+}
+
+function saveBlacklist(list: string[]) {
+  try {
+    fs.writeFileSync(BLACKLIST_FILE, JSON.stringify(list, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error saving blacklist database:", err);
+  }
 }
 
 // Robust file-based database for keys to persist across restarts/redeploys
@@ -41,6 +65,51 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // 1. Extreme Security Headers to prevent frame-hijacking, scraping, or code-injection
+  app.use((req, res, next) => {
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Content-Security-Policy", "default-src 'self' https: 'unsafe-inline' 'unsafe-eval' data: blob:;");
+    next();
+  });
+
+  // 2. Global Bot/Hacking Tool/Scraper blocklist middleware
+  app.use((req, res, next) => {
+    const userAgent = (req.headers["user-agent"] || "").toLowerCase();
+    
+    // List of bot, scraper, headless and exploit tool signatures
+    const bannedAgents = [
+      "curl", "wget", "python", "httpclient", "axios", "postman", "headless", "puppeteer", 
+      "selenium", "playwright", "scrapy", "sqlmap", "nmap", "gobuster", "dirbuster", "nikto", 
+      "burp", "owasp", "zap", "rest-client", "insomnia", "phantomjs", "zgrab", "masscan", "censys"
+    ];
+
+    const isBanned = bannedAgents.some(agent => userAgent.includes(agent)) || !userAgent;
+
+    if (isBanned && req.path.startsWith("/api/")) {
+      console.warn(`[SECURITY VIOLATION] Blocked automated/scraping tool access. User-Agent: ${userAgent}`);
+      return res.status(403).json({ 
+        error: "ACCESS_DENIED", 
+        message: "सुरक्षा उल्लंघन: स्वचालित उपकरणों या अनधिकृत टूल से प्रवेश निषेध है! / Security Violation: Automated or unauthorized tools are blocked!" 
+      });
+    }
+
+    // 3. Global Device Blacklist Check to permanently block cracked/banned phones
+    const deviceId = req.headers["x-device-id"] as string || req.query.deviceId as string;
+    if (deviceId) {
+      const blacklist = loadBlacklist();
+      if (blacklist.includes(deviceId)) {
+        return res.status(403).json({ 
+          error: "DEVICE_BANNED", 
+          message: "सुरक्षा उल्लंघन: आपका डिवाइस स्थायी रूप से अवरुद्ध कर दिया गया है! / Security Violation: Your device has been permanently blocked!" 
+        });
+      }
+    }
+    next();
+  });
 
   // Deterministic live fallback generators to ensure 100% uptime & global device sync
   const getDeterministicHistory30s = () => {
@@ -194,9 +263,23 @@ async function startServer() {
     res.json({ success: true, keys: updatedKeys });
   });
 
-  // POST /api/keys/verify - Public endpoint for users to verify key on any device
+  // POST /api/security/blacklist - Register a device ID to the persistent ban list
+  app.post("/api/security/blacklist", (req, res) => {
+    const { deviceId } = req.body;
+    if (!deviceId) {
+      return res.status(400).json({ error: "Missing deviceId" });
+    }
+    const blacklist = loadBlacklist();
+    if (!blacklist.includes(deviceId)) {
+      blacklist.push(deviceId);
+      saveBlacklist(blacklist);
+    }
+    res.json({ success: true, message: "Device permanently blacklisted." });
+  });
+
+  // POST /api/keys/verify - Public endpoint for users to verify key with device restriction
   app.post("/api/keys/verify", (req, res) => {
-    const { key, game } = req.body;
+    const { key, game, deviceId } = req.body;
     if (!key || !game) {
       return res.status(400).json({ error: "Missing passcode or game type" });
     }
@@ -204,15 +287,51 @@ async function startServer() {
     const keys = loadKeys();
     const now = Date.now();
 
-    // Verify if passcode matches active keys list and has not expired
-    const matchedKey = keys.find(
-      k => k.key === key && (k.game === game || k.game === "all") && k.expiresAt > now
+    // Verify if passcode matches active keys list (including "all")
+    const matchedKeyIndex = keys.findIndex(
+      k => k.key === key && (k.game === game || k.game === "all")
     );
 
-    if (matchedKey) {
+    if (matchedKeyIndex !== -1) {
+      const matchedKey = keys[matchedKeyIndex];
+
+      // 1. Check if administrative expiration is exceeded
+      if (matchedKey.expiresAt && matchedKey.expiresAt < now) {
+        return res.status(400).json({ error: "यह पासकोड समाप्त हो गया है! / This passcode has expired!" });
+      }
+
+      // 2. Check dynamic activation countdown (for 1-hour or other limited duration keys)
+      if (matchedKey.firstUsedAt) {
+        const elapsed = now - matchedKey.firstUsedAt;
+        let durationLimit = 3600000; // Default 1 hour
+        if (matchedKey.duration === "1 Day") durationLimit = 86400000;
+        else if (matchedKey.duration === "3 Days") durationLimit = 259200000;
+        else if (matchedKey.duration === "7 Days") durationLimit = 604800000;
+        else if (matchedKey.duration === "1 Month") durationLimit = 2592000000;
+
+        if (elapsed > durationLimit) {
+          return res.status(400).json({ error: "इस पासकोड की अवधि समाप्त हो चुकी है! / This passcode's active duration has expired!" });
+        }
+      }
+
+      // 3. Enforce single-device lock restriction
+      if (deviceId) {
+        if (!matchedKey.usedByDevice) {
+          // Lock to this device and activate the key countdown!
+          matchedKey.usedByDevice = deviceId;
+          matchedKey.firstUsedAt = now;
+          keys[matchedKeyIndex] = matchedKey;
+          saveKeys(keys);
+        } else if (matchedKey.usedByDevice !== deviceId) {
+          return res.status(400).json({ 
+            error: "यह पासकोड पहले से ही दूसरे डिवाइस में उपयोग किया जा चुका है! / This passcode is already locked to another device!" 
+          });
+        }
+      }
+
       res.json({ success: true, key: matchedKey });
     } else {
-      res.status(400).json({ error: "गलत पासकोड! कृपया वैध और सक्रिय पासकोड दर्ज करें। / Invalid or Expired Passcode!" });
+      res.status(400).json({ error: "गलत पासकोड! कृपया वैध और सक्रिय पासकोड दर्ज करें। / Invalid Passcode!" });
     }
   });
 

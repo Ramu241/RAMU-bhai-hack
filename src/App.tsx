@@ -433,6 +433,16 @@ function generateInitialSimulatedHistory(count = 10) {
 }
 
 export default function App() {
+  // Initialize or fetch the persistent device ID
+  const deviceId = React.useMemo(() => {
+    let dId = localStorage.getItem("ramu_bhai_device_id");
+    if (!dId) {
+      dId = "dev_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem("ramu_bhai_device_id", dId);
+    }
+    return dId;
+  }, []);
+
   const [isTampered, setIsTampered] = useState(() => {
     try {
       return (
@@ -451,7 +461,33 @@ export default function App() {
       localStorage.setItem("sys_security_locked_v1", "true");
       localStorage.setItem("ramu_bhai_secured_token", "BLOCKED_BY_ADMIN");
       localStorage.setItem("app_integrity_v2", "0");
+      // Notify server of security violation to permanently black-list this device on the backend too!
+      fetch("/api/security/blacklist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deviceId })
+      }).catch(() => {});
     } catch (e) {}
+  };
+
+  const secureFetch = async (url: string, options: RequestInit = {}) => {
+    const headers = {
+      ...(options.headers || {}),
+      "X-Device-ID": deviceId
+    };
+    try {
+      const res = await fetch(url, { ...options, headers });
+      if (res.status === 403) {
+        triggerTamperBlock();
+        throw new Error("DEVICE_BANNED");
+      }
+      return res;
+    } catch (err: any) {
+      if (err.message === "DEVICE_BANNED") {
+        triggerTamperBlock();
+      }
+      throw err;
+    }
   };
 
   // Anti-hacking, Anti-reverse-engineering, and Anti-devtools script
@@ -727,7 +763,7 @@ export default function App() {
     let isMounted = true;
     const fetchHistory = async () => {
       try {
-        const response = await fetch("/api/bingo-history");
+        const response = await secureFetch("/api/bingo-history");
         if (!response.ok) throw new Error("API error status: " + response.status);
         const json = await response.json();
         
@@ -828,7 +864,7 @@ export default function App() {
     let isMounted = true;
     const fetchHistory = async () => {
       try {
-        const response = await fetch("/api/bingo-history-30s");
+        const response = await secureFetch("/api/bingo-history-30s");
         if (!response.ok) throw new Error("API error status: " + response.status);
         const json = await response.json();
         
@@ -1133,7 +1169,7 @@ export default function App() {
   const fetchServerKeys = async () => {
     try {
       const securePin = atob("UkFNVV9CSEFJX0FETUlOX1NFQ1VSRV9CWVBBU1NfOTA5MF8jQCE=");
-      const res = await fetch("/api/keys", {
+      const res = await secureFetch("/api/keys", {
         headers: { "Authorization": securePin }
       });
       if (res.ok) {
@@ -1152,10 +1188,10 @@ export default function App() {
     if (!entered) return;
 
     try {
-      const response = await fetch("/api/keys/verify", {
+      const response = await secureFetch("/api/keys/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: entered, game: targetUnlockMode })
+        body: JSON.stringify({ key: entered, game: targetUnlockMode, deviceId })
       });
 
       if (response.ok) {
@@ -1279,7 +1315,7 @@ export default function App() {
 
     try {
       const securePin = atob("UkFNVV9CSEFJX0FETUlOX1NFQ1VSRV9CWVBBU1NfOTA5MF8jQCE=");
-      const res = await fetch("/api/keys", {
+      const res = await secureFetch("/api/keys", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1307,7 +1343,7 @@ export default function App() {
     triggerSound("click");
     try {
       const securePin = atob("UkFNVV9CSEFJX0FETUlOX1NFQ1VSRV9CWVBBU1NfOTA5MF8jQCE=");
-      const res = await fetch(`/api/keys/${encodeURIComponent(keyToRemove)}`, {
+      const res = await secureFetch(`/api/keys/${encodeURIComponent(keyToRemove)}`, {
         method: "DELETE",
         headers: {
           "Authorization": securePin
@@ -2053,7 +2089,14 @@ export default function App() {
                         generatedKeys.map((k, idx) => (
                           <div key={idx} className="p-3 rounded-xl border border-purple-950 bg-black/60 flex justify-between items-center text-xs font-mono">
                             <div>
-                              <div className="text-white font-black">{k.key}</div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-white font-black">{k.key}</span>
+                                {k.usedByDevice ? (
+                                  <span className="text-[8px] bg-red-950/50 border border-red-500/30 text-red-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड किसी डिवाइस पर लॉक हो चुका है">USED (लॉक)</span>
+                                ) : (
+                                  <span className="text-[8px] bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड उपयोग के लिए तैयार है">READY</span>
+                                )}
+                              </div>
                               <div className="text-[10px] text-gray-400 mt-1 uppercase">
                                 गेम / GAME: <span className="text-purple-400 font-bold">{k.game.toUpperCase()}</span> | टाइम / EXP: <span className="text-cyan-400 font-bold">{k.duration}</span>
                               </div>
