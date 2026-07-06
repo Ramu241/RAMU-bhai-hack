@@ -559,8 +559,39 @@ export default function App() {
   const [loadingLogs, setLoadingLogs] = useState<string[]>([]);
   const [verifyLogs, setVerifyLogs] = useState<string[]>([]);
 
-  const [activeTab, setActiveTab] = useState<"home" | "game">("home");
-  const [unlockedMode, setUnlockedMode] = useState<"none" | "wingo" | "wingo30s" | "mines" | "aviator" | "goal">("none");
+  const [activeTab, setActiveTab] = useState<"home" | "game">(() => {
+    try {
+      const token = localStorage.getItem("ramu_bhai_sec_session");
+      if (token) {
+        const decodedWithNoise = atob(token);
+        const rawBase64 = decodedWithNoise.split("##")[0];
+        const sessionObj = JSON.parse(atob(rawBase64));
+        const dId = localStorage.getItem("ramu_bhai_device_id");
+        if (sessionObj.d === dId && sessionObj.e > Date.now()) {
+          return "game";
+        }
+      }
+    } catch (e) {}
+    return "home";
+  });
+
+  const [unlockedMode, setUnlockedMode] = useState<"none" | "wingo" | "wingo30s" | "mines" | "aviator" | "goal">(() => {
+    try {
+      const token = localStorage.getItem("ramu_bhai_sec_session");
+      if (token) {
+        const decodedWithNoise = atob(token);
+        const rawBase64 = decodedWithNoise.split("##")[0];
+        const sessionObj = JSON.parse(atob(rawBase64));
+        const dId = localStorage.getItem("ramu_bhai_device_id");
+        if (sessionObj.d === dId && sessionObj.e > Date.now()) {
+          return sessionObj.m;
+        } else {
+          localStorage.removeItem("ramu_bhai_sec_session");
+        }
+      }
+    } catch (e) {}
+    return "none";
+  });
   const [targetUnlockMode, setTargetUnlockMode] = useState<"none" | "wingo" | "wingo30s" | "mines" | "aviator" | "goal">("none");
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -657,6 +688,67 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("ramu_bhai_generated_keys", JSON.stringify(generatedKeys));
   }, [generatedKeys]);
+
+  // Background Session Expiry Monitor (Checks every 3 seconds to auto-lock on exact expiry)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        const token = localStorage.getItem("ramu_bhai_sec_session");
+        if (token) {
+          const decodedWithNoise = atob(token);
+          const rawBase64 = decodedWithNoise.split("##")[0];
+          const sessionObj = JSON.parse(atob(rawBase64));
+          const dId = localStorage.getItem("ramu_bhai_device_id");
+          if (sessionObj.e <= Date.now() || sessionObj.d !== dId) {
+            // Expired! Force lock immediately
+            localStorage.removeItem("ramu_bhai_sec_session");
+            setUnlockedMode("none");
+            setActiveTab("home");
+            triggerSound("loss");
+          }
+        } else if (unlockedMode !== "none") {
+          // Session was manually cleared or missing, force lock
+          setUnlockedMode("none");
+          setActiveTab("home");
+        }
+      } catch (e) {
+        localStorage.removeItem("ramu_bhai_sec_session");
+        setUnlockedMode("none");
+        setActiveTab("home");
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [unlockedMode]);
+
+  // Restore game prediction matrices on initial load if restored from local storage
+  useEffect(() => {
+    if (appLoadedState === "ready" && unlockedMode !== "none") {
+      if (unlockedMode === "mines") {
+        const grid = new Array(25).fill(false);
+        const starCount = 4;
+        const selectedIndices = new Set<number>();
+        while (selectedIndices.size < starCount) {
+          selectedIndices.add(Math.floor(Math.random() * 25));
+        }
+        selectedIndices.forEach(idx => { grid[idx] = true; });
+        setMinesGrid(grid);
+      } else if (unlockedMode === "aviator") {
+        const r = Math.random();
+        let predicted: number;
+        if (r < 0.15) predicted = parseFloat((Math.random() * 0.4 + 1.1).toFixed(2));
+        else if (r < 0.75) predicted = parseFloat((Math.random() * 2.1 + 1.5).toFixed(2));
+        else predicted = parseFloat((Math.random() * 12 + 4.0).toFixed(2));
+        setPredictedCrashPoint(predicted.toFixed(2) + "x");
+      } else if (unlockedMode === "goal") {
+        const grid = [];
+        for (let i = 0; i < 7; i++) {
+          grid.push(Math.floor(Math.random() * 5));
+        }
+        setGoalGrid(grid);
+      }
+    }
+  }, [appLoadedState, unlockedMode]);
 
   // Sound triggers checking mute option
   const triggerSound = (type: "click" | "verify" | "unlock" | "win" | "loss" | "jackpot") => {
@@ -1131,6 +1223,7 @@ export default function App() {
   // Handle exiting and resetting all history instantly (Strictly no browser cache trace)
   const handleGoHome = () => {
     triggerSound("click");
+    localStorage.removeItem("ramu_bhai_sec_session");
     setUnlockedMode("none");
     setTargetUnlockMode("none");
     setWingoHistory([]);
@@ -1195,6 +1288,10 @@ export default function App() {
       });
 
       if (response.ok) {
+        // Parse the dynamic verification key data returned by the server
+        const resData = await response.json().catch(() => ({}));
+        const verifiedKey = resData.key;
+
         setPasswordError("");
         setIsHacking(true);
         setHackProgress(0);
@@ -1234,6 +1331,29 @@ export default function App() {
               setTargetUnlockMode("none");
               setActiveTab("game");
               triggerSound("unlock");
+
+              // Save the verified session securely on user's device
+              try {
+                const duration = verifiedKey?.duration || "1 Hour";
+                let durationLimit = 3600000; // default 1 hour
+                if (duration === "1 Day") durationLimit = 86400000;
+                else if (duration === "3 Days") durationLimit = 259200000;
+                else if (duration === "7 Days") durationLimit = 604800000;
+                else if (duration === "1 Month") durationLimit = 2592000000;
+
+                const firstUsed = verifiedKey?.firstUsedAt || Date.now();
+                const expiresAt = firstUsed + durationLimit;
+                const sessionObj = {
+                  m: targetUnlockMode,
+                  k: entered,
+                  e: expiresAt,
+                  d: deviceId
+                };
+                const rawStr = JSON.stringify(sessionObj);
+                const noise = Math.random().toString(36).substring(2, 7);
+                const secureVal = btoa(btoa(rawStr) + "##" + noise);
+                localStorage.setItem("ramu_bhai_sec_session", secureVal);
+              } catch (e) {}
 
               // Init game parameters
               if (targetUnlockMode === "mines") {
@@ -1280,6 +1400,29 @@ export default function App() {
             setTargetUnlockMode("none");
             setActiveTab("game");
             triggerSound("unlock");
+
+            // Save offline session fallback
+            try {
+              const duration = matchedCustomKey.duration || "1 Hour";
+              let durationLimit = 3600000; // default 1 hour
+              if (duration === "1 Day") durationLimit = 86400000;
+              else if (duration === "3 Days") durationLimit = 259200000;
+              else if (duration === "7 Days") durationLimit = 604800000;
+              else if (duration === "1 Month") durationLimit = 2592000000;
+
+              const firstUsed = matchedCustomKey.firstUsedAt || Date.now();
+              const expiresAt = firstUsed + durationLimit;
+              const sessionObj = {
+                m: targetUnlockMode,
+                k: entered,
+                e: expiresAt,
+                d: deviceId
+              };
+              const rawStr = JSON.stringify(sessionObj);
+              const noise = Math.random().toString(36).substring(2, 7);
+              const secureVal = btoa(btoa(rawStr) + "##" + noise);
+              localStorage.setItem("ramu_bhai_sec_session", secureVal);
+            } catch (e) {}
           }
         }, 50);
       } else {
@@ -2087,7 +2230,7 @@ export default function App() {
                         </div>
                       ) : (
                         generatedKeys.map((k, idx) => (
-                          <div key={idx} className="p-3 rounded-xl border border-cyan-950/80 bg-black/40 backdrop-blur-md flex justify-between items-center text-xs font-mono">
+                          <div key={idx} className="p-3 rounded-xl border border-cyan-500/20 bg-black/40 backdrop-blur-md flex justify-between items-center text-xs font-mono">
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-white font-black">{k.key}</span>
@@ -2132,91 +2275,25 @@ export default function App() {
             </div>
           )}
 
-          {/* ----------------- SECURITY KEY ENTRY SCREEN ----------------- */}
-          {targetUnlockMode !== "none" && !isHacking && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md px-4">
-              <div className="relative w-full max-w-sm rounded-2xl border border-purple-500/40 bg-[#0b0718] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                <h3 className="text-base font-black text-purple-200 uppercase tracking-wide text-center flex items-center justify-center gap-2 mb-2 font-mono">
-                  <Lock className="w-4 h-4 text-purple-400" />
-                  {curTrans.securityTitle}
-                </h3>
-                <p className="text-center text-xs text-gray-400 mb-6">
-                  {curTrans.securityDesc(targetUnlockMode)}
-                </p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase text-purple-400/80 tracking-widest mb-1.5">
-                      {curTrans.enterKeyLabel}
-                    </label>
-                    <input 
-                      type="text" 
-                      value={passwordInput}
-                      onChange={(e) => setPasswordInput(e.target.value)}
-                      placeholder={curTrans.passcodePlaceholder}
-                      className="w-full text-center py-3 bg-black/50 border border-purple-500/30 rounded-xl focus:border-purple-400 focus:outline-none text-white font-mono tracking-widest text-lg uppercase"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleVerifyPassword();
-                      }}
-                    />
-                    {passwordError && (
-                      <p className="text-[11px] text-red-400 mt-2 text-center font-bold flex items-center justify-center gap-1">
-                        <AlertTriangle className="w-3 h-3 shrink-0" />
-                        {passwordError === "गड़बड़ पासवर्ड! अमान्य या समाप्त।" || passwordError === "Incorrect key passcode!"
-                          ? curTrans.incorrectPasscode 
-                          : passwordError}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-3 pt-2">
-                    <button 
-                      onClick={() => { triggerSound("click"); setTargetUnlockMode("none"); }}
-                      className="flex-1 py-3 rounded-xl border border-red-500/30 bg-red-950/20 text-red-400 hover:text-white hover:bg-red-900 transition-all text-xs font-bold uppercase cursor-pointer"
-                    >
-                      {curTrans.cancelBtn}
-                    </button>
-                    <button 
-                      onClick={handleVerifyPassword}
-                      className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-purple-900/30"
-                    >
-                      {curTrans.unlockBtn}
-                    </button>
-                  </div>
-
-                  <div className="pt-3 border-t border-purple-950/60 text-center">
-                    <button 
-                      onClick={() => { triggerSound("unlock"); setIsBuyPasscodeOpen(true); }}
-                      className="w-full py-2.5 rounded-xl border border-dashed border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-950/40 text-yellow-400 hover:text-yellow-200 transition-all text-[11px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-center gap-2 animate-pulse"
-                    >
-                      <Key className="w-3.5 h-3.5" />
-                      {appLang === "HINDI" ? "पासकोड खरीदें / BUY VIP KEY" : "BUY VIP PASSCODE KEY"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ----------------- FUTURISTIC HACKING OVERLAY ----------------- */}
           {isHacking && (
-            <div className="fixed inset-0 z-50 flex flex-col justify-center bg-black/95 backdrop-blur-md px-4">
+            <div className="fixed inset-0 z-50 flex flex-col justify-center bg-black/75 backdrop-blur-md px-4">
               <div className="w-full max-w-md mx-auto space-y-6">
                 <div className="text-center space-y-2">
                   <div className="relative inline-block">
-                    <div className="w-16 h-16 rounded-full border-2 border-dashed border-purple-500 animate-spin"></div>
-                    <Terminal className="w-8 h-8 text-purple-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <div className="w-16 h-16 rounded-full border-2 border-dashed border-cyan-500 animate-spin"></div>
+                    <Terminal className="w-8 h-8 text-cyan-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                   </div>
-                  <h2 className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase font-mono">
+                  <h2 className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 uppercase font-mono">
                     BYPASS TUNNEL ACTIVE / बाईपास टनल सक्रिय
                   </h2>
                   <p className="text-xs text-gray-500 font-mono">ESTABLISHING PREMIUM NEURAL OVERLAY / सुरक्षा कवच बाईपास चालू...</p>
                 </div>
 
-                <div className="bg-black/80 border border-purple-500/20 rounded-xl p-4 h-48 overflow-y-auto font-mono text-[10px] text-purple-400 space-y-1.5 scrollbar-none">
+                <div className="bg-black/60 border border-cyan-500/30 rounded-xl p-4 h-48 overflow-y-auto font-mono text-[10px] text-cyan-400 space-y-1.5 scrollbar-none backdrop-blur-md">
                   {hackLogs.map((log, idx) => (
                     <div key={idx} className="flex gap-2 items-start">
-                      <span className="text-pink-500 font-bold shrink-0">&gt;</span>
+                      <span className="text-cyan-500 font-bold shrink-0">&gt;</span>
                       <span className="leading-relaxed">{log}</span>
                     </div>
                   ))}
@@ -2241,11 +2318,11 @@ export default function App() {
           {/* ----------------- ACTIVE GAME MODE OVERLAY CONTROL BAR ----------------- */}
           {activeTab === "game" && (
             <>
-              <div className="absolute top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-md border-b border-purple-500/30 flex items-center justify-between px-4 py-3 shadow-[0_4px_25px_rgba(0,0,0,0.85)]">
+              <div className="absolute top-0 left-0 right-0 z-40 bg-black/40 backdrop-blur-xl border-b border-cyan-500/30 flex items-center justify-between px-4 py-3 shadow-[0_4px_25px_rgba(0,0,0,0.6)]">
                 {/* Premium Live Status Badge on the left */}
                 <div className="flex items-center gap-2 pl-2">
-                  <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
-                  <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest font-mono">
+                  <Flame className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 uppercase tracking-widest font-mono">
                     RAMU BHAI LZR VIP
                   </span>
                 </div>
@@ -2253,10 +2330,10 @@ export default function App() {
                 {/* Center Toggle Overlays Panel */}
                 <button 
                   onClick={() => { triggerSound("click"); setPanelVisible(!panelVisible); }}
-                  className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest border transition-all duration-300 glow-purple cursor-pointer ${
+                  className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest border transition-all duration-300 glow-cyan cursor-pointer ${
                     panelVisible 
-                      ? "bg-purple-600 border-purple-400 text-white hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]" 
-                      : "bg-black/60 border-purple-500/40 text-purple-400 hover:text-purple-300 hover:border-purple-500"
+                      ? "bg-cyan-600 border-cyan-400 text-white hover:bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" 
+                      : "bg-black/40 border-cyan-500/30 text-cyan-400 hover:text-cyan-300 hover:border-cyan-400"
                   }`}
                   id="toggle-overlay-panel-btn"
                 >
@@ -2294,7 +2371,7 @@ export default function App() {
           {/* ----------------- PREDICTOR PANEL FLOATING CONTENT ----------------- */}
           {activeTab === "game" && panelVisible && (
             <div 
-              className="absolute left-1/2 top-[75px] -translate-x-1/2 z-30 w-[94%] max-w-sm bg-black/95 border border-purple-500/40 rounded-2xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.95)] max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-none animate-in slide-in-from-top-4 duration-300"
+              className="absolute left-1/2 top-[75px] -translate-x-1/2 z-30 w-[94%] max-w-sm bg-black/40 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.7)] max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-none animate-in slide-in-from-top-4 duration-300"
               id="prediction-overlay-panel"
             >
               {/* Header Area */}

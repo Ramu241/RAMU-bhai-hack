@@ -9,12 +9,12 @@
 /* Custom background animated grid effect */
 .bg-grid-cyber {
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(168, 85, 247, 0.05) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
 }
 
 .glow-purple {
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
 }
 
 .glow-cyan {
@@ -22,7 +22,7 @@
 }
 
 .glow-text-purple {
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
 }
 
 .glow-text-cyan {
@@ -38,9 +38,9 @@
   background: rgba(0, 0, 0, 0.5);
 }
 ::-webkit-scrollbar-thumb {
-  background: #a855f7;
+  background: #06b6d4;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #c084fc;
+  background: #22d3ee;
 }
