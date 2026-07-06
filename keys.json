@@ -1,31 +1,202 @@
 [
-  { "key": "RAMU_1H_WINGO_A7B2D9", "game": "wingo", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_WINGO_F4H8K1", "game": "wingo", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_WINGO_M9N2P5", "game": "wingo", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_WINGO_R6S3T8", "game": "wingo", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_WINGO_W2X7Y4", "game": "wingo", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-
-  { "key": "RAMU_1H_W30S_B8C3E9", "game": "wingo30s", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_W30S_G5H2K7", "game": "wingo30s", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_W30S_L1M6P4", "game": "wingo30s", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_W30S_Q9R4T2", "game": "wingo30s", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_W30S_V7W3Y8", "game": "wingo30s", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-
-  { "key": "RAMU_1H_MINES_C9D4F2", "game": "mines", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_MINES_H7J1K6", "game": "mines", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_MINES_M3N8P5", "game": "mines", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_MINES_R2S6T9", "game": "mines", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_MINES_W4X8Y1", "game": "mines", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-
-  { "key": "RAMU_1H_AVIA_D2E7F3", "game": "aviator", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_AVIA_H8J4K9", "game": "aviator", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_AVIA_M5N1P6", "game": "aviator", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_AVIA_R3S9T4", "game": "aviator", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_AVIA_W6X2Y7", "game": "aviator", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-
-  { "key": "RAMU_1H_GOAL_E3F8G4", "game": "goal", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_GOAL_H9J5K1", "game": "goal", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_GOAL_M6N2P7", "game": "goal", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_GOAL_R4S8T3", "game": "goal", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null },
-  { "key": "RAMU_1H_GOAL_W7X3Y9", "game": "goal", "duration": "1 Hour", "expiresAt": 2224857600000, "usedByDevice": null, "firstUsedAt": null }
+  {
+    "key": "RAMU_1H_WINGO_A7B2D9",
+    "game": "wingo",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_WINGO_F4H8K1",
+    "game": "wingo",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_WINGO_M9N2P5",
+    "game": "wingo",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_WINGO_R6S3T8",
+    "game": "wingo",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_WINGO_W2X7Y4",
+    "game": "wingo",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_W30S_B8C3E9",
+    "game": "wingo30s",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_W30S_G5H2K7",
+    "game": "wingo30s",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_W30S_L1M6P4",
+    "game": "wingo30s",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_W30S_Q9R4T2",
+    "game": "wingo30s",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_W30S_V7W3Y8",
+    "game": "wingo30s",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_MINES_C9D4F2",
+    "game": "mines",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_MINES_H7J1K6",
+    "game": "mines",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_MINES_M3N8P5",
+    "game": "mines",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_MINES_R2S6T9",
+    "game": "mines",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_MINES_W4X8Y1",
+    "game": "mines",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_AVIA_D2E7F3",
+    "game": "aviator",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_AVIA_H8J4K9",
+    "game": "aviator",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_AVIA_M5N1P6",
+    "game": "aviator",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_AVIA_R3S9T4",
+    "game": "aviator",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_AVIA_W6X2Y7",
+    "game": "aviator",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_GOAL_E3F8G4",
+    "game": "goal",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_GOAL_H9J5K1",
+    "game": "goal",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_GOAL_M6N2P7",
+    "game": "goal",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_GOAL_R4S8T3",
+    "game": "goal",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  },
+  {
+    "key": "RAMU_1H_GOAL_W7X3Y9",
+    "game": "goal",
+    "duration": "1 Hour",
+    "expiresAt": 2224857600000,
+    "usedByDevice": null,
+    "firstUsedAt": null
+  }
 ]

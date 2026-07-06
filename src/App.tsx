@@ -1948,14 +1948,14 @@ export default function App() {
           {isAdminOpen && (
             <div className="relative z-10 w-full h-full flex flex-col overflow-y-auto px-4 py-8 max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-200">
               
-              <div className="flex justify-between items-center mb-6 border-b border-purple-900/40 pb-4">
-                <h2 className="text-lg sm:text-xl font-black text-purple-300 flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-purple-400 animate-pulse" />
+              <div className="flex justify-between items-center mb-6 border-b border-cyan-500/20 pb-4">
+                <h2 className="text-lg sm:text-xl font-black text-cyan-300 flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-cyan-400 animate-pulse" />
                   रामू भाई विशेष एडमिन कंसोल / SECRET ADMIN CONSOLE
                 </h2>
                 <button 
                   onClick={() => { triggerSound("click"); setIsAdminOpen(false); }}
-                  className="px-4 py-1.5 rounded-lg bg-red-950/40 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900 text-xs font-bold uppercase cursor-pointer"
+                  className="px-4 py-1.5 rounded-lg bg-red-950/20 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-900/40 text-xs font-bold uppercase cursor-pointer backdrop-blur-md"
                 >
                   बाहर निकलें / BACK EXIT
                 </button>
@@ -1964,10 +1964,10 @@ export default function App() {
               {!isAdminAuthenticated ? (
                 /* ADMIN LOGIN SCREEN */
                 <div className="flex-1 flex items-center justify-center py-12">
-                  <div className="w-full max-w-sm rounded-2xl border border-purple-500/30 bg-[#0c0817] p-6 shadow-xl text-center">
-                    <Lock className="w-10 h-10 text-purple-400 mx-auto mb-4" />
+                  <div className="w-full max-w-sm rounded-2xl border border-cyan-500/30 bg-black/40 backdrop-blur-xl p-6 shadow-[0_0_50px_rgba(6,182,212,0.15)] text-center">
+                    <Lock className="w-10 h-10 text-cyan-400 mx-auto mb-4" />
                     <h3 className="text-base font-black text-white uppercase mb-1">प्रशासक प्रमाणीकरण / ADMIN LOGIN</h3>
-                    <p className="text-xs text-gray-400 mb-6">एडमिन पैनल अनलॉक करने के लिए सुरक्षित पासवर्ड दर्ज करें। / Enter Admin secret password.</p>
+                    <p className="text-xs text-gray-400 mb-6 font-medium">एडमिन पैनल अनलॉक करने के लिए सुरक्षित पासवर्ड दर्ज करें। / Enter Admin secret password.</p>
                     
                     <div className="space-y-4">
                       <input 
@@ -1975,7 +1975,7 @@ export default function App() {
                         placeholder="ENTER SECRET PASSWORD..."
                         value={adminPinInput}
                         onChange={(e) => setAdminPinInput(e.target.value)}
-                        className="w-full text-center py-3 bg-black/60 border border-purple-500/30 rounded-xl focus:border-purple-400 focus:outline-none text-white font-mono tracking-widest text-sm"
+                        className="w-full text-center py-3 bg-black/40 border border-cyan-500/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white font-mono tracking-widest text-sm backdrop-blur-md"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleAdminAuth();
                         }}
@@ -1984,7 +1984,7 @@ export default function App() {
                       
                       <button 
                         onClick={handleAdminAuth}
-                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer"
+                        className="w-full py-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-cyan-900/20"
                       >
                         सत्यापित करें / VERIFY PASSWORD
                       </button>
@@ -1996,8 +1996,8 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                   
                   {/* Left Column: Generate Keys */}
-                  <div className="p-6 rounded-2xl border border-purple-500/20 bg-purple-950/10 backdrop-blur-sm space-y-6">
-                    <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider border-b border-purple-900/30 pb-2">
+                  <div className="p-6 rounded-2xl border border-cyan-500/20 bg-black/30 backdrop-blur-xl space-y-6 shadow-xl">
+                    <h3 className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider border-b border-cyan-900/30 pb-2">
                       🔐 नई वीआईपी पासकोड बनाएं / VIP KEYS GENERATOR
                     </h3>
                     
@@ -2010,7 +2010,7 @@ export default function App() {
                         <select 
                           value={genGame}
                           onChange={(e: any) => setGenGame(e.target.value)}
-                          className="w-full py-2.5 px-3 bg-black border border-purple-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
+                          className="w-full py-2.5 px-3 bg-black/40 border border-cyan-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 backdrop-blur-md"
                         >
                           <option value="wingo">WinGo 1M Predictor</option>
                           <option value="mines">Mines Scanner</option>
@@ -2028,7 +2028,7 @@ export default function App() {
                         <select 
                           value={genDuration}
                           onChange={(e) => setGenDuration(e.target.value)}
-                          className="w-full py-2.5 px-3 bg-black border border-purple-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-purple-400"
+                          className="w-full py-2.5 px-3 bg-black/40 border border-cyan-500/30 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400 backdrop-blur-md"
                         >
                           <option value="1 Hour">1 Hour (1 घंटा)</option>
                           <option value="1 Day">1 Day (1 दिन)</option>
@@ -2041,7 +2041,7 @@ export default function App() {
                       {/* Generate Button */}
                       <button 
                         onClick={handleGenerateKey}
-                        className="w-full py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-500 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 shadow-lg shadow-purple-900/20 transition-all cursor-pointer"
+                        className="w-full py-3 bg-gradient-to-r from-cyan-600 via-blue-600 to-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 shadow-lg shadow-cyan-900/20 transition-all cursor-pointer"
                       >
                         पासकोड जेनरेट करें / GENERATE VIP KEY
                       </button>
@@ -2049,7 +2049,7 @@ export default function App() {
 
                     {/* Display Newly Created Key */}
                     {newlyCreatedKey && (
-                      <div className="p-4 rounded-xl border border-cyan-500/40 bg-cyan-950/20 text-center space-y-2.5 animate-in fade-in duration-350">
+                      <div className="p-4 rounded-xl border border-cyan-500/40 bg-cyan-950/10 text-center space-y-2.5 animate-in fade-in duration-350">
                         <span className="block text-[10px] font-mono text-cyan-400 uppercase font-black">नया पासकोड (कॉपी करने के लिए दबाएं) / NEW GENERATED KEY:</span>
                         <div className="flex bg-black/60 border border-cyan-500/30 p-2.5 rounded-xl items-center justify-between text-xs font-mono">
                           <span className="text-white font-black tracking-widest text-sm pl-2 select-all">{newlyCreatedKey}</span>
@@ -2075,30 +2075,30 @@ export default function App() {
                   </div>
 
                   {/* Right Column: Active Keys List */}
-                  <div className="p-6 rounded-2xl border border-purple-500/20 bg-purple-950/10 backdrop-blur-sm flex flex-col">
-                    <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider border-b border-purple-900/30 pb-2 mb-4">
+                  <div className="p-6 rounded-2xl border border-cyan-500/20 bg-black/30 backdrop-blur-xl flex flex-col shadow-xl">
+                    <h3 className="text-xs sm:text-sm font-black text-cyan-300 uppercase tracking-wider border-b border-cyan-900/30 pb-2 mb-4">
                       📋 सक्रिय पासकोड सूची / ACTIVE VIP KEYS DATABASE
                     </h3>
 
                     <div className="flex-1 max-h-[300px] overflow-y-auto space-y-3 pr-1 scrollbar-none">
                       {generatedKeys.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500 text-xs">
+                        <div className="text-center py-12 text-gray-500 text-xs font-medium">
                           कोई सक्रिय पासकोड उपलब्ध नहीं है। ऊपर से नया कोड बनाएं! / No active custom keys found.
                         </div>
                       ) : (
                         generatedKeys.map((k, idx) => (
-                          <div key={idx} className="p-3 rounded-xl border border-purple-950 bg-black/60 flex justify-between items-center text-xs font-mono">
+                          <div key={idx} className="p-3 rounded-xl border border-cyan-950/80 bg-black/40 backdrop-blur-md flex justify-between items-center text-xs font-mono">
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-white font-black">{k.key}</span>
                                 {k.usedByDevice ? (
-                                  <span className="text-[8px] bg-red-950/50 border border-red-500/30 text-red-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड किसी डिवाइस पर लॉक हो चुका है">USED (लॉक)</span>
+                                  <span className="text-[8px] bg-red-950/40 border border-red-500/30 text-red-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड किसी डिवाइस पर लॉक हो चुका है">USED (लॉक)</span>
                                 ) : (
-                                  <span className="text-[8px] bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड उपयोग के लिए तैयार है">READY</span>
+                                  <span className="text-[8px] bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider" title="यह पासकोड उपयोग के लिए तैयार है">READY</span>
                                 )}
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-1 uppercase">
-                                गेम / GAME: <span className="text-purple-400 font-bold">{k.game.toUpperCase()}</span> | टाइम / EXP: <span className="text-cyan-400 font-bold">{k.duration}</span>
+                              <div className="text-[10px] text-gray-400 mt-1 uppercase font-medium">
+                                गेम / GAME: <span className="text-cyan-400 font-bold">{k.game.toUpperCase()}</span> | टाइम / EXP: <span className="text-emerald-400 font-bold">{k.duration}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
@@ -2107,14 +2107,14 @@ export default function App() {
                                   navigator.clipboard.writeText(k.key);
                                   triggerSound("unlock");
                                 }}
-                                className="p-2 rounded-lg bg-purple-950/40 border border-purple-500/20 text-purple-300 hover:text-white hover:bg-purple-900 transition-all cursor-pointer flex items-center justify-center"
+                                className="p-2 rounded-lg bg-cyan-950/40 border border-cyan-500/20 text-cyan-300 hover:text-white hover:bg-cyan-900 transition-all cursor-pointer flex items-center justify-center"
                                 title="कॉपी करें / Copy Passcode"
                               >
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={() => handleRemoveKey(k.key)}
-                                className="p-2 rounded-lg bg-red-950/30 border border-red-500/20 text-red-400 hover:text-white hover:bg-red-900 transition-all cursor-pointer flex items-center justify-center"
+                                className="p-2 rounded-lg bg-red-950/20 border border-red-500/20 text-red-400 hover:text-white hover:bg-red-900 transition-all cursor-pointer flex items-center justify-center"
                                 title="हटाएं"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
