@@ -2275,6 +2275,72 @@ export default function App() {
             </div>
           )}
 
+          {/* ----------------- SECURITY KEY ENTRY SCREEN ----------------- */}
+          {targetUnlockMode !== "none" && !isHacking && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md px-4">
+              <div className="relative w-full max-w-sm rounded-2xl border border-cyan-500/35 bg-black/40 backdrop-blur-xl p-6 shadow-[0_0_35px_rgba(6,182,212,0.18)] animate-in fade-in zoom-in-95 duration-200">
+                <h3 className="text-base font-black text-cyan-300 uppercase tracking-wide text-center flex items-center justify-center gap-2 mb-2 font-mono">
+                  <Lock className="w-4 h-4 text-cyan-400" />
+                  {curTrans.securityTitle}
+                </h3>
+                <p className="text-center text-xs text-gray-400 mb-6 font-medium">
+                  {curTrans.securityDesc(targetUnlockMode)}
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-cyan-400/80 tracking-widest mb-1.5 font-bold">
+                      {curTrans.enterKeyLabel}
+                    </label>
+                    <input 
+                      type="text" 
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      placeholder={curTrans.passcodePlaceholder}
+                      className="w-full text-center py-3 bg-black/40 border border-cyan-500/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white font-mono tracking-widest text-lg uppercase backdrop-blur-md"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleVerifyPassword();
+                      }}
+                    />
+                    {passwordError && (
+                      <p className="text-[11px] text-red-400 mt-2 text-center font-bold flex items-center justify-center gap-1">
+                        <AlertTriangle className="w-3 h-3 shrink-0" />
+                        {passwordError === "गड़बड़ पासवर्ड! अमान्य या समाप्त।" || passwordError === "Incorrect key passcode!"
+                          ? curTrans.incorrectPasscode 
+                          : passwordError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button 
+                      onClick={() => { triggerSound("click"); setTargetUnlockMode("none"); }}
+                      className="flex-1 py-3 rounded-xl border border-red-500/30 bg-red-950/20 text-red-400 hover:text-white hover:bg-red-900 transition-all text-xs font-bold uppercase cursor-pointer"
+                    >
+                      {curTrans.cancelBtn}
+                    </button>
+                    <button 
+                      onClick={handleVerifyPassword}
+                      className="flex-1 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-cyan-900/30"
+                    >
+                      {curTrans.unlockBtn}
+                    </button>
+                  </div>
+
+                  <div className="pt-3 border-t border-cyan-950/60 text-center">
+                    <button 
+                      onClick={() => { triggerSound("unlock"); setIsBuyPasscodeOpen(true); }}
+                      className="w-full py-2.5 rounded-xl border border-dashed border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-950/40 text-yellow-400 hover:text-yellow-200 transition-all text-[11px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-center gap-2 animate-pulse"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      {appLang === "HINDI" ? "पासकोड खरीदें / BUY VIP KEY" : "BUY VIP PASSCODE KEY"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ----------------- FUTURISTIC HACKING OVERLAY ----------------- */}
           {isHacking && (
             <div className="fixed inset-0 z-50 flex flex-col justify-center bg-black/75 backdrop-blur-md px-4">
