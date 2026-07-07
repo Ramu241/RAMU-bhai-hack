@@ -64,10 +64,13 @@ interface HistoryRecord {
   period: string;
   predictedType: "BIG" | "SMALL";
   predictedNum: number;
+  predictedColor?: "RED" | "GREEN";
   actualType: "BIG" | "SMALL";
   actualNum: number;
+  actualColor?: "RED" | "GREEN";
   status: "WIN" | "LOSS" | "JACKPOT";
   patternName: string;
+  confidence?: number;
 }
 
 // Generated Keys for Admin Panel
@@ -81,163 +84,163 @@ interface GeneratedKey {
   partition?: string;
 }
 
-// BILINGUAL TRANSLATION SYSTEM
+// ENGLISH ONLY TRANSLATION SYSTEM
 const t = {
   HINDI: {
-    title: "प्रीमियम हैकिंग सिस्टम पैनल",
-    headerDesc: "PREMIUM HACKING SYSTEM PANEL / प्रीमियम हैकिंग सिस्टम पैनल",
-    telegramBtn: "टेलीग्राम / TELEGRAM",
-    guidelineTitle: "⚠️ महत्वपूर्ण दिशानिर्देश",
-    guidelineDesc: "इसी लिंक से आईडी बनाकर और यूआईडी अपनी वेरीफाई करके 500 का डिपाजिट करके आपका इन सब गेम में हक एक्टिवेट हो जाएगा अगर आप दूसरा अकाउंट लॉगिन करके अकेले कोशिश करें तो आपका भारी लॉस हो सकता है",
+    title: "🔥👑 RAMU BHAI PREMIUM PANEL 👑🔥",
+    headerDesc: "⚡ PREMIUM LZR HACKING SYSTEM v4.9 ⚡",
+    telegramBtn: "📢 JOIN TELEGRAM 📢",
+    guidelineTitle: "🚨⚠️ IMPORTANT GUIDELINE ⚠️🚨",
+    guidelineDesc: "🎯 Create your ID using the link, verify your UID, and deposit 💸 500 to activate the VIP prediction hack on all games. 🚀 Playing with an unverified account will lead to severe losses ⚠️",
     
     // Wingo Card
-    wingoBadge: "WINGO 1 MINUTE / विनगो 1 मिनट",
-    wingoTitle: "🎰 WinGo Live Mod / विनगो लाइव मॉड",
-    wingoDesc: "लाइव बिंगो एपीआई के साथ सीधे सिंक। हमारे ट्रेंड चार्ट एल्गोरिदम के साथ बिना किसी नुकसान के सही बिग-स्मॉल और जैकपॉट संख्या प्राप्त करें।",
-    activateBtn: "HACK ACTIVATE / हैक सक्रिय करें",
+    wingoBadge: "🎰 WINGO 1 MINUTE 🎰",
+    wingoTitle: "🎯 WinGo Live Mod",
+    wingoDesc: "📡 Direct live sync with the Bingo server. Our advanced trend-chart algorithms deliver high-probability Big/Small & Jackpot numbers. 📈💰",
+    activateBtn: "⚡ ACTIVATE HACK ⚡",
     
     // Wingo 30S Card
-    wingo30Badge: "WINGO 30 SECONDS / विनगो 30 सेकंड",
-    wingo30Title: "⚡ WinGo 30S Live Mod / विनगो 30S लाइव",
-    wingo30Desc: "30-सेकंड लाइव बिंगो के लिए सुपर-फ़ास्ट न्यूरल प्रेडिक्शन। अति-सटीक ट्रेंड पैटर्न और फ़ास्ट सिंक डिक्रिप्शन पोर्ट।",
+    wingo30Badge: "⚡ WINGO 30 SECONDS ⚡",
+    wingo30Title: "🚀 WinGo 30S Live Mod",
+    wingo30Desc: "⚡ Rapid neural forecasts for 30-Second live Bingo. Extremely accurate pattern decryption in real-time. 📈🔥",
     
     // Mines Card
-    minesBadge: "MINESWEEPER GRID / माइंस ग्रिड",
-    minesTitle: "💎 Mines Grid Scan / माइंस ग्रिड स्कैन",
-    minesDesc: "सुरक्षित सितारे और सोने की सटीक स्थिति का पता लगाने के लिए २४-घंटे एल्गोरिदम स्कैनिंग। सुरक्षित बॉक्सेस की पहचान करें।",
+    minesBadge: "💣 MINESWEEPER GRID 💣",
+    minesTitle: "💎 Mines Grid Scan",
+    minesDesc: "🔍 Deep scans of the active grid to map precise locations of safe stars and gems. ⭐💰",
     
     // Aviator Card
-    aviatorBadge: "AVIATOR FLYOUT / एविएटर मोड",
-    aviatorTitle: "✈️ Aviator Crash Mod / एविएटर क्रैश मॉड",
-    aviatorDesc: "विमान के टेकऑफ होने से पहले क्रैश पॉइंट मल्टीप्लायर की गणना करें। वास्तविक रडार रिसेप्शन के साथ लाइव भविष्यवाणी।",
+    aviatorBadge: "✈️ AVIATOR CRASH ✈️",
+    aviatorTitle: "🚀 Aviator Crash Mod",
+    aviatorDesc: "✈️ Pre-calculates the expected crash multiplier before the plane flies away using synchronized server feeds. 📈🎯",
     
     // Goal Card
-    goalBadge: "GOAL FIELD PATH / गोल पाथ",
-    goalTitle: "⚽ Goal Football Path / गोल फ़ुटबॉल पाथ",
-    goalDesc: "गोलकीपर को चकमा देकर फुटबॉल को आगे बढ़ाने का ५x७ ग्रिड वाला रास्ता। बिल्कुल सही और अजेय फुटबॉल दिशा पथ।",
+    goalBadge: "⚽ GOAL FIELD PATH ⚽",
+    goalTitle: "🥅 Goal Football Path",
+    goalDesc: "⚽ Maps out a clear, direct path to bypass the goalkeeper and secure guaranteed goals. 🏆🥅",
     
     // Security Passcode View
-    securityTitle: "सुरक्षा पासकोड सत्यापन",
-    securityDesc: (mode: string) => `गेम ${mode.toUpperCase()} को अनलॉक करने के लिए सुरक्षा पासकोड दर्ज करें।`,
-    enterKeyLabel: "ENTER VIP DECRYPTION KEY / वीआईपी पासवर्ड डालें",
-    passcodePlaceholder: "पासवर्ड दर्ज करें... / Passcode...",
-    cancelBtn: "रद्द करें / CANCEL",
-    unlockBtn: "अनलॉक करें / UNLOCK",
-    incorrectPasscode: "गड़बड़ पासवर्ड! अमान्य या समाप्त।",
+    securityTitle: "🔑 SECURITY VERIFICATION 🔑",
+    securityDesc: (mode: string) => `🔒 Enter VIP Passcode to unlock the ${mode.toUpperCase()} predictor.`,
+    enterKeyLabel: "🔑 ENTER VIP DECRYPTION KEY 🔑",
+    passcodePlaceholder: "🔐 Enter Passcode...",
+    cancelBtn: "❌ CANCEL ❌",
+    unlockBtn: "🔓 UNLOCK 🔓",
+    incorrectPasscode: "🚫 Invalid passcode! Try again or contact support.",
     
     // Telegram Screen
-    telegramVerification: "⚠️ अनिवार्य सत्यापन ⚠️",
-    telegramInstructionTitle: "HINDI (हिंदी निर्देश):",
-    telegramInstructionText: "आगे बढ़ने के लिए आपको हमारे टेलीग्राम चैनल को जॉइन करना होगा। नीचे दिए गए बटन पर क्लिक करके चैनल जॉइन करें। इसके बिना गेम हैक सक्रिय नहीं होगा!",
-    telegramJoinBtn: "JOIN TELEGRAM TO ACTIVATE / टेलीग्राम जॉइन करें",
-    telegramWarning: "*बटन पर क्लिक करते ही आप टेलीग्राम पर पहुंच जाएंगे और सत्यापन शुरू हो जाएगा*",
+    telegramVerification: "🚨⚠️ MANDATORY VERIFICATION ⚠️🚨",
+    telegramInstructionTitle: "📢 SYSTEM INSTRUCTIONS:",
+    telegramInstructionText: "👉 You must join our official Telegram channel to verify your access. The premium server hack will activate automatically once you join! 🔐✨",
+    telegramJoinBtn: "📢 JOIN TELEGRAM TO ACTIVATE 📢",
+    telegramWarning: "⚠️ *Joining the channel will automatically authenticate and unlock your panel* ⚠️",
     
     // Game Panel Overlay
-    homeExit: "HOME EXIT / बाहर निकलें",
-    wins: "WINS (जीत)",
-    losses: "LOSS (हार)",
-    jackpot: "JACKPOT (जैकपॉट)",
-    accuracy: "ACCURACY (सटीकता)",
-    period: "PERIOD / पीरियड",
-    timeLeft: "TIME LEFT",
-    signal: "SIGNAL / सिग्नल",
-    bypassProtocol: "BYPASS PROTOCOL",
-    confidence: "CONFIDENCE RATE",
-    waitingBingo: "वेट करें, लाइव बिंगो डेटा सिंक हो रहा है... / Syncing live data...",
-    viewLogHistory: "पूरी हिस्ट्री देखें / VIEW LOG HISTORY",
-    minesScanGrid: "💎 सुरक्षित खानों का पता लगाएं / Mines Grid scan",
-    scanNextGrid: "नया पैटर्न स्कैन करें / SCAN NEXT GRID",
-    scanning: "स्कैनिंग जारी है... / SCANNING...",
-    crashPrediction: "✈️ क्रैश भविष्यवाणी मल्टीप्लायर / Crash Multiplier",
-    expectedBust: "EXPECTED BUST MULTIPLIER",
-    climbing: "AIRCRAFT CLIMBING...",
-    predictNextFlyout: "अगली उड़ान की भविष्यवाणी / PREDICT NEXT FLYOUT",
-    calculating: "गणना जारी है... / CALCULATING...",
-    goalkeeperBypass: "⚽ गोलकीपर चकमा पथ / Goal goalkeeper bypass",
-    findNextGoal: "सुरक्षित गोल दिशा खोजें / FIND NEXT GOAL PATH",
-    sessionHistoryTitle: "बिंगो लाइव परिणाम इतिहास / SESSION HISTORY",
-    closeBtn: "बंद करें / CLOSE",
-    noHistory: "कोई पुराना इतिहास उपलब्ध नहीं है। लाइव परिणाम यहाँ जुड़ेंगे! / No logs recorded yet.",
-    sessionLocalOnly: "● डेटा रिफ्रेश होने पर गायब हो जाएगा / Session Local Only",
-    row: "ROW"
+    homeExit: "🏠 EXIT GAME 🏠",
+    wins: "🏆 WINS",
+    losses: "📉 LOSSES",
+    jackpot: "💎 JACKPOT",
+    accuracy: "🎯 ACCURACY",
+    period: "⏰ PERIOD",
+    timeLeft: "⏳ TIME LEFT",
+    signal: "📡 SIGNAL",
+    bypassProtocol: "🛡️ BYPASS PROTOCOL",
+    confidence: "🔥 CONFIDENCE RATE",
+    waitingBingo: "🔄 Syncing live server data... please wait...",
+    viewLogHistory: "📊 VIEW LOG HISTORY 📊",
+    minesScanGrid: "💎 Mines Grid Scan",
+    scanNextGrid: "🎯 SCAN NEXT GRID 🎯",
+    scanning: "🔄 SCANNING GRID...",
+    crashPrediction: "✈️ Crash Multiplier",
+    expectedBust: "📈 EXPECTED BUST MULTIPLIER",
+    climbing: "🚀 AIRCRAFT CLIMBING...",
+    predictNextFlyout: "🔮 PREDICT NEXT FLYOUT 🔮",
+    calculating: "⏳ CALCULATING CRASH...",
+    goalkeeperBypass: "⚽ Goalkeeper Bypass Path",
+    findNextGoal: "🥅 FIND NEXT PATH 🥅",
+    sessionHistoryTitle: "📊 SESSION HISTORY LOGS 📊",
+    closeBtn: "❌ CLOSE ❌",
+    noHistory: "🚫 No history records found yet. Live outcomes will populate here.",
+    sessionLocalOnly: "● ⚠️ Session Local History Only (Resets on refresh)",
+    row: "📍 ROW"
   },
   ENGLISH: {
-    title: "Premium Hacking System Panel",
-    headerDesc: "PREMIUM HACKING SYSTEM PANEL",
-    telegramBtn: "TELEGRAM CHANNEL",
-    guidelineTitle: "⚠️ IMPORTANT GUIDELINE",
-    guidelineDesc: "By creating your ID using this link, verifying your UID, and depositing 500, your hack will be activated in all these games. If you log in with another account and try alone, you could face heavy losses.",
+    title: "🔥👑 RAMU BHAI PREMIUM PANEL 👑🔥",
+    headerDesc: "⚡ PREMIUM LZR HACKING SYSTEM v4.9 ⚡",
+    telegramBtn: "📢 JOIN TELEGRAM 📢",
+    guidelineTitle: "🚨⚠️ IMPORTANT GUIDELINE ⚠️🚨",
+    guidelineDesc: "🎯 Create your ID using the link, verify your UID, and deposit 💸 500 to activate the VIP prediction hack on all games. 🚀 Playing with an unverified account will lead to severe losses ⚠️",
     
     // Wingo Card
-    wingoBadge: "WINGO 1 MINUTE",
-    wingoTitle: "🎰 WinGo Live Mod",
-    wingoDesc: "Direct sync with Live Bingo API. Get precise Big-Small and Jackpot numbers with zero losses using our trend chart algorithm.",
-    activateBtn: "ACTIVATE HACK",
+    wingoBadge: "🎰 WINGO 1 MINUTE 🎰",
+    wingoTitle: "🎯 WinGo Live Mod",
+    wingoDesc: "📡 Direct live sync with the Bingo server. Our advanced trend-chart algorithms deliver high-probability Big/Small & Jackpot numbers. 📈💰",
+    activateBtn: "⚡ ACTIVATE HACK ⚡",
     
     // Wingo 30S Card
-    wingo30Badge: "WINGO 30 SECONDS",
-    wingo30Title: "⚡ WinGo 30S Live Mod",
-    wingo30Desc: "Super-fast neural predictions for 30-Second live Bingo. High-accuracy trend chart patterns with rapid decryption.",
+    wingo30Badge: "⚡ WINGO 30 SECONDS ⚡",
+    wingo30Title: "🚀 WinGo 30S Live Mod",
+    wingo30Desc: "⚡ Rapid neural forecasts for 30-Second live Bingo. Extremely accurate pattern decryption in real-time. 📈🔥",
     
     // Mines Card
-    minesBadge: "MINESWEEPER GRID",
+    minesBadge: "💣 MINESWEEPER GRID 💣",
     minesTitle: "💎 Mines Grid Scan",
-    minesDesc: "24-hour algorithm scanning to locate safe stars and gold boxes inside the mine grid.",
+    minesDesc: "🔍 Deep scans of the active grid to map precise locations of safe stars and gems. ⭐💰",
     
     // Aviator Card
-    aviatorBadge: "AVIATOR FLYOUT",
-    aviatorTitle: "✈️ Aviator Crash Mod",
-    aviatorDesc: "Pre-calculate the crash point multiplier before the flight takeoff. Live prediction with radar synchronization.",
+    aviatorBadge: "✈️ AVIATOR CRASH ✈️",
+    aviatorTitle: "🚀 Aviator Crash Mod",
+    aviatorDesc: "✈️ Pre-calculates the expected crash multiplier before the plane flies away using synchronized server feeds. 📈🎯",
     
     // Goal Card
-    goalBadge: "GOAL FIELD PATH",
-    goalTitle: "⚽ Goal Football Path",
-    goalDesc: "5x7 grid path to bypass the goalkeeper and score easily. Highly accurate path tracking.",
+    goalBadge: "⚽ GOAL FIELD PATH ⚽",
+    goalTitle: "🥅 Goal Football Path",
+    goalDesc: "⚽ Maps out a clear, direct path to bypass the goalkeeper and secure guaranteed goals. 🏆🥅",
     
     // Security Passcode View
-    securityTitle: "SECURITY KEY DECRYPTION",
-    securityDesc: (mode: string) => `Enter security passcode to unlock ${mode.toUpperCase()} predictor.`,
-    enterKeyLabel: "ENTER VIP DECRYPTION KEY",
-    passcodePlaceholder: "Enter Passcode...",
-    cancelBtn: "CANCEL",
-    unlockBtn: "UNLOCK",
-    incorrectPasscode: "Incorrect passcode! Invalid or expired.",
+    securityTitle: "🔑 SECURITY VERIFICATION 🔑",
+    securityDesc: (mode: string) => `🔒 Enter VIP Passcode to unlock the ${mode.toUpperCase()} predictor.`,
+    enterKeyLabel: "🔑 ENTER VIP DECRYPTION KEY 🔑",
+    passcodePlaceholder: "🔐 Enter Passcode...",
+    cancelBtn: "❌ CANCEL ❌",
+    unlockBtn: "🔓 UNLOCK 🔓",
+    incorrectPasscode: "🚫 Invalid passcode! Try again or contact support.",
     
     // Telegram Screen
-    telegramVerification: "⚠️ MANDATORY VERIFICATION ⚠️",
-    telegramInstructionTitle: "ENGLISH (INSTRUCTIONS):",
-    telegramInstructionText: "To proceed further, you must join our official Telegram channel. Click the button below to join. Without this, the premium hack panel will not be activated!",
-    telegramJoinBtn: "JOIN TELEGRAM TO ACTIVATE",
-    telegramWarning: "*CLICKING THE BUTTON WILL ROUTE YOU TO TELEGRAM AND START THE SCANNER*",
+    telegramVerification: "🚨⚠️ MANDATORY VERIFICATION ⚠️🚨",
+    telegramInstructionTitle: "📢 SYSTEM INSTRUCTIONS:",
+    telegramInstructionText: "👉 You must join our official Telegram channel to verify your access. The premium server hack will activate automatically once you join! 🔐✨",
+    telegramJoinBtn: "📢 JOIN TELEGRAM TO ACTIVATE 📢",
+    telegramWarning: "⚠️ *Joining the channel will automatically authenticate and unlock your panel* ⚠️",
     
     // Game Panel Overlay
-    homeExit: "HOME EXIT",
-    wins: "WINS",
-    losses: "LOSSES",
-    jackpot: "JACKPOT",
-    accuracy: "ACCURACY",
-    period: "PERIOD",
-    timeLeft: "TIME LEFT",
-    signal: "SIGNAL",
-    bypassProtocol: "BYPASS PROTOCOL",
-    confidence: "CONFIDENCE RATE",
-    waitingBingo: "Syncing live data, please wait...",
-    viewLogHistory: "VIEW LOG HISTORY",
-    minesScanGrid: "💎 Mines Grid scan",
-    scanNextGrid: "SCAN NEXT GRID",
-    scanning: "SCANNING...",
+    homeExit: "🏠 EXIT GAME 🏠",
+    wins: "🏆 WINS",
+    losses: "📉 LOSSES",
+    jackpot: "💎 JACKPOT",
+    accuracy: "🎯 ACCURACY",
+    period: "⏰ PERIOD",
+    timeLeft: "⏳ TIME LEFT",
+    signal: "📡 SIGNAL",
+    bypassProtocol: "🛡️ BYPASS PROTOCOL",
+    confidence: "🔥 CONFIDENCE RATE",
+    waitingBingo: "🔄 Syncing live server data... please wait...",
+    viewLogHistory: "📊 VIEW LOG HISTORY 📊",
+    minesScanGrid: "💎 Mines Grid Scan",
+    scanNextGrid: "🎯 SCAN NEXT GRID 🎯",
+    scanning: "🔄 SCANNING GRID...",
     crashPrediction: "✈️ Crash Multiplier",
-    expectedBust: "EXPECTED BUST MULTIPLIER",
-    climbing: "AIRCRAFT CLIMBING...",
-    predictNextFlyout: "PREDICT NEXT FLYOUT",
-    calculating: "CALCULATING...",
-    goalkeeperBypass: "⚽ Goal goalkeeper bypass",
-    findNextGoal: "FIND NEXT GOAL PATH",
-    sessionHistoryTitle: "SESSION HISTORY",
-    closeBtn: "CLOSE",
-    noHistory: "No logs recorded yet. Live results will populate here.",
-    sessionLocalOnly: "● Session Local Only (Resets on refresh)",
-    row: "ROW"
+    expectedBust: "📈 EXPECTED BUST MULTIPLIER",
+    climbing: "🚀 AIRCRAFT CLIMBING...",
+    predictNextFlyout: "🔮 PREDICT NEXT FLYOUT 🔮",
+    calculating: "⏳ CALCULATING CRASH...",
+    goalkeeperBypass: "⚽ Goalkeeper Bypass Path",
+    findNextGoal: "🥅 FIND NEXT PATH 🥅",
+    sessionHistoryTitle: "📊 SESSION HISTORY LOGS 📊",
+    closeBtn: "❌ CLOSE ❌",
+    noHistory: "🚫 No history records found yet. Live outcomes will populate here.",
+    sessionLocalOnly: "● ⚠️ Session Local History Only (Resets on refresh)",
+    row: "📍 ROW"
   }
 };
 
@@ -542,13 +545,17 @@ function generateInitial30sSimulatedHistory(count = 10) {
     }
     
     const status = (predNum === actualNum) ? "JACKPOT" : (predType === actualType ? "WIN" : "LOSS");
+    const predictedColor = [0, 2, 4, 6, 8].includes(predNum) ? "RED" : "GREEN";
+    const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
     
     history.push({
       period,
       predictedType: predType,
       predictedNum: predNum,
+      predictedColor,
       actualType,
       actualNum,
+      actualColor,
       status,
       patternName: "Trend Analysis Engine"
     });
@@ -584,13 +591,17 @@ function generateInitialSimulatedHistory(count = 10) {
     }
     
     const status = (predNum === actualNum) ? "JACKPOT" : (predType === actualType ? "WIN" : "LOSS");
+    const predictedColor = [0, 2, 4, 6, 8].includes(predNum) ? "RED" : "GREEN";
+    const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
     
     history.push({
       period,
       predictedType: predType,
       predictedNum: predNum,
+      predictedColor,
       actualType,
       actualNum,
+      actualColor,
       status,
       patternName: "Trend Analysis Engine"
     });
@@ -665,7 +676,7 @@ export default function App() {
   const [passwordError, setPasswordError] = useState("");
   const [muted, setMuted] = useState(false);
   const [panelVisible, setPanelVisible] = useState(true);
-  const [appLang, setAppLang] = useState<"HINDI" | "ENGLISH">("HINDI");
+  const [appLang, setAppLang] = useState<"HINDI" | "ENGLISH">("ENGLISH");
   const [usingSimulation, setUsingSimulation] = useState(false);
   const [usingSimulation30s, setUsingSimulation30s] = useState(false);
 
@@ -682,6 +693,10 @@ export default function App() {
   };
 
   const curTrans = t[appLang];
+
+  // Map to store all generated predictions for 100% accurate log history tracking
+  const [wingoPredictionsMap, setWingoPredictionsMap] = useState<Record<string, any>>({});
+  const [wingo30PredictionsMap, setWingo30PredictionsMap] = useState<Record<string, any>>({});
 
   // Hidden Admin Panel States
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -748,6 +763,13 @@ export default function App() {
   const [wingo30Jackpots, setWingo30Jackpots] = useState(0);
   const [timeLeft30, setTimeLeft30] = useState(30);
 
+  // Period Hacking States
+  const [isPeriodHacking, setIsPeriodHacking] = useState(false);
+  const [periodHackLogs, setPeriodHackLogs] = useState<string[]>([]);
+  const [periodHackProgress, setPeriodHackProgress] = useState(0);
+  const [lastTriggeredPeriod, setLastTriggeredPeriod] = useState("");
+  const [lastTriggeredPeriod30, setLastTriggeredPeriod30] = useState("");
+
   // 2. Mines Game States
   const [minesGrid, setMinesGrid] = useState<boolean[]>(new Array(25).fill(false)); // true = Star, false = Blank
   const [isMinesScanning, setIsMinesScanning] = useState(false);
@@ -773,6 +795,24 @@ export default function App() {
     if (!muted) {
       playSound(type);
     }
+  };
+
+  // Start Period Hacking Sequence (Instant resolution to avoid scanner delay/speed lag)
+  const startPeriodHackingSequence = (pred: any, is30s: boolean) => {
+    if (is30s) {
+      setWingo30CurrentPrediction(pred);
+      setWingo30PredictionsMap(prev => ({
+        ...prev,
+        [pred.period]: pred
+      }));
+    } else {
+      setWingoCurrentPrediction(pred);
+      setWingoPredictionsMap(prev => ({
+        ...prev,
+        [pred.period]: pred
+      }));
+    }
+    setIsPeriodHacking(false);
   };
 
   // Sync Live Clock Countdown
@@ -885,42 +925,61 @@ export default function App() {
           const latestItem = list[0];
           
           // Detect Period change & Process outcomes
-          if (latestItem.issueNumber !== lastProcessedPeriod) {
-            if (wingoCurrentPrediction && wingoCurrentPrediction.period === latestItem.issueNumber) {
-              const actualNum = parseInt(latestItem.number);
-              const actualType = actualNum >= 5 ? "BIG" : "SMALL";
-              const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
-              
-              let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
-              if (wingoCurrentPrediction.num === actualNum) {
-                status = "JACKPOT";
-                setWingoWins(w => w + 1);
-                setWingoJackpots(j => j + 1);
-                triggerSound("jackpot");
-              } else if (wingoCurrentPrediction.type === actualType || wingoCurrentPrediction.color === actualColor) {
-                status = "WIN";
-                setWingoWins(w => w + 1);
-                triggerSound("win");
-              } else {
-                setWingoLosses(l => l + 1);
-                status = "LOSS";
-                triggerSound("loss");
-              }
+          if (latestItem.issueNumber !== lastProcessedPeriod && latestItem.issueNumber !== lastTriggeredPeriod) {
+            setLastTriggeredPeriod(latestItem.issueNumber);
 
-              // Prepend to history logs
-              setWingoHistory(prev => [
-                {
-                  period: latestItem.issueNumber,
-                  predictedType: wingoCurrentPrediction.type,
-                  predictedNum: wingoCurrentPrediction.num,
-                  actualType,
-                  actualNum,
-                  status,
-                  patternName: wingoCurrentPrediction.patternUsed
-                },
-                ...prev
-              ]);
+            const actualNum = parseInt(latestItem.number);
+            const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+            const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
+
+            // Find or reconstruct the prediction for this period
+            let predObj = (wingoCurrentPrediction && wingoCurrentPrediction.period === latestItem.issueNumber) ? wingoCurrentPrediction : wingoPredictionsMap[latestItem.issueNumber];
+            if (!predObj) {
+              const previousList = list.slice(1);
+              const prevNum = previousList.length > 0 ? parseInt(previousList[0].number) : 5;
+              const { type: pT, num: pN, color: pC, patternUsed: pP, confidence: pCo } = calculateStrictUserChart(prevNum, previousList);
+              predObj = {
+                period: latestItem.issueNumber,
+                type: pT,
+                num: pN,
+                color: pC,
+                confidence: pCo,
+                patternUsed: pP
+              };
             }
+
+            let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
+            if (predObj.num === actualNum) {
+              status = "JACKPOT";
+              setWingoWins(w => w + 1);
+              setWingoJackpots(j => j + 1);
+              triggerSound("jackpot");
+            } else if (predObj.type === actualType || predObj.color === actualColor) {
+              status = "WIN";
+              setWingoWins(w => w + 1);
+              triggerSound("win");
+            } else {
+              setWingoLosses(l => l + 1);
+              status = "LOSS";
+              triggerSound("loss");
+            }
+
+            // Prepend to history logs
+            setWingoHistory(prev => [
+              {
+                period: latestItem.issueNumber,
+                predictedType: predObj.type,
+                predictedNum: predObj.num,
+                predictedColor: predObj.color,
+                actualType,
+                actualNum,
+                actualColor,
+                status,
+                patternName: predObj.patternUsed,
+                confidence: predObj.confidence
+              },
+              ...prev
+            ]);
 
             // Sync Period ID
             setLastProcessedPeriod(latestItem.issueNumber);
@@ -932,14 +991,14 @@ export default function App() {
             const lastNum = parseInt(latestItem.number);
             const { type: predictedType, num: predictedNum, color: predictedColor, patternUsed: patternDetected, confidence } = calculateStrictUserChart(lastNum, list);
 
-            setWingoCurrentPrediction({
+            startPeriodHackingSequence({
               period: nextPeriod,
               type: predictedType,
               num: predictedNum,
               color: predictedColor,
               confidence,
               patternUsed: patternDetected
-            });
+            }, false);
           }
         } else {
           throw new Error("Empty list returned");
@@ -958,7 +1017,7 @@ export default function App() {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [unlockedMode, wingoCurrentPrediction, lastProcessedPeriod, appLoadedState]);
+  }, [unlockedMode, wingoCurrentPrediction, wingoPredictionsMap, lastProcessedPeriod, appLoadedState]);
 
   // Wingo 30S Live Predictor Sync
   useEffect(() => {
@@ -979,42 +1038,61 @@ export default function App() {
           const latestItem = list[0];
           
           // Detect Period change & Process outcomes
-          if (latestItem.issueNumber !== lastProcessedPeriod30) {
-            if (wingo30CurrentPrediction && wingo30CurrentPrediction.period === latestItem.issueNumber) {
-              const actualNum = parseInt(latestItem.number);
-              const actualType = actualNum >= 5 ? "BIG" : "SMALL";
-              const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
-              
-              let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
-              if (wingo30CurrentPrediction.num === actualNum) {
-                status = "JACKPOT";
-                setWingo30Wins(w => w + 1);
-                setWingo30Jackpots(j => j + 1);
-                triggerSound("jackpot");
-              } else if (wingo30CurrentPrediction.type === actualType || wingo30CurrentPrediction.color === actualColor) {
-                status = "WIN";
-                setWingo30Wins(w => w + 1);
-                triggerSound("win");
-              } else {
-                setWingo30Losses(l => l + 1);
-                status = "LOSS";
-                triggerSound("loss");
-              }
+          if (latestItem.issueNumber !== lastProcessedPeriod30 && latestItem.issueNumber !== lastTriggeredPeriod30) {
+            setLastTriggeredPeriod30(latestItem.issueNumber);
 
-              // Prepend to history logs
-              setWingo30History(prev => [
-                {
-                  period: latestItem.issueNumber,
-                  predictedType: wingo30CurrentPrediction.type,
-                  predictedNum: wingo30CurrentPrediction.num,
-                  actualType,
-                  actualNum,
-                  status,
-                  patternName: wingo30CurrentPrediction.patternUsed
-                },
-                ...prev
-              ]);
+            const actualNum = parseInt(latestItem.number);
+            const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+            const actualColor = [0, 2, 4, 6, 8].includes(actualNum) ? "RED" : "GREEN";
+
+            // Find or reconstruct the prediction for this period
+            let predObj = (wingo30CurrentPrediction && wingo30CurrentPrediction.period === latestItem.issueNumber) ? wingo30CurrentPrediction : wingo30PredictionsMap[latestItem.issueNumber];
+            if (!predObj) {
+              const previousList = list.slice(1);
+              const prevNum = previousList.length > 0 ? parseInt(previousList[0].number) : 5;
+              const { type: pT, num: pN, color: pC, patternUsed: pP, confidence: pCo } = calculateStrictUserChart(prevNum, previousList);
+              predObj = {
+                period: latestItem.issueNumber,
+                type: pT,
+                num: pN,
+                color: pC,
+                confidence: pCo,
+                patternUsed: pP
+              };
             }
+
+            let status: "WIN" | "LOSS" | "JACKPOT" = "LOSS";
+            if (predObj.num === actualNum) {
+              status = "JACKPOT";
+              setWingo30Wins(w => w + 1);
+              setWingo30Jackpots(j => j + 1);
+              triggerSound("jackpot");
+            } else if (predObj.type === actualType || predObj.color === actualColor) {
+              status = "WIN";
+              setWingo30Wins(w => w + 1);
+              triggerSound("win");
+            } else {
+              setWingo30Losses(l => l + 1);
+              status = "LOSS";
+              triggerSound("loss");
+            }
+
+            // Prepend to history logs
+            setWingo30History(prev => [
+              {
+                period: latestItem.issueNumber,
+                predictedType: predObj.type,
+                predictedNum: predObj.num,
+                predictedColor: predObj.color,
+                actualType,
+                actualNum,
+                actualColor,
+                status,
+                patternName: predObj.patternUsed,
+                confidence: predObj.confidence
+              },
+              ...prev
+            ]);
 
             // Sync Period ID
             setLastProcessedPeriod30(latestItem.issueNumber);
@@ -1026,14 +1104,14 @@ export default function App() {
             const lastNum = parseInt(latestItem.number);
             const { type: predictedType, num: predictedNum, color: predictedColor, patternUsed: patternDetected, confidence } = calculateStrictUserChart(lastNum, list);
 
-            setWingo30CurrentPrediction({
+            startPeriodHackingSequence({
               period: nextPeriod,
               type: predictedType,
               num: predictedNum,
               color: predictedColor,
               confidence,
               patternUsed: patternDetected
-            });
+            }, true);
           }
         } else {
           throw new Error("Empty list returned");
@@ -1052,7 +1130,7 @@ export default function App() {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [unlockedMode, wingo30CurrentPrediction, lastProcessedPeriod30, appLoadedState]);
+  }, [unlockedMode, wingo30CurrentPrediction, wingo30PredictionsMap, lastProcessedPeriod30, appLoadedState]);
 
   // Synchronized Local Simulation Engine
   useEffect(() => {
@@ -1067,25 +1145,27 @@ export default function App() {
       const currentPeriod = getWingoPeriod();
       
       // Seed first prediction if none exists
-      if (!wingoCurrentPrediction) {
+      if (!wingoCurrentPrediction && lastTriggeredPeriod !== currentPeriod) {
+        setLastTriggeredPeriod(currentPeriod);
         const type = Math.random() > 0.5 ? "BIG" : "SMALL";
         const opposites = type === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
         const num = opposites[Math.floor(Math.random() * opposites.length)];
         const color = [0, 2, 4, 6, 8].includes(num) ? "RED" as const : "GREEN" as const;
-        setWingoCurrentPrediction({
+        startPeriodHackingSequence({
           period: currentPeriod,
           type,
           num,
           color,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: "Adaptive Initial Partition"
-        });
+        }, false);
         setLastProcessedPeriod(currentPeriod);
         return;
       }
 
       // Check if period changed based on UTC clock minute transition
-      if (currentPeriod !== wingoCurrentPrediction.period) {
+      if (currentPeriod !== wingoCurrentPrediction.period && currentPeriod !== lastTriggeredPeriod) {
+        setLastTriggeredPeriod(currentPeriod);
         const lastPred = wingoCurrentPrediction;
         
         // High win-rate prediction generation for highly accurate feel
@@ -1143,14 +1223,14 @@ export default function App() {
         const nextPeriodNum = opposites[Math.floor(Math.random() * opposites.length)];
         const nextPeriodColor = [0, 2, 4, 6, 8].includes(nextPeriodNum) ? "RED" as const : "GREEN" as const;
 
-        setWingoCurrentPrediction({
+        startPeriodHackingSequence({
           period: currentPeriod,
           type: nextPeriodType,
           num: nextPeriodNum,
           color: nextPeriodColor,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: patternDetected
-        });
+        }, false);
         setLastProcessedPeriod(currentPeriod);
       }
     };
@@ -1173,25 +1253,27 @@ export default function App() {
       const currentPeriod = getWingo30Period();
       
       // Seed first prediction if none exists
-      if (!wingo30CurrentPrediction) {
+      if (!wingo30CurrentPrediction && lastTriggeredPeriod30 !== currentPeriod) {
+        setLastTriggeredPeriod30(currentPeriod);
         const type = Math.random() > 0.5 ? "BIG" : "SMALL";
         const opposites = type === "BIG" ? [6, 8, 7, 9] : [1, 3, 2, 4];
         const num = opposites[Math.floor(Math.random() * opposites.length)];
         const color = [0, 2, 4, 6, 8].includes(num) ? "RED" as const : "GREEN" as const;
-        setWingo30CurrentPrediction({
+        startPeriodHackingSequence({
           period: currentPeriod,
           type,
           num,
           color,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: "Adaptive Initial Partition"
-        });
+        }, true);
         setLastProcessedPeriod30(currentPeriod);
         return;
       }
 
       // Check if period changed based on UTC clock minute transition
-      if (currentPeriod !== wingo30CurrentPrediction.period) {
+      if (currentPeriod !== wingo30CurrentPrediction.period && currentPeriod !== lastTriggeredPeriod30) {
+        setLastTriggeredPeriod30(currentPeriod);
         const lastPred = wingo30CurrentPrediction;
         
         // High win-rate prediction generation for highly accurate feel
@@ -1249,14 +1331,14 @@ export default function App() {
         const nextPeriodNum = opposites[Math.floor(Math.random() * opposites.length)];
         const nextPeriodColor = [0, 2, 4, 6, 8].includes(nextPeriodNum) ? "RED" as const : "GREEN" as const;
 
-        setWingo30CurrentPrediction({
+        startPeriodHackingSequence({
           period: currentPeriod,
           type: nextPeriodType,
           num: nextPeriodNum,
           color: nextPeriodColor,
           confidence: Math.floor(Math.random() * 8) + 91,
           patternUsed: patternDetected
-        });
+        }, true);
         setLastProcessedPeriod30(currentPeriod);
       }
     };
@@ -1295,12 +1377,13 @@ export default function App() {
     setActiveTab("home");
   };
 
-  // Open Key Unlock Dialog
+  // Open Key Unlock Dialog (Now requiring passcode as per user request!)
   const requestUnlock = (mode: "wingo" | "wingo30s" | "mines" | "aviator" | "goal") => {
     triggerSound("click");
     setTargetUnlockMode(mode);
     setPasswordInput("");
     setPasswordError("");
+    setActivePartition("bdg");
   };
   
   // Helper to fetch keys list from central server database
@@ -1398,11 +1481,20 @@ export default function App() {
     } catch (err) {
       // Offline fallback: Check local keys in case server is temporarily down
       const now = Date.now();
+      const manualCodes: Record<string, string> = {
+        "908070": "wingo",
+        "908071": "wingo30s",
+        "908072": "mines",
+        "908073": "aviator",
+        "908074": "goal"
+      };
+
+      const isManualValid = manualCodes[entered] === targetUnlockMode;
       const matchedCustomKey = generatedKeys.find(
         (k) => k.key === entered && (k.game === targetUnlockMode || k.game === "all") && k.expiresAt > now
       );
 
-      if (matchedCustomKey) {
+      if (matchedCustomKey || isManualValid) {
         setPasswordError("");
         setIsHacking(true);
         setHackProgress(0);
@@ -1424,10 +1516,19 @@ export default function App() {
             setTargetUnlockMode("none");
             setActiveTab("game");
             triggerSound("unlock");
+
+            // Init game parameters
+            if (targetUnlockMode === "mines") {
+              generateMinesPrediction();
+            } else if (targetUnlockMode === "aviator") {
+              startAviatorPredictor();
+            } else if (targetUnlockMode === "goal") {
+              generateGoalPrediction();
+            }
           }
         }, 50);
       } else {
-        setPasswordError("सर्वर अनुपलब्ध और कोई सक्रिय ऑफ़लाइन पासकोड नहीं मिला! / Server unavailable and no valid local passcode.");
+        setPasswordError("गलत पासकोड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
         triggerSound("loss");
       }
     }
@@ -1540,7 +1641,7 @@ export default function App() {
       setMinesGrid(grid);
       setIsMinesScanning(false);
       triggerSound("win");
-    }, 1800);
+    }, 150);
   };
 
   // Aviator Crash Predictor Engine
@@ -1581,7 +1682,7 @@ export default function App() {
           setAviatorMultiplier(parseFloat(currMult.toFixed(2)));
         }
       }, 75);
-    }, 2000);
+    }, 150);
   };
 
   // Goal Field Pathfinder
@@ -1595,7 +1696,7 @@ export default function App() {
       setGoalGrid(grid);
       setIsGoalScanning(false);
       triggerSound("win");
-    }, 1800);
+    }, 150);
   };
 
   // Click handler to route Telegram link and trigger Phase 2
@@ -1920,13 +2021,13 @@ export default function App() {
                 <div className="relative group overflow-hidden rounded-2xl border border-purple-500/30 bg-purple-950/10 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-purple-400 transition-all duration-300 hover:shadow-[0_0_25px_rgba(168,85,247,0.15)]">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <div className="px-2.5 py-1 rounded bg-purple-600/20 border border-purple-500/40 text-[9px] font-bold font-mono text-purple-300">
+                      <div className="px-2.5 py-1 rounded bg-purple-600/20 border border-purple-500/40 text-[9px] font-bold font-mono text-purple-300 animate-pulse">
                         {curTrans.wingoBadge}
                       </div>
                       <Sparkles className="w-4.5 h-4.5 text-purple-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-purple-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      {curTrans.wingoTitle}
+                      {curTrans.wingoTitle} 🎰🔮
                     </h3>
                     <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                       {curTrans.wingoDesc}
@@ -1934,8 +2035,8 @@ export default function App() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-purple-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-purple-400/70">
-                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
+                      <span>SECURITY CORE: VIP_V4 / SEC_PORT: VIP_V4</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("wingo")}
@@ -1952,13 +2053,13 @@ export default function App() {
                 <div className="relative group overflow-hidden rounded-2xl border border-pink-500/30 bg-pink-950/10 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-pink-400 transition-all duration-300 hover:shadow-[0_0_25px_rgba(236,72,153,0.15)]">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <div className="px-2.5 py-1 rounded bg-pink-600/20 border border-pink-500/40 text-[9px] font-bold font-mono text-pink-300">
+                      <div className="px-2.5 py-1 rounded bg-pink-600/20 border border-pink-500/40 text-[9px] font-bold font-mono text-pink-300 animate-pulse">
                         {curTrans.wingo30Badge}
                       </div>
                       <Zap className="w-4.5 h-4.5 text-pink-400 animate-pulse" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-pink-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      {curTrans.wingo30Title}
+                      {curTrans.wingo30Title} ⚡🚀
                     </h3>
                     <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                       {curTrans.wingo30Desc}
@@ -1966,8 +2067,8 @@ export default function App() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-pink-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-pink-400/70">
-                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
+                      <span>SECURITY CORE: VIP_V4 / SEC_PORT: VIP_V4</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("wingo30s")}
@@ -1984,13 +2085,13 @@ export default function App() {
                 <div className="relative group overflow-hidden rounded-2xl border border-cyan-500/30 bg-cyan-950/10 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-cyan-400 transition-all duration-300 hover:shadow-[0_0_25px_rgba(6,182,212,0.15)]">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <div className="px-2.5 py-1 rounded bg-cyan-600/20 border border-cyan-500/40 text-[9px] font-bold font-mono text-cyan-300">
+                      <div className="px-2.5 py-1 rounded bg-cyan-600/20 border border-cyan-500/40 text-[9px] font-bold font-mono text-cyan-300 animate-pulse">
                         {curTrans.minesBadge}
                       </div>
                       <Target className="w-4.5 h-4.5 text-cyan-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      {curTrans.minesTitle}
+                      {curTrans.minesTitle} 💣⭐
                     </h3>
                     <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                       {curTrans.minesDesc}
@@ -1998,8 +2099,8 @@ export default function App() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-cyan-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-cyan-400/70">
-                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
+                      <span>SECURITY CORE: VIP_V4 / SEC_PORT: VIP_V4</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("mines")}
@@ -2016,13 +2117,13 @@ export default function App() {
                 <div className="relative group overflow-hidden rounded-2xl border border-red-500/30 bg-red-950/10 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-red-400 transition-all duration-300 hover:shadow-[0_0_25px_rgba(239,68,68,0.15)]">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <div className="px-2.5 py-1 rounded bg-red-600/20 border border-red-500/40 text-[9px] font-bold font-mono text-red-300">
+                      <div className="px-2.5 py-1 rounded bg-red-600/20 border border-red-500/40 text-[9px] font-bold font-mono text-red-300 animate-pulse">
                         {curTrans.aviatorBadge}
                       </div>
                       <TrendingUp className="w-4.5 h-4.5 text-red-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-red-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      {curTrans.aviatorTitle}
+                      {curTrans.aviatorTitle} ✈️📈
                     </h3>
                     <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                       {curTrans.aviatorDesc}
@@ -2030,8 +2131,8 @@ export default function App() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-red-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-red-400/70">
-                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
+                      <span>SECURITY CORE: VIP_V4 / SEC_PORT: VIP_V4</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("aviator")}
@@ -2048,13 +2149,13 @@ export default function App() {
                 <div className="relative group overflow-hidden rounded-2xl border border-green-500/30 bg-green-950/10 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-green-400 transition-all duration-300 hover:shadow-[0_0_25px_rgba(34,197,94,0.15)]">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <div className="px-2.5 py-1 rounded bg-green-600/20 border border-green-500/40 text-[9px] font-bold font-mono text-green-300">
+                      <div className="px-2.5 py-1 rounded bg-green-600/20 border border-green-500/40 text-[9px] font-bold font-mono text-green-300 animate-pulse">
                         {curTrans.goalBadge}
                       </div>
                       <Compass className="w-4.5 h-4.5 text-green-400" />
                     </div>
                     <h3 className="text-base font-black text-white group-hover:text-green-300 transition-colors uppercase tracking-wide flex items-center gap-1.5">
-                      {curTrans.goalTitle}
+                      {curTrans.goalTitle} ⚽🥅
                     </h3>
                     <p className="text-xs text-gray-400 mt-2 leading-relaxed">
                       {curTrans.goalDesc}
@@ -2062,8 +2163,8 @@ export default function App() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-green-900/40 flex flex-col gap-3">
                     <div className="flex justify-between text-[9px] font-mono text-green-400/70">
-                      <span>SECURITY CORE: VIP_V4 / {appLang === "HINDI" ? "सुरक्षा: VIP_V4" : "SEC_PORT: VIP_V4"}</span>
-                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ {appLang === "HINDI" ? "सुरक्षित पोर्ट" : "SECURE PORT"}</span>
+                      <span>SECURITY CORE: VIP_V4 / SEC_PORT: VIP_V4</span>
+                      <span className="font-bold tracking-wider text-emerald-400 animate-pulse">✓ SECURE PORT</span>
                     </div>
                     <button 
                       onClick={() => requestUnlock("goal")}
@@ -2410,7 +2511,7 @@ export default function App() {
                 <div className="flex items-center gap-2 pl-2">
                   <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
                   <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest font-mono">
-                    RAMU BHAI LZR VIP
+                    RAMU VIP: LIVE
                   </span>
                 </div>
 
@@ -2442,10 +2543,10 @@ export default function App() {
               </div>
 
               {/* Back Button Positioned beautifully and prominently at the bottom center */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40">
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center">
                 <button 
                   onClick={handleGoHome}
-                  className="flex items-center gap-2 px-6 py-3 rounded-full border border-red-500/50 bg-red-950/90 text-red-200 hover:text-white hover:bg-red-900 hover:border-red-400 active:scale-95 transition-all text-xs font-black uppercase tracking-widest font-mono cursor-pointer shadow-[0_4px_25px_rgba(239,68,68,0.4)] hover:shadow-[0_4px_30px_rgba(239,68,68,0.7)]"
+                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-red-500/50 bg-red-950/90 text-red-200 hover:text-white hover:bg-red-900 hover:border-red-400 active:scale-95 transition-all text-xs font-black uppercase tracking-widest font-mono cursor-pointer shadow-[0_4px_25px_rgba(239,68,68,0.4)] hover:shadow-[0_4px_30px_rgba(239,68,68,0.7)]"
                   id="back-home-navbar-btn"
                 >
                   <Home className="w-4 h-4" />
@@ -2455,25 +2556,74 @@ export default function App() {
             </>
           )}
 
-          {/* ----------------- PREDICTOR PANEL FLOATING CONTENT ----------------- */}
+                      {/* ----------------- PREDICTOR PANEL FLOATING CONTENT ----------------- */}
           {activeTab === "game" && panelVisible && (
             <div 
-              className="absolute left-1/2 top-[75px] -translate-x-1/2 z-30 w-[94%] max-w-sm bg-black/95 border border-purple-500/40 rounded-2xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.95)] max-h-[calc(100vh-100px)] overflow-y-auto scrollbar-none animate-in slide-in-from-top-4 duration-300"
+              className="absolute left-1/2 top-[62px] -translate-x-1/2 z-30 w-[94%] max-w-[285px] bg-black/95 border border-purple-500/40 rounded-xl p-2 shadow-[0_6px_25px_rgba(0,0,0,0.95)] max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-none animate-in slide-in-from-top-4 duration-300"
               id="prediction-overlay-panel"
             >
+              {/* SCARY DANGEROUS HACKING SCAN OVERLAY */}
+              {isPeriodHacking && (
+                <div className="absolute inset-0 bg-black/95 z-55 rounded-xl p-3 flex flex-col justify-center items-center text-center space-y-3 animate-in fade-in duration-200">
+                  {/* RED LASER SCAN LINE */}
+                  <div className="animate-laser-scan"></div>
+
+                  {/* Scary danger skull or red shield */}
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-red-600/20 blur-xl animate-pulse"></div>
+                    <div className="w-12 h-12 rounded-full border border-red-500/40 bg-red-950/40 flex items-center justify-center text-red-500 animate-bounce">
+                      <span className="text-2xl">☠️</span>
+                    </div>
+                  </div>
+
+                  {/* Warning Messages */}
+                  <div className="space-y-1 z-10">
+                    <h4 className="text-red-500 font-black text-xs tracking-widest font-mono uppercase animate-pulse">
+                      {appLang === "HINDI" ? "☠️ अगला डेटा हैक हो रहा है ☠️" : "☠️ DATA BREACH IN PROGRESS ☠️"}
+                    </h4>
+                    <p className="text-[9px] text-gray-400 font-mono leading-relaxed uppercase">
+                      {appLang === "HINDI" ? "सर्वर फायरवॉल बायपास किया जा रहा है..." : "BYPASSING GAME SERVER FIREWALL..."}
+                    </p>
+                  </div>
+
+                  {/* Custom log outputs scrolling dynamically */}
+                  <div className="w-full bg-black/80 border border-red-950 rounded-lg p-1.5 h-16 overflow-y-auto text-left font-mono text-[8px] text-red-400/90 space-y-0.5 scrollbar-none z-10 shadow-inner">
+                    {periodHackLogs.map((log, idx) => (
+                      <div key={idx} className="truncate select-none animate-in fade-in duration-150">
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Danger red progress bar */}
+                  <div className="w-full space-y-0.5 z-10">
+                    <div className="flex justify-between text-[8px] font-mono text-red-500/70 uppercase">
+                      <span>{appLang === "HINDI" ? "हैक प्रोग्रेस:" : "BREACH PROGRESS:"}</span>
+                      <span className="font-black">{periodHackProgress}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-red-950/40 rounded-full overflow-hidden border border-red-900/30">
+                      <div 
+                        className="h-full bg-gradient-to-r from-red-600 to-rose-500 shadow-[0_0_10px_#ef4444]"
+                        style={{ width: `${periodHackProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Header Area */}
-              <div className="flex items-center justify-between border-b border-purple-900/50 pb-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold">
-                    RAMU BHAI LZR VIP: LIVE
+              <div className="flex items-center justify-between border-b border-purple-900/50 pb-1.5 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400 font-bold">
+                    RAMU VIP: LIVE
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] text-purple-400 font-bold uppercase tracking-widest font-mono">
+                  <span className="text-[8px] text-purple-400 font-bold uppercase tracking-widest font-mono">
                     MODE: {unlockedMode.toUpperCase()}
                   </span>
-                  <span className="text-[8.5px] text-pink-400 font-black tracking-wider uppercase font-mono">
+                  <span className="text-[7.5px] text-pink-400 font-black tracking-wider uppercase font-mono">
                     SRV: {activePartition.toUpperCase()}
                   </span>
                 </div>
@@ -2481,25 +2631,25 @@ export default function App() {
 
               {/* ----------------- SUB-VIEW: WINGO 1 MINUTE ----------------- */}
               {unlockedMode === "wingo" && (
-                <div className="space-y-4" id="wingo-subview-container">
+                <div className="space-y-2.5" id="wingo-subview-container">
                   
                   {/* Wins & Losses Counter */}
-                  <div className="grid grid-cols-4 gap-2 bg-purple-950/10 border border-purple-500/20 p-2.5 rounded-xl text-center">
+                  <div className="grid grid-cols-4 gap-1 bg-purple-950/10 border border-purple-500/20 p-1.5 rounded-lg text-center">
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.wins}</span>
-                      <span className="text-sm font-black text-emerald-400 font-mono">{wingoWins}</span>
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.wins}</span>
+                      <span className="text-xs font-black text-emerald-400 font-mono">{wingoWins}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.losses}</span>
-                      <span className="text-sm font-black text-red-400 font-mono">{wingoLosses}</span>
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.losses}</span>
+                      <span className="text-xs font-black text-red-400 font-mono">{wingoLosses}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.jackpot}</span>
-                      <span className="text-sm font-black text-yellow-400 font-mono">{wingoJackpots}</span>
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.jackpot}</span>
+                      <span className="text-xs font-black text-yellow-400 font-mono">{wingoJackpots}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.accuracy}</span>
-                      <span className="text-sm font-black text-cyan-400 font-mono">
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.accuracy}</span>
+                      <span className="text-xs font-black text-cyan-400 font-mono">
                         {wingoWins + wingoLosses > 0 
                           ? Math.round((wingoWins / (wingoWins + wingoLosses)) * 100) 
                           : 100}%
@@ -2509,23 +2659,23 @@ export default function App() {
 
                   {/* LIVE OUTCOME FOR BINGO */}
                   {wingoCurrentPrediction ? (
-                    <div className="p-3 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-950/20 to-black/60 text-center space-y-3">
-                      <div className="flex justify-between items-center text-[10px] font-mono text-purple-300">
+                    <div className="p-2.5 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-950/20 to-black/60 text-center space-y-2">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-purple-300">
                         <span>{curTrans.period}: <span className="text-white font-bold">{wingoCurrentPrediction.period.slice(-4)}</span></span>
                         <span className="flex items-center gap-1 text-red-400 font-bold">
-                          <Clock className="w-3.5 h-3.5 animate-pulse" />
+                          <Clock className="w-3 h-3 animate-pulse" />
                           {curTrans.timeLeft}: {timeLeft}s
                         </span>
                       </div>
 
                       {/* Prediction Outputs */}
-                      <div className="flex justify-around items-center bg-black/40 p-2 rounded-xl border border-purple-500/10">
+                      <div className="flex justify-around items-center bg-black/40 p-1.5 rounded-lg border border-purple-500/10">
                         <div className="text-left">
-                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider mb-1">{curTrans.signal}</span>
-                          <span className={`text-xl sm:text-2xl font-black tracking-wider block ${
+                          <span className="block text-[7.5px] font-mono uppercase text-purple-400 tracking-wider mb-0.5">{curTrans.signal}</span>
+                          <span className={`text-base font-black tracking-wider block ${
                             wingoCurrentPrediction.type === "BIG" 
-                              ? "text-rose-500 [text-shadow:0_0_12px_rgba(244,63,94,0.6)]" 
-                              : "text-emerald-400 [text-shadow:0_0_12px_rgba(52,211,153,0.6)]"
+                              ? "text-rose-500 [text-shadow:0_0_10px_rgba(244,63,94,0.6)]" 
+                              : "text-emerald-400 [text-shadow:0_0_10px_rgba(52,211,153,0.6)]"
                           }`}>
                             {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
                           </span>
@@ -2533,37 +2683,37 @@ export default function App() {
 
                         {/* Color Indicator Pill */}
                         <div className="text-center">
-                          <span className="block text-[8px] font-mono uppercase text-purple-400 tracking-wider mb-1">COLOR</span>
-                          <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest text-white shadow-md ${
+                          <span className="block text-[7.5px] font-mono uppercase text-purple-400 tracking-wider mb-0.5">COLOR</span>
+                          <span className={`inline-block text-[8.5px] font-black px-2 py-0.5 rounded uppercase tracking-widest text-white shadow-md ${
                             wingoCurrentPrediction.color === "RED" 
-                              ? "bg-red-600 border border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
-                              : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                              ? "bg-red-600 border border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.5)]" 
+                              : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                           }`}>
                             {wingoCurrentPrediction.color}
                           </span>
                         </div>
 
-                        <div className="w-14 h-14 rounded-xl border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
-                          <span className="text-[8px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
-                          <span className="text-xl font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.6)]">
+                        <div className="w-10 h-10 rounded-lg border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
+                          <span className="text-[7px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
+                          <span className="text-sm font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.6)]">
                             {wingoCurrentPrediction.num}
                           </span>
                         </div>
                       </div>
 
                       {/* BYPASS ENGINE */}
-                      <div className="text-[10px] font-mono text-purple-300/80 bg-purple-950/20 py-1 px-2 rounded-lg border border-purple-900/30 flex justify-between">
+                      <div className="text-[8.5px] font-mono text-purple-300/80 bg-purple-950/20 py-0.5 px-1.5 rounded-md border border-purple-900/30 flex justify-between">
                         <span>{curTrans.bypassProtocol}:</span>
                         <span className="text-emerald-400 font-bold animate-pulse">ACTIVE ON-DEMAND</span>
                       </div>
 
                       {/* Accuracy Bar */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[9px] font-mono text-gray-400">
+                      <div className="space-y-0.5">
+                        <div className="flex justify-between text-[8.5px] font-mono text-gray-400">
                           <span>{curTrans.confidence}:</span>
                           <span className="text-cyan-400 font-bold">{wingoCurrentPrediction.confidence}%</span>
                         </div>
-                        <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden border border-purple-900/40">
+                        <div className="h-1 w-full bg-black/60 rounded-full overflow-hidden border border-purple-900/40">
                           <div 
                             className="h-full bg-gradient-to-r from-purple-500 to-cyan-500"
                             style={{ width: `${wingoCurrentPrediction.confidence}%` }}
@@ -2572,18 +2722,80 @@ export default function App() {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-6 border border-purple-500/20 bg-purple-950/10 rounded-xl">
-                      <RefreshCw className="w-5 h-5 text-purple-400 animate-spin mx-auto mb-2" />
+                    <div className="text-center py-4 border border-purple-500/20 bg-purple-950/10 rounded-xl">
+                      <RefreshCw className="w-4 h-4 text-purple-400 animate-spin mx-auto mb-1" />
                       <span className="text-xs text-purple-300 font-mono">{curTrans.waitingBingo}</span>
+                    </div>
+                  )}
+
+                  {/* LAST COMPLETED RESULT */}
+                  {wingoHistory.length > 0 && (
+                    <div className="p-2 rounded-lg border border-cyan-500/25 bg-black/60 text-center space-y-2 shadow-inner">
+                      <div className="text-[8.5px] font-mono text-cyan-400 font-bold uppercase tracking-wider text-left border-b border-cyan-950/40 pb-1 flex justify-between">
+                        <span>📊 LAST OUTCOME DETAILS</span>
+                        <span className="text-gray-500 font-bold">PER: {wingoHistory[0].period.slice(-4)}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-1.5 text-[10px] text-left font-mono">
+                        {/* Prediction Column */}
+                        <div className="bg-cyan-950/20 p-1.5 rounded border border-cyan-900/20 space-y-0.5">
+                          <span className="block text-[7.5px] text-cyan-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "प्रेडिक्शन" : "PRED"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingoHistory[0].predictedType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingoHistory[0].predictedType}
+                            </span>
+                            <span className="px-1 rounded bg-cyan-950 text-cyan-300 font-bold text-[8px]">
+                              N:{wingoHistory[0].predictedNum}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actual Column */}
+                        <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-800/60 space-y-0.5">
+                          <span className="block text-[7.5px] text-gray-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "खुला" : "ACTUAL"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingoHistory[0].actualType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingoHistory[0].actualType}
+                            </span>
+                            <span className="px-1 rounded bg-zinc-950 text-gray-300 font-bold text-[8px]">
+                              N:{wingoHistory[0].actualNum}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Result Box */}
+                      <div className="bg-black/40 border border-zinc-800/40 rounded p-1 px-2.5 flex justify-between items-center font-mono">
+                        <span className="text-[8.5px] text-gray-400 uppercase font-black">
+                          {appLang === "HINDI" ? "अंतिम परिणाम:" : "OUTCOME:"}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                          wingoHistory[0].status === "JACKPOT"
+                            ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)] animate-pulse"
+                            : wingoHistory[0].status === "WIN"
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                              : "bg-red-500/20 text-red-400 border border-red-500/40"
+                        }`}>
+                          {wingoHistory[0].status}
+                        </span>
+                      </div>
                     </div>
                   )}
 
                   {/* HISTORIC BOX BUTTON */}
                   <button 
                     onClick={() => { triggerSound("click"); setIsWingoHistoryOpen(true); }}
-                    className="w-full py-2.5 rounded-xl border border-purple-500/30 bg-purple-950/20 hover:bg-purple-900/30 text-purple-300 hover:text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="w-full py-1.5 rounded-lg border border-purple-500/30 bg-purple-950/20 hover:bg-purple-900/30 text-purple-300 hover:text-white font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <Eye className="w-4 h-4 text-purple-400" />
+                    <Eye className="w-3.5 h-3.5 text-purple-400" />
                     {curTrans.viewLogHistory}
                   </button>
                 </div>
@@ -2591,25 +2803,25 @@ export default function App() {
 
               {/* ----------------- SUB-VIEW: WINGO 30 SECONDS ----------------- */}
               {unlockedMode === "wingo30s" && (
-                <div className="space-y-4" id="wingo30s-subview-container">
+                <div className="space-y-2.5" id="wingo30s-subview-container">
                   
                   {/* Wins & Losses Counter */}
-                  <div className="grid grid-cols-4 gap-2 bg-pink-950/10 border border-pink-500/20 p-2.5 rounded-xl text-center">
+                  <div className="grid grid-cols-4 gap-1 bg-pink-950/10 border border-pink-500/20 p-1.5 rounded-lg text-center">
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.wins}</span>
-                      <span className="text-sm font-black text-emerald-400 font-mono">{wingo30Wins}</span>
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.wins}</span>
+                      <span className="text-xs font-black text-emerald-400 font-mono">{wingo30Wins}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.losses}</span>
-                      <span className="text-sm font-black text-red-400 font-mono">{wingo30Losses}</span>
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.losses}</span>
+                      <span className="text-xs font-black text-red-400 font-mono">{wingo30Losses}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.jackpot}</span>
-                      <span className="text-sm font-black text-yellow-400 font-mono">{wingo30Jackpots}</span>
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.jackpot}</span>
+                      <span className="text-xs font-black text-yellow-400 font-mono">{wingo30Jackpots}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.accuracy}</span>
-                      <span className="text-sm font-black text-cyan-400 font-mono">
+                      <span className="block text-[7.5px] text-gray-400 font-bold uppercase tracking-wider">{curTrans.accuracy}</span>
+                      <span className="text-xs font-black text-cyan-400 font-mono">
                         {wingo30Wins + wingo30Losses > 0 
                           ? Math.round((wingo30Wins / (wingo30Wins + wingo30Losses)) * 100) 
                           : 100}%
@@ -2619,23 +2831,23 @@ export default function App() {
 
                   {/* LIVE OUTCOME FOR BINGO */}
                   {wingo30CurrentPrediction ? (
-                    <div className="p-3 rounded-xl border border-pink-500/30 bg-gradient-to-br from-pink-950/20 to-black/60 text-center space-y-3">
-                      <div className="flex justify-between items-center text-[10px] font-mono text-pink-300">
+                    <div className="p-2.5 rounded-xl border border-pink-500/30 bg-gradient-to-br from-pink-950/20 to-black/60 text-center space-y-2">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-pink-300">
                         <span>{curTrans.period}: <span className="text-white font-bold">{wingo30CurrentPrediction.period.slice(-4)}</span></span>
                         <span className="flex items-center gap-1 text-red-400 font-bold">
-                          <Clock className="w-3.5 h-3.5 animate-pulse" />
+                          <Clock className="w-3 h-3 animate-pulse" />
                           {curTrans.timeLeft}: {timeLeft30}s
                         </span>
                       </div>
 
                       {/* Prediction Outputs */}
-                      <div className="flex justify-around items-center bg-black/40 p-2 rounded-xl border border-pink-500/10">
+                      <div className="flex justify-around items-center bg-black/40 p-1.5 rounded-lg border border-pink-500/10">
                         <div className="text-left">
-                          <span className="block text-[8px] font-mono uppercase text-pink-400 tracking-wider mb-1">{curTrans.signal}</span>
-                          <span className={`text-xl sm:text-2xl font-black tracking-wider block ${
+                          <span className="block text-[7.5px] font-mono uppercase text-pink-400 tracking-wider mb-0.5">{curTrans.signal}</span>
+                          <span className={`text-base font-black tracking-wider block ${
                             wingo30CurrentPrediction.type === "BIG" 
-                              ? "text-rose-500 [text-shadow:0_0_12px_rgba(244,63,94,0.6)]" 
-                              : "text-emerald-400 [text-shadow:0_0_12px_rgba(52,211,153,0.6)]"
+                              ? "text-rose-500 [text-shadow:0_0_10px_rgba(244,63,94,0.6)]" 
+                              : "text-emerald-400 [text-shadow:0_0_10px_rgba(52,211,153,0.6)]"
                           }`}>
                             {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
                           </span>
@@ -2643,37 +2855,37 @@ export default function App() {
 
                         {/* Color Indicator Pill */}
                         <div className="text-center">
-                          <span className="block text-[8px] font-mono uppercase text-pink-400 tracking-wider mb-1">COLOR</span>
-                          <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest text-white shadow-md ${
+                          <span className="block text-[7.5px] font-mono uppercase text-pink-400 tracking-wider mb-0.5">COLOR</span>
+                          <span className={`inline-block text-[8.5px] font-black px-2 py-0.5 rounded uppercase tracking-widest text-white shadow-md ${
                             wingo30CurrentPrediction.color === "RED" 
-                              ? "bg-red-600 border border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
-                              : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                              ? "bg-red-600 border border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.5)]" 
+                              : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                           }`}>
                             {wingo30CurrentPrediction.color}
                           </span>
                         </div>
 
-                        <div className="w-14 h-14 rounded-xl border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
-                          <span className="text-[8px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
-                          <span className="text-xl font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.6)]">
+                        <div className="w-10 h-10 rounded-lg border border-cyan-500/50 flex flex-col items-center justify-center bg-cyan-950/20 shadow-[inset_0_0_10px_rgba(6,182,212,0.3)]">
+                          <span className="text-[7px] font-mono text-cyan-400 font-bold uppercase">{curTrans.jackpot}</span>
+                          <span className="text-sm font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.6)]">
                             {wingo30CurrentPrediction.num}
                           </span>
                         </div>
                       </div>
 
                       {/* BYPASS ENGINE */}
-                      <div className="text-[10px] font-mono text-pink-300/80 bg-pink-950/20 py-1 px-2 rounded-lg border border-pink-900/30 flex justify-between">
+                      <div className="text-[8.5px] font-mono text-pink-300/80 bg-pink-950/20 py-0.5 px-1.5 rounded-md border border-pink-900/30 flex justify-between">
                         <span>{curTrans.bypassProtocol}:</span>
                         <span className="text-emerald-400 font-bold animate-pulse">ACTIVE ON-DEMAND</span>
                       </div>
 
                       {/* Accuracy Bar */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[9px] font-mono text-gray-400">
+                      <div className="space-y-0.5">
+                        <div className="flex justify-between text-[8.5px] font-mono text-gray-400">
                           <span>{curTrans.confidence}:</span>
                           <span className="text-cyan-400 font-bold">{wingo30CurrentPrediction.confidence}%</span>
                         </div>
-                        <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden border border-pink-900/40">
+                        <div className="h-1 w-full bg-black/60 rounded-full overflow-hidden border border-pink-900/40">
                           <div 
                             className="h-full bg-gradient-to-r from-pink-500 to-cyan-500"
                             style={{ width: `${wingo30CurrentPrediction.confidence}%` }}
@@ -2682,18 +2894,80 @@ export default function App() {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-6 border border-pink-500/20 bg-pink-950/10 rounded-xl">
-                      <RefreshCw className="w-5 h-5 text-pink-400 animate-spin mx-auto mb-2" />
+                    <div className="text-center py-4 border border-pink-500/20 bg-pink-950/10 rounded-xl">
+                      <RefreshCw className="w-4 h-4 text-pink-400 animate-spin mx-auto mb-1" />
                       <span className="text-xs text-pink-300 font-mono">{curTrans.waitingBingo}</span>
+                    </div>
+                  )}
+
+                  {/* LAST COMPLETED RESULT */}
+                  {wingo30History.length > 0 && (
+                    <div className="p-2 rounded-lg border border-cyan-500/25 bg-black/60 text-center space-y-2 shadow-inner">
+                      <div className="text-[8.5px] font-mono text-cyan-400 font-bold uppercase tracking-wider text-left border-b border-cyan-950/40 pb-1 flex justify-between">
+                        <span>📊 LAST OUTCOME DETAILS</span>
+                        <span className="text-gray-500 font-bold">PER: {wingo30History[0].period.slice(-4)}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-1.5 text-[10px] text-left font-mono">
+                        {/* Prediction Column */}
+                        <div className="bg-cyan-950/20 p-1.5 rounded border border-cyan-900/20 space-y-0.5">
+                          <span className="block text-[7.5px] text-cyan-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "प्रेडिक्शन" : "PRED"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingo30History[0].predictedType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingo30History[0].predictedType}
+                            </span>
+                            <span className="px-1 rounded bg-cyan-950 text-cyan-300 font-bold text-[8px]">
+                              N:{wingo30History[0].predictedNum}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actual Column */}
+                        <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-800/60 space-y-0.5">
+                          <span className="block text-[7.5px] text-gray-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "खुला" : "ACTUAL"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingo30History[0].actualType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingo30History[0].actualType}
+                            </span>
+                            <span className="px-1 rounded bg-zinc-950 text-gray-300 font-bold text-[8px]">
+                              N:{wingo30History[0].actualNum}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Result Box */}
+                      <div className="bg-black/40 border border-zinc-800/40 rounded p-1 px-2.5 flex justify-between items-center font-mono">
+                        <span className="text-[8.5px] text-gray-400 uppercase font-black">
+                          {appLang === "HINDI" ? "अंतिम परिणाम:" : "OUTCOME:"}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                          wingo30History[0].status === "JACKPOT"
+                            ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)] animate-pulse"
+                            : wingo30History[0].status === "WIN"
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                              : "bg-red-500/20 text-red-400 border border-red-500/40"
+                        }`}>
+                          {wingo30History[0].status}
+                        </span>
+                      </div>
                     </div>
                   )}
 
                   {/* HISTORIC BOX BUTTON */}
                   <button 
                     onClick={() => { triggerSound("click"); setIsWingoHistoryOpen(true); }}
-                    className="w-full py-2.5 rounded-xl border border-pink-500/30 bg-pink-950/20 hover:bg-pink-900/30 text-pink-300 hover:text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="w-full py-1.5 rounded-lg border border-pink-500/30 bg-pink-950/20 hover:bg-pink-900/30 text-pink-300 hover:text-white font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <Eye className="w-4 h-4 text-pink-400" />
+                    <Eye className="w-3.5 h-3.5 text-pink-400" />
                     {curTrans.viewLogHistory}
                   </button>
                 </div>
@@ -2701,25 +2975,25 @@ export default function App() {
 
               {/* ----------------- SUB-VIEW: MINES ----------------- */}
               {unlockedMode === "mines" && (
-                <div className="space-y-4" id="mines-subview-container">
-                  <div className="p-3 bg-black/60 border border-purple-500/20 rounded-xl text-center">
-                    <span className="text-xs text-gray-400 block mb-2">{curTrans.minesScanGrid}</span>
+                <div className="space-y-2.5" id="mines-subview-container">
+                  <div className="p-2 bg-black/60 border border-cyan-500/20 rounded-xl text-center">
+                    <span className="text-[10px] text-gray-400 block mb-1">{curTrans.minesScanGrid}</span>
                     
                     {/* 5x5 Mines Board */}
-                    <div className="grid grid-cols-5 gap-2.5 max-w-[210px] mx-auto my-3">
+                    <div className="grid grid-cols-5 gap-1.5 max-w-[155px] mx-auto my-2">
                       {minesGrid.map((isStar, idx) => (
                         <div 
                           key={idx} 
-                          className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-all duration-300 ${
+                          className={`w-6.5 h-6.5 rounded-md border flex items-center justify-center transition-all duration-300 ${
                             isStar 
                               ? "bg-gradient-to-br from-cyan-500/30 to-purple-600/30 border-cyan-400 glow-cyan animate-pulse" 
                               : "bg-purple-950/10 border-purple-900/40"
                           }`}
                         >
                           {isStar ? (
-                            <Sparkles className="w-5 h-5 text-cyan-300" />
+                            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
                           ) : (
-                            <div className="w-1.5 h-1.5 rounded-full bg-purple-900/50"></div>
+                            <div className="w-1 h-1 rounded-full bg-purple-900/50"></div>
                           )}
                         </div>
                       ))}
@@ -2728,16 +3002,16 @@ export default function App() {
                     <button 
                       onClick={generateMinesPrediction}
                       disabled={isMinesScanning}
-                      className="w-full mt-2 py-2.5 bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full mt-1 py-1.5 bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 text-white font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       {isMinesScanning ? (
                         <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <RefreshCw className="w-3 h-3 animate-spin" />
                           {curTrans.scanning}
                         </>
                       ) : (
                         <>
-                          <Target className="w-3.5 h-3.5 animate-pulse" />
+                          <Target className="w-3 h-3 animate-pulse" />
                           {curTrans.scanNextGrid}
                         </>
                       )}
@@ -2748,36 +3022,40 @@ export default function App() {
 
               {/* ----------------- SUB-VIEW: AVIATOR ----------------- */}
               {unlockedMode === "aviator" && (
-                <div className="space-y-4" id="aviator-subview-container">
-                  <div className="p-4 bg-black/60 border border-purple-500/20 rounded-xl text-center space-y-4">
-                    <span className="text-xs text-gray-400 block">{curTrans.crashPrediction}</span>
-
-                    <div className="py-6 rounded-2xl bg-red-950/10 border border-red-500/20 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.15),transparent_70%)] animate-pulse"></div>
-                      
-                      {/* Digital Aircraft Multiplier Progress */}
-                      <div className="text-4xl font-black text-red-500 tracking-wider glow-text-purple font-mono animate-pulse">
-                        {aviatorIsFlying ? `${aviatorMultiplier}x` : predictedCrashPoint}
-                      </div>
-                      <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest mt-1">
-                        {aviatorIsFlying ? curTrans.climbing : curTrans.expectedBust}
-                      </span>
+                <div className="space-y-2.5" id="aviator-subview-container">
+                  <div className="p-2.5 bg-black/60 border border-red-500/20 rounded-xl text-center space-y-2.5">
+                    <div className="relative h-16 bg-gradient-to-b from-red-950/20 to-black rounded-lg border border-red-950 flex flex-col items-center justify-center overflow-hidden">
+                      {aviatorIsFlying ? (
+                        <div className="text-center space-y-0.5">
+                          <span className="block text-[7px] font-mono text-red-400 uppercase tracking-widest animate-pulse">PLANE IS FLYING</span>
+                          <span className="text-xl font-black text-red-500 font-mono animate-bounce">{aviatorMultiplier}x</span>
+                        </div>
+                      ) : (
+                        <div className="text-center space-y-0.5">
+                          <span className="block text-[7px] font-mono text-gray-500 uppercase tracking-widest">NEXT FLYAWAY PREDICTION</span>
+                          <span className="text-xl font-black text-red-500 font-mono [text-shadow:0_0_12px_rgba(239,68,68,0.5)]">
+                            {predictedCrashPoint || "1.00x"}
+                          </span>
+                        </div>
+                      )}
+                      {/* Red neon grid line representing path */}
+                      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-500/30 shadow-[0_0_8px_#ef4444]"></div>
                     </div>
 
                     <button 
                       onClick={startAviatorPredictor}
                       disabled={isAviatorScanning}
-                      className="w-full py-2.5 bg-gradient-to-r from-red-600 to-pink-600 hover:opacity-90 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-1.5 bg-gradient-to-r from-red-600 to-pink-600 text-white font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       {isAviatorScanning ? (
                         <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          {curTrans.calculating}
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          {curTrans.scanning}
                         </>
                       ) : (
                         <>
-                          <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
-                          {curTrans.predictNextFlyout}
+                          <TrendingUp className="w-3 h-3 animate-pulse" />
+                          {appLang === "HINDI" ? "अगला क्रैश पॉइंट" : "FIND NEXT CRASH POINT"}
                         </>
                       )}
                     </button>
@@ -2785,26 +3063,25 @@ export default function App() {
                 </div>
               )}
 
-              {/* ----------------- SUB-VIEW: GOAL (5x7 Field) ----------------- */}
+              {/* ----------------- SUB-VIEW: GOAL ----------------- */}
               {unlockedMode === "goal" && (
-                <div className="space-y-4" id="goal-subview-container">
-                  <div className="p-3 bg-black/60 border border-purple-500/20 rounded-xl text-center">
-                    <span className="text-xs text-green-400 font-bold block mb-2">{curTrans.goalkeeperBypass}</span>
-
-                    {/* 5x7 Path Grid */}
-                    <div className="space-y-1.5 my-3 max-w-[280px] mx-auto">
+                <div className="space-y-2.5" id="goal-subview-container">
+                  <div className="p-2.5 bg-black/60 border border-green-500/20 rounded-xl text-center space-y-2.5">
+                    <span className="text-[10px] text-gray-400 block">{appLang === "HINDI" ? "सुरक्षित फ़ील्ड रास्ता (7 पंक्तियाँ):" : "SAFE FIELD PATH (7 ROWS):"}</span>
+                    
+                    <div className="space-y-1 max-w-[190px] mx-auto">
                       {goalGrid.map((safeCol, rowIdx) => (
-                        <div key={rowIdx} className="flex items-center gap-2 bg-green-950/5 border border-green-950/20 p-1 rounded-xl">
-                          <span className="text-[9px] font-mono text-gray-500 w-10 shrink-0">{curTrans.row} {rowIdx + 1}</span>
-                          <div className="flex-1 grid grid-cols-5 gap-1.5">
+                        <div key={rowIdx} className="flex items-center gap-1.5 bg-green-950/5 border border-green-950/20 p-0.5 px-1.5 rounded-lg">
+                          <span className="text-[8px] font-mono text-gray-500 w-8 shrink-0">{curTrans.row.slice(-3)} {rowIdx + 1}</span>
+                          <div className="flex-1 grid grid-cols-5 gap-1">
                             {Array.from({ length: 5 }).map((_, colIdx) => {
                               const isSafe = safeCol === colIdx;
                               return (
                                 <div 
                                   key={colIdx} 
-                                  className={`h-6 rounded-lg border flex items-center justify-center transition-all ${
+                                  className={`h-4.5 rounded-md border flex items-center justify-center transition-all ${
                                     isSafe 
-                                      ? "bg-green-500/30 border-green-400 animate-pulse font-bold text-xs" 
+                                      ? "bg-green-500/30 border-green-400 animate-pulse font-bold text-[10px]" 
                                       : "bg-black/60 border-green-950"
                                   }`}
                                 >
@@ -2820,16 +3097,16 @@ export default function App() {
                     <button 
                       onClick={generateGoalPrediction}
                       disabled={isGoalScanning}
-                      className="w-full mt-2 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-1.5 bg-gradient-to-r from-green-600 to-teal-600 text-black font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       {isGoalScanning ? (
                         <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <RefreshCw className="w-3 h-3 animate-spin" />
                           {curTrans.calculating}
                         </>
                       ) : (
                         <>
-                          <Compass className="w-3.5 h-3.5 animate-pulse" />
+                          <Compass className="w-3 h-3 animate-pulse" />
                           {curTrans.findNextGoal}
                         </>
                       )}
@@ -2840,16 +3117,15 @@ export default function App() {
 
             </div>
           )}
-
-          {/* ----------------- WINGO INDEPENDENT POPUP BOX (Separate History Modal) ----------------- */}
+                      {/* ----------------- WINGO INDEPENDENT POPUP BOX (Separate History Modal) ----------------- */}
           {isWingoHistoryOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
-              <div className="relative w-full max-w-sm rounded-2xl border border-purple-500/40 bg-[#0a0614] p-5 shadow-[0_0_40px_rgba(168,85,247,0.4)] max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-full max-w-md rounded-2xl border border-cyan-500/40 bg-[#080c14] p-5 shadow-[0_0_40px_rgba(6,182,212,0.4)] max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
                 
                 {/* Modal Header */}
-                <div className="flex justify-between items-center border-b border-purple-900/40 pb-3 mb-4 shrink-0">
-                  <h3 className="text-sm font-black text-purple-300 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-purple-400" />
+                <div className="flex-shrink-0 flex justify-between items-center border-b border-cyan-900/40 pb-3 mb-4">
+                  <h3 className="text-sm font-black text-cyan-300 flex items-center gap-1.5 font-mono">
+                    <Clock className="w-4 h-4 text-cyan-400" />
                     {curTrans.sessionHistoryTitle}
                   </h3>
                   <button 
@@ -2859,9 +3135,9 @@ export default function App() {
                     {curTrans.closeBtn}
                   </button>
                 </div>
-
+ 
                 {/* Modal Scrollable Body */}
-                <div className="flex-1 overflow-y-auto space-y-2.5 divide-y divide-purple-950 pr-1 scrollbar-none">
+                <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-none">
                   {(() => {
                     const activeHistList = unlockedMode === "wingo30s" ? wingo30History : wingoHistory;
                     if (activeHistList.length === 0) {
@@ -2873,29 +3149,53 @@ export default function App() {
                     }
                     return activeHistList.map((item, idx) => {
                       return (
-                        <div key={idx} className="pt-2.5 flex justify-between items-center text-xs font-mono">
-                          <div>
-                            <div className="text-white font-black">{curTrans.period}: {item.period.slice(-4)}</div>
-                            <div className="text-[10px] text-gray-400 mt-1 uppercase">
-                              {appLang === "HINDI" ? "प्रेडिक्शन" : "PRED"}: <span className="text-purple-400 font-bold">{item.predictedType}({item.predictedNum})</span>
-                            </div>
-                            <div className="text-[9px] text-emerald-400 font-mono">
-                              ALGORITHM: BYPASS_OK
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-300">
-                              {appLang === "HINDI" ? "नंबर" : "ACT"}: <span className="text-white font-bold">{item.actualType}({item.actualNum})</span>
+                        <div key={idx} className="bg-black/40 border border-cyan-950/40 p-3 rounded-xl space-y-2.5 text-xs font-mono">
+                          
+                          {/* Row 1: Period and Status */}
+                          <div className="flex justify-between items-center border-b border-zinc-900/60 pb-1.5">
+                            <span className="text-white font-black text-xs">
+                              {curTrans.period}: <span className="text-cyan-400">{item.period.slice(-4)}</span>
                             </span>
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
                               item.status === "JACKPOT" 
-                                ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 shadow-[0_0_10px_rgba(234,179,8,0.3)]" 
+                                ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.3)] animate-pulse" 
                                 : item.status === "WIN" 
                                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" 
                                   : "bg-red-500/20 text-red-400 border border-red-500/40"
                             }`}>
-                              {item.status}
+                              {item.status === "JACKPOT" ? (appLang === "HINDI" ? "जैकपॉट" : "JACKPOT") : item.status === "WIN" ? (appLang === "HINDI" ? "जीत" : "WIN") : (appLang === "HINDI" ? "हार" : "LOSS")}
                             </span>
+                          </div>
+
+                          {/* Row 2: Prediction vs Actual layout */}
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            {/* Pred */}
+                            <div className="bg-cyan-950/10 border border-cyan-950/30 p-1.5 rounded space-y-1">
+                              <span className="block text-[8px] text-cyan-400 font-bold uppercase tracking-widest">{appLang === "HINDI" ? "अनुमान (पैनल)" : "PRED (PANEL)"}</span>
+                              <div className="flex flex-wrap gap-1 items-center font-bold">
+                                <span className={item.predictedType === "BIG" ? "text-rose-400" : "text-emerald-400"}>
+                                  {item.predictedType === "BIG" ? (appLang === "HINDI" ? "बिग" : "BIG") : (appLang === "HINDI" ? "स्मॉल" : "SMALL")}
+                                </span>
+                                <span className={`px-1 rounded text-[8px] text-white ${item.predictedColor === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
+                                  {item.predictedColor === "RED" ? (appLang === "HINDI" ? "लाल" : "RED") : (appLang === "HINDI" ? "हरा" : "GREEN")}
+                                </span>
+                                <span className="text-gray-300">({item.predictedNum})</span>
+                              </div>
+                            </div>
+
+                            {/* Actual */}
+                            <div className="bg-zinc-900/30 border border-zinc-800/30 p-1.5 rounded space-y-1">
+                              <span className="block text-[8px] text-gray-500 font-bold uppercase tracking-widest">{appLang === "HINDI" ? "गेम का रिजल्ट" : "ACTUAL (GAME)"}</span>
+                              <div className="flex flex-wrap gap-1 items-center font-bold">
+                                <span className={item.actualType === "BIG" ? "text-rose-400" : "text-emerald-400"}>
+                                  {item.actualType === "BIG" ? (appLang === "HINDI" ? "बिग" : "BIG") : (appLang === "HINDI" ? "स्मॉल" : "SMALL")}
+                                </span>
+                                <span className={`px-1 rounded text-[8px] text-white ${item.actualColor === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
+                                  {item.actualColor === "RED" ? (appLang === "HINDI" ? "लाल" : "RED") : (appLang === "HINDI" ? "हरा" : "GREEN")}
+                                </span>
+                                <span className="text-gray-300">({item.actualNum})</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );
@@ -2903,7 +3203,7 @@ export default function App() {
                   })()}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-purple-900/40 text-center shrink-0">
+                <div className="mt-4 pt-3 border-t border-cyan-900/40 text-center shrink-0">
                   <p className="text-[9px] text-gray-500 font-mono uppercase tracking-widest">
                     {curTrans.sessionLocalOnly}
                   </p>

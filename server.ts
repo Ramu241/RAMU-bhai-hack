@@ -281,7 +281,12 @@ async function startServer() {
       "MINES777": "mines",
       "AVIATOR5": "aviator",
       "GOAL333": "goal",
-      "RAMU_VIP_ALL": "all"
+      "RAMU_VIP_ALL": "all",
+      "908070": "wingo",
+      "908071": "wingo30s",
+      "908072": "mines",
+      "908073": "aviator",
+      "908074": "goal"
     };
 
     const requestedKeyUpper = key.trim().toUpperCase();
