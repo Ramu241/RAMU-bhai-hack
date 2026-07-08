@@ -772,7 +772,6 @@ export default function App() {
 
   // 2. Mines Game States
   const [minesGrid, setMinesGrid] = useState<boolean[]>(new Array(25).fill(false)); // true = Star, false = Blank
-  const [minesBombCount, setMinesBombCount] = useState<3 | 5 | 10>(3);
   const [isMinesScanning, setIsMinesScanning] = useState(false);
 
   // 3. Aviator Game States
@@ -1409,25 +1408,6 @@ export default function App() {
     const entered = passwordInput.trim();
     if (!entered) return;
 
-    // Permanent VIP lifetime passcodes
-    const permanentKeys: Record<string, string> = {
-      "WINGO999": "wingo",
-      "WINGO30": "wingo30s",
-      "MINES777": "mines",
-      "AVIATOR5": "aviator",
-      "GOAL333": "goal",
-      "RAMU_VIP_ALL": "all",
-      "908070": "wingo",
-      "908071": "wingo30s",
-      "908072": "mines",
-      "908073": "aviator",
-      "908074": "goal"
-    };
-
-    const requestedKeyUpper = entered.toUpperCase();
-    let verifiedKeyObj: any = null;
-    let isSuccess = false;
-
     try {
       const response = await secureFetch("/api/keys/verify", {
         method: "POST",
@@ -1437,119 +1417,103 @@ export default function App() {
 
       if (response.ok) {
         const resData = await response.json().catch(() => ({}));
-        verifiedKeyObj = resData.key;
-        isSuccess = true;
-      } else {
-        // If server API fails (like 404 on static GitHub Pages), fall back to client check!
-        const allowedGame = permanentKeys[requestedKeyUpper];
-        if (allowedGame && (allowedGame === "all" || allowedGame === targetUnlockMode)) {
-          verifiedKeyObj = {
-            key: requestedKeyUpper,
-            game: allowedGame === "all" ? targetUnlockMode : allowedGame,
-            duration: "Lifetime Permanent VIP",
-            partition: "bdg"
-          };
-          isSuccess = true;
-        } else if (allowedGame) {
-          setPasswordError(`यह पासकोड ${allowedGame.toUpperCase()} मोड के लिए सुरक्षित है! / This passcode is restricted to ${allowedGame.toUpperCase()} mode!`);
-          triggerSound("loss");
-          return;
+        if (resData.key && resData.key.partition) {
+          setActivePartition(resData.key.partition);
         } else {
-          // Check generated keys stored locally
-          const now = Date.now();
-          const matchedCustomKey = generatedKeys.find(
-            (k) => k.key.trim().toLowerCase() === entered.toLowerCase() && 
-                   (k.game === targetUnlockMode || k.game === "all") && 
-                   k.expiresAt > now
-          );
-          if (matchedCustomKey) {
-            verifiedKeyObj = matchedCustomKey;
-            isSuccess = true;
-          } else {
-            const errData = await response.json().catch(() => ({}));
-            setPasswordError(errData.error || "गलत पासकोड! कृपया वैध और सक्रिय पासकोड दर्ज करें। / Invalid Passcode!");
-            triggerSound("loss");
-            return;
-          }
+          setActivePartition("bdg");
         }
+        setPasswordError("");
+        setIsHacking(true);
+        setHackProgress(0);
+        setHackLogs([]);
+
+        const logTemplates = [
+          `[DECRYPT] 🎭 RAMU BHAI VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
+          `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
+          `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
+          `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
+          `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
+        ];
+
+        const soundInterval = setInterval(() => {
+          triggerSound("verify");
+        }, 500);
+
+        let pct = 0;
+        const progressTimer = setInterval(() => {
+          pct += 2;
+          setHackProgress(pct);
+
+          const logIdx = Math.floor((pct / 100) * logTemplates.length);
+          if (logIdx < logTemplates.length) {
+            setHackLogs(prev => {
+              if (prev.includes(logTemplates[logIdx])) return prev;
+              return [...prev, logTemplates[logIdx]];
+            });
+          }
+
+          if (pct >= 100) {
+            clearInterval(progressTimer);
+            clearInterval(soundInterval);
+            setTimeout(() => {
+              setIsHacking(false);
+              setUnlockedMode(targetUnlockMode);
+              setTargetUnlockMode("none");
+              setActiveTab("game");
+              triggerSound("unlock");
+
+              // Init game parameters
+              if (targetUnlockMode === "mines") {
+                generateMinesPrediction();
+              } else if (targetUnlockMode === "aviator") {
+                startAviatorPredictor();
+              } else if (targetUnlockMode === "goal") {
+                generateGoalPrediction();
+              }
+            }, 500);
+          }
+        }, 40); // ~2s screen
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        setPasswordError(errData.error || "गड़बड़ पासवर्ड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
+        triggerSound("loss");
       }
     } catch (err) {
-      console.warn("API connection failed, falling back to local client-side validation:", err);
-      const allowedGame = permanentKeys[requestedKeyUpper];
-      if (allowedGame && (allowedGame === "all" || allowedGame === targetUnlockMode)) {
-        verifiedKeyObj = {
-          key: requestedKeyUpper,
-          game: allowedGame === "all" ? targetUnlockMode : allowedGame,
-          duration: "Lifetime Permanent VIP",
-          partition: "bdg"
-        };
-        isSuccess = true;
-      } else if (allowedGame) {
-        setPasswordError(`यह पासकोड ${allowedGame.toUpperCase()} मोड के लिए सुरक्षित है! / This passcode is restricted to ${allowedGame.toUpperCase()} mode!`);
-        triggerSound("loss");
-        return;
-      } else {
-        const now = Date.now();
-        const matchedCustomKey = generatedKeys.find(
-          (k) => k.key.trim().toLowerCase() === entered.toLowerCase() && 
-                 (k.game === targetUnlockMode || k.game === "all") && 
-                 k.expiresAt > now
-        );
-        if (matchedCustomKey) {
-          verifiedKeyObj = matchedCustomKey;
-          isSuccess = true;
-        } else {
-          setPasswordError("गलत पासकोड! कृपया वैध और सक्रिय पासकोड दर्ज करें। / Invalid Passcode!");
-          triggerSound("loss");
-          return;
-        }
-      }
-    }
+      // Offline fallback: Check local keys in case server is temporarily down
+      const now = Date.now();
+      const manualCodes: Record<string, string> = {
+        "908070": "wingo",
+        "908071": "wingo30s",
+        "908072": "mines",
+        "908073": "aviator",
+        "908074": "goal"
+      };
 
-    if (isSuccess && verifiedKeyObj) {
-      if (verifiedKeyObj.partition) {
-        setActivePartition(verifiedKeyObj.partition);
-      } else {
-        setActivePartition("bdg");
-      }
-      setPasswordError("");
-      setIsHacking(true);
-      setHackProgress(0);
-      setHackLogs([]);
+      const isManualValid = manualCodes[entered] === targetUnlockMode;
+      const matchedCustomKey = generatedKeys.find(
+        (k) => k.key === entered && (k.game === targetUnlockMode || k.game === "all") && k.expiresAt > now
+      );
 
-      const logTemplates = [
-        `[DECRYPT] 🎭 RAMU BHAI VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
-        `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
-        `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
-        `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
-        `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
-      ];
+      if (matchedCustomKey || isManualValid) {
+        setPasswordError("");
+        setIsHacking(true);
+        setHackProgress(0);
+        setHackLogs([]);
 
-      const soundInterval = setInterval(() => {
-        triggerSound("verify");
-      }, 500);
-
-      let pct = 0;
-      const progressTimer = setInterval(() => {
-        pct += 2;
-        setHackProgress(pct);
-
-        const logIdx = Math.floor((pct / 100) * logTemplates.length);
-        if (logIdx < logTemplates.length) {
-          setHackLogs(prev => {
-            if (prev.includes(logTemplates[logIdx])) return prev;
-            return [...prev, logTemplates[logIdx]];
-          });
-        }
-
-        if (pct >= 100) {
-          clearInterval(progressTimer);
-          clearInterval(soundInterval);
-          setTimeout(() => {
+        const logTemplates = [
+          `[DECRYPT] 🎭 (LOCAL OFFLINE FALLBACK) RAMU BHAI टनल सक्रिय की जा रही है...`,
+          `[SUCCESS] स्थानीय रूप से पासकोड सत्यापित! `
+        ];
+        
+        let pct = 0;
+        const progressTimer = setInterval(() => {
+          pct += 5;
+          setHackProgress(pct);
+          if (pct >= 100) {
+            clearInterval(progressTimer);
             setIsHacking(false);
             setUnlockedMode(targetUnlockMode);
             setTargetUnlockMode("none");
-            setPasswordInput("");
             setActiveTab("game");
             triggerSound("unlock");
 
@@ -1561,9 +1525,12 @@ export default function App() {
             } else if (targetUnlockMode === "goal") {
               generateGoalPrediction();
             }
-          }, 300);
-        }
-      }, 35);
+          }
+        }, 50);
+      } else {
+        setPasswordError("गलत पासकोड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
+        triggerSound("loss");
+      }
     }
   };
 
@@ -1663,13 +1630,7 @@ export default function App() {
 
     setTimeout(() => {
       const grid = new Array(25).fill(false);
-      let starCount = 5; // default for 3 bombs
-      if (minesBombCount === 5) {
-        starCount = 4;
-      } else if (minesBombCount === 10) {
-        starCount = 3;
-      }
-      
+      const starCount = 4; // ALWAYS 4 accurate safe stars
       const selectedIndices = new Set<number>();
       while (selectedIndices.size < starCount) {
         selectedIndices.add(Math.floor(Math.random() * 25));
@@ -2767,6 +2728,68 @@ export default function App() {
                     </div>
                   )}
 
+                  {/* LAST COMPLETED RESULT */}
+                  {wingoHistory.length > 0 && (
+                    <div className="p-2 rounded-lg border border-cyan-500/25 bg-black/60 text-center space-y-2 shadow-inner">
+                      <div className="text-[8.5px] font-mono text-cyan-400 font-bold uppercase tracking-wider text-left border-b border-cyan-950/40 pb-1 flex justify-between">
+                        <span>📊 LAST OUTCOME DETAILS</span>
+                        <span className="text-gray-500 font-bold">PER: {wingoHistory[0].period.slice(-4)}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-1.5 text-[10px] text-left font-mono">
+                        {/* Prediction Column */}
+                        <div className="bg-cyan-950/20 p-1.5 rounded border border-cyan-900/20 space-y-0.5">
+                          <span className="block text-[7.5px] text-cyan-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "प्रेडिक्शन" : "PRED"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingoHistory[0].predictedType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingoHistory[0].predictedType}
+                            </span>
+                            <span className="px-1 rounded bg-cyan-950 text-cyan-300 font-bold text-[8px]">
+                              N:{wingoHistory[0].predictedNum}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actual Column */}
+                        <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-800/60 space-y-0.5">
+                          <span className="block text-[7.5px] text-gray-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "खुला" : "ACTUAL"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingoHistory[0].actualType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingoHistory[0].actualType}
+                            </span>
+                            <span className="px-1 rounded bg-zinc-950 text-gray-300 font-bold text-[8px]">
+                              N:{wingoHistory[0].actualNum}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Result Box */}
+                      <div className="bg-black/40 border border-zinc-800/40 rounded p-1 px-2.5 flex justify-between items-center font-mono">
+                        <span className="text-[8.5px] text-gray-400 uppercase font-black">
+                          {appLang === "HINDI" ? "अंतिम परिणाम:" : "OUTCOME:"}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                          wingoHistory[0].status === "JACKPOT"
+                            ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)] animate-pulse"
+                            : wingoHistory[0].status === "WIN"
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                              : "bg-red-500/20 text-red-400 border border-red-500/40"
+                        }`}>
+                          {wingoHistory[0].status}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* HISTORIC BOX BUTTON */}
                   <button 
                     onClick={() => { triggerSound("click"); setIsWingoHistoryOpen(true); }}
@@ -2877,6 +2900,68 @@ export default function App() {
                     </div>
                   )}
 
+                  {/* LAST COMPLETED RESULT */}
+                  {wingo30History.length > 0 && (
+                    <div className="p-2 rounded-lg border border-cyan-500/25 bg-black/60 text-center space-y-2 shadow-inner">
+                      <div className="text-[8.5px] font-mono text-cyan-400 font-bold uppercase tracking-wider text-left border-b border-cyan-950/40 pb-1 flex justify-between">
+                        <span>📊 LAST OUTCOME DETAILS</span>
+                        <span className="text-gray-500 font-bold">PER: {wingo30History[0].period.slice(-4)}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-1.5 text-[10px] text-left font-mono">
+                        {/* Prediction Column */}
+                        <div className="bg-cyan-950/20 p-1.5 rounded border border-cyan-900/20 space-y-0.5">
+                          <span className="block text-[7.5px] text-cyan-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "प्रेडिक्शन" : "PRED"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingo30History[0].predictedType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingo30History[0].predictedType}
+                            </span>
+                            <span className="px-1 rounded bg-cyan-950 text-cyan-300 font-bold text-[8px]">
+                              N:{wingo30History[0].predictedNum}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actual Column */}
+                        <div className="bg-zinc-900/60 p-1.5 rounded border border-zinc-800/60 space-y-0.5">
+                          <span className="block text-[7.5px] text-gray-400 font-black tracking-wider uppercase">
+                            {appLang === "HINDI" ? "खुला" : "ACTUAL"}
+                          </span>
+                          <div className="flex flex-wrap gap-1 items-center mt-0.5">
+                            <span className={`px-1 rounded font-black text-[8px] ${
+                              wingo30History[0].actualType === "BIG" ? "bg-rose-950/40 text-rose-400" : "bg-emerald-950/40 text-emerald-400"
+                            }`}>
+                              {wingo30History[0].actualType}
+                            </span>
+                            <span className="px-1 rounded bg-zinc-950 text-gray-300 font-bold text-[8px]">
+                              N:{wingo30History[0].actualNum}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Result Box */}
+                      <div className="bg-black/40 border border-zinc-800/40 rounded p-1 px-2.5 flex justify-between items-center font-mono">
+                        <span className="text-[8.5px] text-gray-400 uppercase font-black">
+                          {appLang === "HINDI" ? "अंतिम परिणाम:" : "OUTCOME:"}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                          wingo30History[0].status === "JACKPOT"
+                            ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)] animate-pulse"
+                            : wingo30History[0].status === "WIN"
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                              : "bg-red-500/20 text-red-400 border border-red-500/40"
+                        }`}>
+                          {wingo30History[0].status}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* HISTORIC BOX BUTTON */}
                   <button 
                     onClick={() => { triggerSound("click"); setIsWingoHistoryOpen(true); }}
@@ -2894,32 +2979,6 @@ export default function App() {
                   <div className="p-2 bg-black/60 border border-cyan-500/20 rounded-xl text-center">
                     <span className="text-[10px] text-gray-400 block mb-1">{curTrans.minesScanGrid}</span>
                     
-                    {/* Bomb Selection Section */}
-                    <div className="flex justify-center items-center gap-2 mb-2">
-                      <span className="text-[8.5px] font-black text-cyan-400 uppercase tracking-wider font-mono">
-                        {appLang === "HINDI" ? "बम चुनें:" : "BOMBS:"}
-                      </span>
-                      <div className="flex bg-cyan-950/40 rounded-lg p-0.5 border border-cyan-500/20">
-                        {([3, 5, 10] as const).map(count => (
-                          <button
-                            key={count}
-                            onClick={() => { 
-                              triggerSound("click"); 
-                              setMinesBombCount(count); 
-                              setMinesGrid(new Array(25).fill(false)); 
-                            }}
-                            className={`px-2 py-0.5 text-[8.5px] font-black rounded-md transition-all cursor-pointer ${
-                              minesBombCount === count
-                                ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.4)]"
-                                : "text-gray-400 hover:text-white"
-                            }`}
-                          >
-                            {count}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
                     {/* 5x5 Mines Board */}
                     <div className="grid grid-cols-5 gap-1.5 max-w-[155px] mx-auto my-2">
                       {minesGrid.map((isStar, idx) => (

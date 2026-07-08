@@ -72,9 +72,28 @@ async function startServer() {
     next();
   });
 
-  // 2. Global Bot/Hacking Tool/Scraper blocklist middleware - Fully relaxed to ensure 100% compatibility across all devices and web platforms
+  // 2. Global Bot/Hacking Tool/Scraper blocklist middleware
   app.use((req, res, next) => {
-    // Check if device ID is blacklisted or if we need standard headers
+    const userAgent = (req.headers["user-agent"] || "").toLowerCase();
+    
+    // List of bot, scraper, headless and exploit tool signatures
+    const bannedAgents = [
+      "curl", "wget", "python", "httpclient", "axios", "postman", "headless", "puppeteer", 
+      "selenium", "playwright", "scrapy", "sqlmap", "nmap", "gobuster", "dirbuster", "nikto", 
+      "burp", "owasp", "zap", "rest-client", "insomnia", "phantomjs", "zgrab", "masscan", "censys"
+    ];
+
+    const isBanned = bannedAgents.some(agent => userAgent.includes(agent)) || !userAgent;
+
+    if (isBanned && req.path.startsWith("/api/")) {
+      console.warn(`[SECURITY VIOLATION] Blocked automated/scraping tool access. User-Agent: ${userAgent}`);
+      return res.status(403).json({ 
+        error: "ACCESS_DENIED", 
+        message: "सुरक्षा उल्लंघन: स्वचालित उपकरणों या अनधिकृत टूल से प्रवेश निषेध है! / Security Violation: Automated or unauthorized tools are blocked!" 
+      });
+    }
+
+    // 3. Global Device Blacklist Check - Disabled to unblock user device
     const deviceId = req.headers["x-device-id"] as string || req.query.deviceId as string;
     if (deviceId) {
       console.log(`[SECURITY] Device check bypassed for Device ID: ${deviceId}`);
@@ -297,9 +316,8 @@ async function startServer() {
     const now = Date.now();
 
     // Verify if passcode matches active keys list (including "all")
-    const cleanedInput = key.trim().toLowerCase();
     const matchedKeyIndex = keys.findIndex(
-      k => k.key.trim().toLowerCase() === cleanedInput && (k.game === game || k.game === "all")
+      k => k.key === key && (k.game === game || k.game === "all")
     );
 
     if (matchedKeyIndex !== -1) {
