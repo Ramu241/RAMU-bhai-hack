@@ -1126,9 +1126,8 @@ export default function App() {
   }, []);
 
   const triggerTamperBlock = () => {
-    // Only block dynamically during active session to prevent persistent bricking of legitimate user devices
-    setIsTampered(true);
-    playEmergencySiren();
+    // Completely bypass tampering block to prevent false-alarms, white screens, or blocks in production/GitHub/iframes
+    console.log("Tamper block triggered but bypassed for compatibility");
   };
 
   const playEmergencySiren = () => {
@@ -1204,78 +1203,8 @@ export default function App() {
 
   // Upgraded High-Security Anti-hacking, Anti-reverse-engineering and Anti-devtools scan script
   useEffect(() => {
-    try {
-      const hn = window.location.hostname;
-      const isDev = hn.includes("ais-dev") || hn.includes("ais-pre") || hn.includes("localhost") || hn.includes("127.0.0.1") || hn.includes("run.app");
-      if (isDev) return; // Completely relax security in developer preview to avoid blocking the owner
-    } catch (e) {}
-
-    // 1. Block right click context menu to prevent inspecting elements
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      try { triggerSound("loss"); } catch(ex) {}
-    };
-
-    // 2. Block critical debugging hotkeys (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U)
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
-        (e.ctrlKey && (e.key === "U" || e.key === "u"))
-      ) {
-        e.preventDefault();
-        try { triggerSound("loss"); } catch(ex) {}
-        triggerTamperBlock();
-      }
-    };
-
-    window.addEventListener("contextmenu", handleContextMenu);
-    window.addEventListener("keydown", handleKeyDown);
-
-    // 3. Console Debugger Trap: executes dynamically to pause browser on any devtools open state
-    const debugTrapInterval = setInterval(() => {
-      const startTime = performance.now();
-      debugger; // Traps open debugger panels instantly
-      const endTime = performance.now();
-      if (endTime - startTime > 150) {
-        triggerTamperBlock();
-      }
-    }, 1000);
-
-    // 4. Dimension detection block: fires if side or bottom devtools panel resizes screen width/height significantly
-    const dimInterval = setInterval(() => {
-      const threshold = 170;
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      if (widthDiff > threshold || heightDiff > threshold) {
-        triggerTamperBlock();
-      }
-    }, 1000);
-
-    // 5. Console Flooding & Anti-Injections
-    const consoleClearInterval = setInterval(() => {
-      console.clear();
-      console.log("%c⚠️ ACCESS RESTRICTED! RAMU BHAI SECURITY PROTOCOL ACTIVE.", "color: red; font-size: 20px; font-weight: bold;");
-    }, 800);
-
-    // 6. Block function decomposition by hooking toString
-    const blockDecomp = () => {
-      const f = function() {};
-      f.toString = () => {
-        triggerTamperBlock();
-        return "secure_obfuscated_code()";
-      };
-    };
-    blockDecomp();
-
-    // Clean up
-    return () => {
-      window.removeEventListener("contextmenu", handleContextMenu);
-      window.removeEventListener("keydown", handleKeyDown);
-      clearInterval(debugTrapInterval);
-      clearInterval(dimInterval);
-      clearInterval(consoleClearInterval);
-    };
+    // Disabled intrusive scripts to prevent browser freezing, timing exceptions, and false-alarm white screens on GitHub and iframes
+    console.log("Ramu Bhai Security Systems active and bypassed for platform compatibility.");
   }, []);
 
   // Navigation & Multi-step Entry Flow States
@@ -3708,36 +3637,57 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Prediction Outputs - Perfect 3-column equal grid, corner-to-corner set, equal-width */}
-                        <div className="grid grid-cols-3 gap-1.5 bg-black/30 p-1.5 rounded-lg border border-purple-500/10 text-center items-stretch">
-                          <div className="bg-purple-950/10 p-1.5 rounded-md border border-purple-900/20 flex flex-col justify-center items-center">
-                            <span className="block text-[7.5px] font-mono uppercase text-purple-400 tracking-wider mb-1">{curTrans.signal}</span>
-                            <span className={`text-[10px] font-black tracking-wider block ${
-                              wingoCurrentPrediction.type === "BIG" 
-                                ? "text-rose-500 [text-shadow:0_0_8px_rgba(244,63,94,0.5)]" 
-                                : "text-emerald-400 [text-shadow:0_0_8px_rgba(52,211,153,0.5)]"
-                            }`}>
-                              {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
-                            </span>
-                          </div>
+                        {/* Prediction Outputs - Unified Single Compact Beautiful Container */}
+                        <div className={`p-2 rounded-xl border transition-all duration-300 ${
+                          wingoCurrentPrediction.color === "RED"
+                            ? "bg-gradient-to-r from-red-950/45 via-red-900/10 to-black/60 border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.25)] animate-pulse"
+                            : "bg-gradient-to-r from-emerald-950/45 via-emerald-900/10 to-black/60 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)] animate-pulse"
+                        }`}>
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                            {/* Combined label */}
+                            <div className="flex flex-col text-left">
+                              <span className="text-[7.5px] font-mono uppercase text-gray-400 tracking-wider font-black">
+                                {appLang === "HINDI" ? "रामू भाई संयुक्त अनुमान" : "JOINT FORECAST"}
+                              </span>
+                              <span className="text-[6px] font-mono text-gray-500">LIVE HACK SECURE v4.9</span>
+                            </div>
 
-                          {/* Color Indicator Pill */}
-                          <div className="bg-purple-950/10 p-1.5 rounded-md border border-purple-900/20 flex flex-col justify-center items-center">
-                            <span className="block text-[7.5px] font-mono uppercase text-purple-400 tracking-wider mb-1">COLOR</span>
-                            <span className={`inline-block text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider text-white ${
-                              wingoCurrentPrediction.color === "RED" 
-                                ? "bg-red-600 border border-red-400 shadow-[0_0_6px_rgba(239,68,68,0.4)]" 
-                                : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_6px_rgba(16,185,129,0.4)]"
-                            }`}>
-                              {wingoCurrentPrediction.color}
-                            </span>
-                          </div>
+                            {/* Elements row */}
+                            <div className="flex flex-wrap items-center justify-center gap-1.5 w-full sm:w-auto">
+                              {/* Big / Small Signal */}
+                              <div className="bg-black/50 border border-white/5 px-2 py-1 rounded-md flex items-center gap-1">
+                                <span className="text-[6.5px] font-mono text-gray-400">SIG:</span>
+                                <span className={`text-[10px] font-black tracking-wide ${
+                                  wingoCurrentPrediction.type === "BIG" 
+                                    ? "text-rose-500 [text-shadow:0_0_5px_rgba(244,63,94,0.5)]" 
+                                    : "text-emerald-400 [text-shadow:0_0_5px_rgba(52,211,153,0.5)]"
+                                }`}>
+                                  {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
+                                </span>
+                              </div>
 
-                          <div className="bg-purple-950/10 p-1.5 rounded-md border border-purple-900/20 flex flex-col justify-center items-center">
-                            <span className="block text-[7.5px] font-mono uppercase text-cyan-400 tracking-wider mb-1">{curTrans.jackpot}</span>
-                            <span className="text-xs font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.5)]">
-                              {wingoCurrentPrediction.num}
-                            </span>
+                              {/* Combined Color Indicator */}
+                              <div className={`px-2 py-1 rounded-md border text-white font-mono text-[10px] flex items-center gap-1 ${
+                                wingoCurrentPrediction.color === "RED" 
+                                  ? "bg-red-950/40 border-red-500/25" 
+                                  : "bg-emerald-950/40 border-emerald-500/25"
+                              }`}>
+                                <span className="text-[6.5px] text-gray-400">COL:</span>
+                                <span className={`font-black flex items-center gap-0.5 text-[10px] ${
+                                  wingoCurrentPrediction.color === "RED" ? "text-red-400" : "text-emerald-400"
+                                }`}>
+                                  {wingoCurrentPrediction.color === "RED" ? "🟥 RED" : "🟩 GREEN"}
+                                </span>
+                              </div>
+
+                              {/* Jackpot Number */}
+                              <div className="bg-cyan-950/30 border border-cyan-500/25 px-2 py-1 rounded-md flex items-center gap-1">
+                                <span className="text-[6.5px] font-mono text-cyan-400">JKPT:</span>
+                                <span className="text-[10px] font-black text-cyan-300 font-mono [text-shadow:0_0_5px_rgba(34,211,238,0.5)]">
+                                  {wingoCurrentPrediction.num}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -4000,36 +3950,57 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Prediction Outputs - Perfect 3-column equal grid, corner-to-corner set, equal-width */}
-                        <div className="grid grid-cols-3 gap-1.5 bg-black/30 p-1.5 rounded-lg border border-pink-500/10 text-center items-stretch">
-                          <div className="bg-pink-950/10 p-1.5 rounded-md border border-pink-900/20 flex flex-col justify-center items-center">
-                            <span className="block text-[7.5px] font-mono uppercase text-pink-400 tracking-wider mb-1">{curTrans.signal}</span>
-                            <span className={`text-[10px] font-black tracking-wider block ${
-                              wingo30CurrentPrediction.type === "BIG" 
-                                ? "text-rose-500 [text-shadow:0_0_8px_rgba(244,63,94,0.5)]" 
-                                : "text-emerald-400 [text-shadow:0_0_8px_rgba(52,211,153,0.5)]"
-                            }`}>
-                              {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
-                            </span>
-                          </div>
+                        {/* Prediction Outputs - Unified Single Compact Beautiful Container */}
+                        <div className={`p-2 rounded-xl border transition-all duration-300 ${
+                          wingo30CurrentPrediction.color === "RED"
+                            ? "bg-gradient-to-r from-red-950/45 via-red-900/10 to-black/60 border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.25)] animate-pulse"
+                            : "bg-gradient-to-r from-emerald-950/45 via-emerald-900/10 to-black/60 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)] animate-pulse"
+                        }`}>
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                            {/* Combined label */}
+                            <div className="flex flex-col text-left">
+                              <span className="text-[7.5px] font-mono uppercase text-gray-400 tracking-wider font-black">
+                                {appLang === "HINDI" ? "रामू भाई संयुक्त अनुमान" : "JOINT FORECAST"}
+                              </span>
+                              <span className="text-[6px] font-mono text-gray-500">LIVE HACK SECURE v4.9</span>
+                            </div>
 
-                          {/* Color Indicator Pill */}
-                          <div className="bg-pink-950/10 p-1.5 rounded-md border border-pink-900/20 flex flex-col justify-center items-center">
-                            <span className="block text-[7.5px] font-mono uppercase text-pink-400 tracking-wider mb-1">COLOR</span>
-                            <span className={`inline-block text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider text-white ${
-                              wingo30CurrentPrediction.color === "RED" 
-                                ? "bg-red-600 border border-red-400 shadow-[0_0_6px_rgba(239,68,68,0.4)]" 
-                                : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_6px_rgba(16,185,129,0.4)]"
-                            }`}>
-                              {wingo30CurrentPrediction.color}
-                            </span>
-                          </div>
+                            {/* Elements row */}
+                            <div className="flex flex-wrap items-center justify-center gap-1.5 w-full sm:w-auto">
+                              {/* Big / Small Signal */}
+                              <div className="bg-black/50 border border-white/5 px-2 py-1 rounded-md flex items-center gap-1">
+                                <span className="text-[6.5px] font-mono text-gray-400">SIG:</span>
+                                <span className={`text-[10px] font-black tracking-wide ${
+                                  wingo30CurrentPrediction.type === "BIG" 
+                                    ? "text-rose-500 [text-shadow:0_0_5px_rgba(244,63,94,0.5)]" 
+                                    : "text-emerald-400 [text-shadow:0_0_5px_rgba(52,211,153,0.5)]"
+                                }`}>
+                                  {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
+                                </span>
+                              </div>
 
-                          <div className="bg-pink-950/10 p-1.5 rounded-md border border-pink-900/20 flex flex-col justify-center items-center">
-                            <span className="block text-[7.5px] font-mono uppercase text-cyan-400 tracking-wider mb-1">{curTrans.jackpot}</span>
-                            <span className="text-xs font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.5)]">
-                              {wingo30CurrentPrediction.num}
-                            </span>
+                              {/* Combined Color Indicator */}
+                              <div className={`px-2 py-1 rounded-md border text-white font-mono text-[10px] flex items-center gap-1 ${
+                                wingo30CurrentPrediction.color === "RED" 
+                                  ? "bg-red-950/40 border-red-500/25" 
+                                  : "bg-emerald-950/40 border-emerald-500/25"
+                              }`}>
+                                <span className="text-[6.5px] text-gray-400">COL:</span>
+                                <span className={`font-black flex items-center gap-0.5 text-[10px] ${
+                                  wingo30CurrentPrediction.color === "RED" ? "text-red-400" : "text-emerald-400"
+                                }`}>
+                                  {wingo30CurrentPrediction.color === "RED" ? "🟥 RED" : "🟩 GREEN"}
+                                </span>
+                              </div>
+
+                              {/* Jackpot Number */}
+                              <div className="bg-cyan-950/30 border border-cyan-500/25 px-2 py-1 rounded-md flex items-center gap-1">
+                                <span className="text-[6.5px] font-mono text-cyan-400">JKPT:</span>
+                                <span className="text-[10px] font-black text-cyan-300 font-mono [text-shadow:0_0_5px_rgba(34,211,238,0.5)]">
+                                  {wingo30CurrentPrediction.num}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
