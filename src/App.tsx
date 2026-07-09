@@ -1850,7 +1850,7 @@ export default function App() {
       }
 
       // Check if period changed based on UTC clock minute transition
-      if (currentPeriod !== wingoCurrentPrediction.period && currentPeriod !== lastTriggeredPeriod) {
+      if (wingoCurrentPrediction && currentPeriod !== wingoCurrentPrediction.period && currentPeriod !== lastTriggeredPeriod) {
         setLastTriggeredPeriod(currentPeriod);
         const lastPred = wingoCurrentPrediction;
         
@@ -1964,7 +1964,7 @@ export default function App() {
       }
 
       // Check if period changed based on UTC clock minute transition
-      if (currentPeriod !== wingo30CurrentPrediction.period && currentPeriod !== lastTriggeredPeriod30) {
+      if (wingo30CurrentPrediction && currentPeriod !== wingo30CurrentPrediction.period && currentPeriod !== lastTriggeredPeriod30) {
         setLastTriggeredPeriod30(currentPeriod);
         const lastPred = wingo30CurrentPrediction;
         
@@ -3637,25 +3637,25 @@ export default function App() {
                               <div className="bg-rose-950/30 border border-rose-900/30 rounded p-1">
                                 <span className="block text-[7px] text-rose-400 font-black">🔴 BIG</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "BIG").length}
+                                  {wingoHistory.filter(h => h.predictedType === "BIG" && h.actualType === "BIG").length}
                                 </span>
                               </div>
                               <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
                                 <span className="block text-[7px] text-emerald-400 font-black">🟢 SMALL</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "SMALL").length}
+                                  {wingoHistory.filter(h => h.predictedType === "SMALL" && h.actualType === "SMALL").length}
                                 </span>
                               </div>
                               <div className="bg-red-950/30 border border-red-900/30 rounded p-1">
                                 <span className="block text-[7px] text-red-400 font-black">🟥 RED</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "RED").length}
+                                  {wingoHistory.filter(h => h.predictedColor === "RED" && (h.actualColor === "RED" || h.actualColor === "VIOLET")).length}
                                 </span>
                               </div>
                               <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
                                 <span className="block text-[7px] text-emerald-400 font-black">🟩 GREEN</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "GREEN").length}
+                                  {wingoHistory.filter(h => h.predictedColor === "GREEN" && (h.actualColor === "GREEN" || h.actualColor === "VIOLET")).length}
                                 </span>
                               </div>
                             </div>
@@ -3929,25 +3929,25 @@ export default function App() {
                               <div className="bg-rose-950/30 border border-rose-900/30 rounded p-1">
                                 <span className="block text-[7px] text-rose-400 font-black">🔴 BIG</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "BIG").length}
+                                  {wingo30History.filter(h => h.predictedType === "BIG" && h.actualType === "BIG").length}
                                 </span>
                               </div>
                               <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
                                 <span className="block text-[7px] text-emerald-400 font-black">🟢 SMALL</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "SMALL").length}
+                                  {wingo30History.filter(h => h.predictedType === "SMALL" && h.actualType === "SMALL").length}
                                 </span>
                               </div>
                               <div className="bg-red-950/30 border border-red-900/30 rounded p-1">
                                 <span className="block text-[7px] text-red-400 font-black">🟥 RED</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "RED").length}
+                                  {wingo30History.filter(h => h.predictedColor === "RED" && (h.actualColor === "RED" || h.actualColor === "VIOLET")).length}
                                 </span>
                               </div>
                               <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
                                 <span className="block text-[7px] text-emerald-400 font-black">🟩 GREEN</span>
                                 <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "GREEN").length}
+                                  {wingo30History.filter(h => h.predictedColor === "GREEN" && (h.actualColor === "GREEN" || h.actualColor === "VIOLET")).length}
                                 </span>
                               </div>
                             </div>
