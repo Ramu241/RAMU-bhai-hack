@@ -30,7 +30,10 @@ import {
   Zap,
   Key,
   Copy,
-  ShieldAlert
+  ShieldAlert,
+  Upload,
+  Check,
+  User
 } from "lucide-react";
 import { playSound } from "./utils/audio";
 
@@ -903,6 +906,34 @@ export default function App() {
   const [isBuyPasscodeOpen, setIsBuyPasscodeOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"1 Hour" | "1 Day" | "3 Days" | "7 Days">("1 Day");
   const [copiedUpi, setCopiedUpi] = useState(false);
+
+  // Interactive Deposit & Activation Wizard states
+  const [buyModalStep, setBuyModalStep] = useState<1 | 2 | 3 | 4>(1);
+  const [registeredUid, setRegisteredUid] = useState("");
+  const [isVerifyingUid, setIsVerifyingUid] = useState(false);
+  const [isUidVerified, setIsUidVerified] = useState(false);
+  const [isVerifyingDeposit, setIsVerifyingDeposit] = useState(false);
+  const [isDepositVerified, setIsDepositVerified] = useState(false);
+  const [uploadedScreenshot, setUploadedScreenshot] = useState<string | null>(null);
+  const [uploadedScreenshotName, setUploadedScreenshotName] = useState<string>("");
+  const [isVerifyingScreenshot, setIsVerifyingScreenshot] = useState(false);
+  const [isScreenshotVerified, setIsScreenshotVerified] = useState(false);
+
+  // Reset wizard states when buy modal opens
+  useEffect(() => {
+    if (isBuyPasscodeOpen) {
+      setBuyModalStep(1);
+      setRegisteredUid("");
+      setIsUidVerified(false);
+      setIsVerifyingUid(false);
+      setIsDepositVerified(false);
+      setIsVerifyingDeposit(false);
+      setUploadedScreenshot(null);
+      setUploadedScreenshotName("");
+      setIsScreenshotVerified(false);
+      setIsVerifyingScreenshot(false);
+    }
+  }, [isBuyPasscodeOpen]);
 
   const PLAN_PRICES = {
     "1 Hour": 50,
@@ -2886,7 +2917,7 @@ export default function App() {
                       className="w-full py-2.5 rounded-xl border border-dashed border-yellow-500/50 bg-yellow-950/20 hover:bg-yellow-950/40 text-yellow-400 hover:text-yellow-200 transition-all text-[11px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-center gap-2 animate-pulse"
                     >
                       <Key className="w-3.5 h-3.5" />
-                      {appLang === "HINDI" ? "पासकोड खरीदें / BUY VIP KEY" : "BUY VIP PASSCODE KEY"}
+                      {appLang === "HINDI" ? "डिपॉजिट & पासकोड एक्टिवेशन / DEPOSIT & ACTIVATE" : "DEPOSIT & ACTIVATE KEY"}
                     </button>
                   </div>
                 </div>
@@ -3732,13 +3763,11 @@ export default function App() {
                               {curTrans.period}: <span className="text-cyan-400">{item.period.slice(-4)}</span>
                             </span>
                             <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                              item.status === "JACKPOT" 
-                                ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.3)] animate-pulse" 
-                                : item.status === "WIN" 
-                                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" 
-                                  : "bg-red-500/20 text-red-400 border border-red-500/40"
+                              item.status === "WIN" || item.status === "JACKPOT"
+                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" 
+                                : "bg-red-500/20 text-red-400 border border-red-500/40"
                             }`}>
-                              {item.status === "JACKPOT" ? (appLang === "HINDI" ? "जैकपॉट" : "JACKPOT") : item.status === "WIN" ? (appLang === "HINDI" ? "जीत" : "WIN") : (appLang === "HINDI" ? "हार" : "LOSS")}
+                              {item.status === "WIN" || item.status === "JACKPOT" ? "WIN🐯" : "LOES🖤"}
                             </span>
                           </div>
 
@@ -3749,10 +3778,10 @@ export default function App() {
                               <span className="block text-[8px] text-cyan-400 font-bold uppercase tracking-widest">{appLang === "HINDI" ? "अनुमान (पैनल)" : "PRED (PANEL)"}</span>
                               <div className="flex flex-wrap gap-1 items-center font-bold">
                                 <span className={item.predictedType === "BIG" ? "text-rose-400" : "text-emerald-400"}>
-                                  {item.predictedType === "BIG" ? (appLang === "HINDI" ? "बिग" : "BIG") : (appLang === "HINDI" ? "स्मॉल" : "SMALL")}
+                                  {item.predictedType === "BIG" ? (appLang === "HINDI" ? "BIG" : "BIG") : (appLang === "HINDI" ? "SMALL" : "SMALL")}
                                 </span>
                                 <span className={`px-1 rounded text-[8px] text-white ${item.predictedColor === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
-                                  {item.predictedColor === "RED" ? (appLang === "HINDI" ? "लाल" : "RED") : (appLang === "HINDI" ? "हरा" : "GREEN")}
+                                  {item.predictedColor === "RED" ? (appLang === "HINDI" ? "RED" : "RED") : (appLang === "HINDI" ? "GREEN" : "GREEN")}
                                 </span>
                                 <span className="text-gray-300">({item.predictedNum})</span>
                               </div>
@@ -3763,10 +3792,10 @@ export default function App() {
                               <span className="block text-[8px] text-gray-500 font-bold uppercase tracking-widest">{appLang === "HINDI" ? "गेम का रिजल्ट" : "ACTUAL (GAME)"}</span>
                               <div className="flex flex-wrap gap-1 items-center font-bold">
                                 <span className={item.actualType === "BIG" ? "text-rose-400" : "text-emerald-400"}>
-                                  {item.actualType === "BIG" ? (appLang === "HINDI" ? "बिग" : "BIG") : (appLang === "HINDI" ? "स्मॉल" : "SMALL")}
+                                  {item.actualType === "BIG" ? (appLang === "HINDI" ? "BIG" : "BIG") : (appLang === "HINDI" ? "SMALL" : "SMALL")}
                                 </span>
                                 <span className={`px-1 rounded text-[8px] text-white ${item.actualColor === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
-                                  {item.actualColor === "RED" ? (appLang === "HINDI" ? "लाल" : "RED") : (appLang === "HINDI" ? "हरा" : "GREEN")}
+                                  {item.actualColor === "RED" ? (appLang === "HINDI" ? "RED" : "RED") : (appLang === "HINDI" ? "GREEN" : "GREEN")}
                                 </span>
                                 <span className="text-gray-300">({item.actualNum})</span>
                               </div>
@@ -3788,16 +3817,16 @@ export default function App() {
             </div>
           )}
 
-          {/* ----------------- BUY VIP PASSCODE MODAL (PAYMENT SCREEN) ----------------- */}
+          {/* ----------------- BUY VIP PASSCODE MODAL (DEPOSIT & ACTIVATION SCREEN) ----------------- */}
           {isBuyPasscodeOpen && (
-            <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/90 backdrop-blur-md px-4 py-6 overflow-y-auto">
-              <div className="relative w-full max-w-md rounded-2xl border border-yellow-500/40 bg-[#0c0818] p-5 sm:p-6 shadow-[0_0_35px_rgba(234,179,8,0.25)] max-h-[95vh] flex flex-col overflow-y-auto scrollbar-none animate-in fade-in zoom-in-95 duration-200">
+            <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/95 backdrop-blur-md px-4 py-6 overflow-y-auto">
+              <div className="relative w-full max-w-md rounded-2xl border border-yellow-500/40 bg-[#0c0818] p-5 sm:p-6 shadow-[0_0_35px_rgba(234,179,8,0.3)] max-h-[95vh] flex flex-col overflow-y-auto scrollbar-none animate-in fade-in zoom-in-95 duration-200">
                 
                 {/* Modal Header */}
                 <div className="flex justify-between items-center border-b border-purple-900/40 pb-3 mb-4 shrink-0">
                   <h3 className="text-sm font-black text-yellow-400 flex items-center gap-1.5 font-mono">
-                    <Key className="w-4 h-4 text-yellow-500 animate-pulse" />
-                    {appLang === "HINDI" ? "वीआईपी की खरीदें / GET VIP KEY" : "GET VIP PASSCODE KEY"}
+                    <Flame className="w-4 h-4 text-yellow-500 animate-pulse" />
+                    {appLang === "HINDI" ? "गेम डिपॉजिट और एक्टिवेशन / DEPOSIT & ACTIVATE" : "DEPOSIT & ACTIVATE VIP KEY"}
                   </h3>
                   <button 
                     onClick={() => { triggerSound("click"); setIsBuyPasscodeOpen(false); }}
@@ -3807,115 +3836,336 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Plan Selection Grid */}
-                <div className="shrink-0 mb-4">
-                  <span className="block text-[10px] font-mono text-purple-400 uppercase tracking-widest mb-2 font-black">
-                    {appLang === "HINDI" ? "१. वैधता प्लान चुनें / 1. SELECT VALIDITY PLAN" : "1. SELECT VALIDITY PLAN"}
-                  </span>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {(["1 Hour", "1 Day", "3 Days", "7 Days"] as const).map((plan) => {
-                      const price = PLAN_PRICES[plan];
-                      const isSelected = selectedPlan === plan;
-                      return (
+                {/* Interactive Wizard Stepper Progress */}
+                <div className="flex items-center justify-between px-1 mb-5 shrink-0 select-none">
+                  {[1, 2, 3, 4].map((stepNum) => {
+                    const isCompleted = buyModalStep > stepNum;
+                    const isActive = buyModalStep === stepNum;
+                    return (
+                      <React.Fragment key={stepNum}>
                         <button
-                          key={plan}
-                          onClick={() => { triggerSound("click"); setSelectedPlan(plan); }}
-                          className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                            isSelected 
-                              ? "bg-yellow-500/20 border-yellow-400 shadow-[0_0_12px_rgba(234,179,8,0.3)] scale-102" 
-                              : "bg-black/50 border-purple-950 hover:border-yellow-500/30"
+                          disabled={stepNum > buyModalStep}
+                          onClick={() => {
+                            triggerSound("click");
+                            setBuyModalStep(stepNum as any);
+                          }}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all border duration-200 ${
+                            isCompleted
+                              ? "bg-emerald-500 border-emerald-400 text-black shadow-[0_0_10px_rgba(16,185,129,0.4)] cursor-pointer"
+                              : isActive
+                              ? "bg-yellow-500 border-yellow-400 text-black shadow-[0_0_10px_rgba(234,179,8,0.4)] animate-pulse"
+                              : "bg-purple-950/40 border-purple-900 text-purple-400 cursor-not-allowed"
                           }`}
                         >
-                          <span className={`text-[11px] font-black uppercase tracking-wider ${isSelected ? "text-yellow-400" : "text-gray-400"}`}>
-                            {plan === "1 Hour" ? (appLang === "HINDI" ? "1 घंटा" : "1 Hour") :
-                             plan === "1 Day" ? (appLang === "HINDI" ? "1 दिन" : "1 Day") :
-                             plan === "3 Days" ? (appLang === "HINDI" ? "3 दिन" : "3 Days") : 
-                             (appLang === "HINDI" ? "7 दिन" : "7 Days")}
-                          </span>
-                          <span className="text-base font-black text-white mt-1">₹{price}</span>
+                          {isCompleted ? <Check className="w-3.5 h-3.5 stroke-[3px]" /> : stepNum}
                         </button>
-                      );
-                    })}
-                  </div>
+                        {stepNum < 4 && (
+                          <div className={`flex-1 h-0.5 mx-1.5 rounded transition-all duration-300 ${
+                            buyModalStep > stepNum ? "bg-emerald-500" : "bg-purple-950"
+                          }`} />
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
 
-                {/* QR Code and Payment Details */}
-                <div className="bg-black/80 border border-purple-900/40 p-4 rounded-xl flex flex-col items-center text-center space-y-4 shadow-inner mb-4">
-                  <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-black">
-                    {appLang === "HINDI" ? "२. बारकोड स्कैन करके पेमेंट करें / 2. SCAN BARCODE TO PAY" : "2. SCAN BARCODE TO PAY"}
-                  </span>
-                  
-                  {/* Dynamic QR Code */}
-                  <div className="bg-white p-2.5 rounded-xl shadow-lg border border-yellow-500/20 glow-yellow flex items-center justify-center">
-                    <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                        `upi://pay?pa=Shyamu6@fam&pn=RAMU%20BHAI%20VIP&am=${PLAN_PRICES[selectedPlan]}&cu=INR&tn=VIP%20Passcode%20${selectedPlan.replace(" ", "%20")}`
-                      )}`} 
-                      alt="Payment QR Code" 
-                      className="w-36 h-36 object-contain rounded"
-                      referrerPolicy="no-referrer"
-                    />
+                {/* STEP 1: REGISTER & ENTER/VERIFY UID */}
+                {buyModalStep === 1 && (
+                  <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <div className="bg-purple-950/20 border border-purple-500/20 p-3.5 rounded-xl text-left space-y-1.5">
+                      <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest font-black block">
+                        {appLang === "HINDI" ? "१. नया अकाउंट रजिस्टर करें / 1. REGISTER ACCOUNT" : "1. REGISTER NEW ACCOUNT"}
+                      </span>
+                      <p className="text-[11px] text-gray-300 leading-relaxed font-bold">
+                        {appLang === "HINDI" 
+                          ? "नीचे दिए गए सर्वर लिंक पर क्लिक करके नया अकाउंट रजिस्टर करें। पुराना अकाउंट मान्य नहीं है।" 
+                          : "Create a brand new game account using our direct server gateway link below. Old accounts are not valid."}
+                      </p>
+                      <div className="pt-2">
+                        <a 
+                          href={PARTITION_URLS[activePartition] || "https://bdgwinmy.cc//#/register?invitationCode=8261315097340"} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="w-full py-2.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-xl transition-all flex items-center justify-center gap-2 font-black text-xs uppercase tracking-wider cursor-pointer"
+                        >
+                          <Flame className="w-4 h-4 text-yellow-500 animate-pulse" />
+                          <span>{PARTITION_NAMES[activePartition] || "BDG Win"} {appLang === "HINDI" ? "रजिस्टर लिंक" : "REGISTER LINK"}</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="bg-black/40 border border-purple-900/30 p-4 rounded-xl text-left space-y-3">
+                      <label className="block text-[10px] font-mono text-purple-400 uppercase tracking-widest font-black">
+                        {appLang === "HINDI" ? "२. अपनी नई गेम UID दर्ज करें / 2. ENTER UID" : "2. ENTER YOUR NEW GAME UID"}
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-purple-500">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="text"
+                          disabled={isUidVerified || isVerifyingUid}
+                          value={registeredUid}
+                          onChange={(e) => setRegisteredUid(e.target.value.replace(/[^0-9a-zA-Z]/g, ""))}
+                          placeholder={appLang === "HINDI" ? "उदा. 1029384756" : "e.g. 1029384756"}
+                          className="w-full pl-9 pr-4 py-2.5 bg-black/60 border border-purple-950 rounded-xl text-white font-mono placeholder-gray-600 focus:outline-none focus:border-purple-500 text-xs font-bold"
+                        />
+                      </div>
+
+                      {isUidVerified ? (
+                        <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 shrink-0" />
+                          <span>{appLang === "HINDI" ? `सफलता: UID ${registeredUid} सफलतापूर्वक वेरीफाई हो गया!` : `SUCCESS: UID ${registeredUid} verified!`}</span>
+                        </div>
+                      ) : isVerifyingUid ? (
+                        <div className="p-4 bg-purple-950/40 border border-purple-500/30 rounded-xl space-y-2">
+                          <div className="flex items-center gap-2 text-cyan-400 font-mono text-[10px] font-black uppercase tracking-wider animate-pulse">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>{appLang === "HINDI" ? "सर्वर हैंडशेक सिंकिंग..." : "SERVER HANDSHAKE SYNCING..."}</span>
+                          </div>
+                          <div className="h-1 bg-purple-950 rounded-full overflow-hidden">
+                            <div className="h-full bg-cyan-400 animate-[pulse_1s_infinite]" style={{ width: "70%" }}></div>
+                          </div>
+                          <p className="text-[9px] text-purple-400 font-mono uppercase">
+                            {appLang === "HINDI" ? "बीडीजी सर्वर एपीआई क्रेडेंशियल्स की जांच की जा रही है..." : "CHECKING SERVER INVITATION TREE DATA..."}
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (!registeredUid.trim()) {
+                              triggerSound("loss");
+                              alert(appLang === "HINDI" ? "कृपया अपना रजिस्टर्ड UID दर्ज करें!" : "Please enter your registered UID!");
+                              return;
+                            }
+                            triggerSound("click");
+                            setIsVerifyingUid(true);
+                            setTimeout(() => {
+                              setIsVerifyingUid(false);
+                              setIsUidVerified(true);
+                              triggerSound("unlock");
+                              setTimeout(() => {
+                                setBuyModalStep(2);
+                              }, 1200);
+                            }, 2000);
+                          }}
+                          className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-500 hover:to-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.3)]"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>{appLang === "HINDI" ? "UID वेरीफाई करें / VERIFY UID" : "VERIFY UID"}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
+                )}
 
-                  <div className="space-y-1">
-                    <span className="block text-xs text-yellow-400 font-black tracking-wide uppercase">
-                      {appLang === "HINDI" ? "चयनित:" : "SELECTED:"} {selectedPlan === "1 Hour" ? "1 Hour" : selectedPlan} PLAN - ₹{PLAN_PRICES[selectedPlan]}
-                    </span>
-                    <span className="text-[10px] text-gray-500 font-mono block uppercase">
-                      RAMU BHAI SECURE MERCHANT GATEWAY
-                    </span>
+                {/* STEP 2: MINIMUM ₹500 DEPOSIT */}
+                {buyModalStep === 2 && (
+                  <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <div className="bg-yellow-950/20 border border-yellow-500/30 p-3.5 rounded-xl text-left space-y-1.5">
+                      <span className="text-[10px] font-mono text-yellow-400 uppercase tracking-widest font-black block">
+                        {appLang === "HINDI" ? "स्टेप २: कम से कम ₹५०० का डिपॉजिट करें" : "STEP 2: DEPOSIT MINIMUM ₹500"}
+                      </span>
+                      <p className="text-[11px] text-gray-300 leading-relaxed font-bold">
+                        {appLang === "HINDI"
+                          ? "⚠️ महत्वपूर्ण: ₹500 से कम डिपॉजिट करने पर ऐप सर्वर से कनेक्ट नहीं होगा, क्योंकि आपके वॉलेट में कम अमाउंट होने से हैक टनल काम नहीं कर पाएगा और आप सही से नहीं खेल पाएंगे।"
+                          : "⚠️ Critical Note: Depositing less than ₹500 will NOT connect the server tunnel because low funds prevent the bypass engine from authenticating correctly."}
+                      </p>
+                    </div>
+
+                    <div className="bg-black/40 border border-purple-900/30 p-4 rounded-xl text-center space-y-4">
+                      <div className="flex justify-center">
+                        <div className="w-12 h-12 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-400 animate-bounce">
+                          <Zap className="w-6 h-6" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 text-center">
+                        <span className="text-[10px] text-gray-500 font-mono block uppercase">REQUIRED MIN BALANCE</span>
+                        <span className="text-2xl font-black text-white">₹500+ INR</span>
+                      </div>
+
+                      {isDepositVerified ? (
+                        <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>{appLang === "HINDI" ? "डिपॉजिट सत्यापित: ₹500+ वॉलेट बैलेंस डिटेक्टेड!" : "DEPOSIT CONFIRMED: ₹500+ LIVE BALANCE DETECTED!"}</span>
+                        </div>
+                      ) : isVerifyingDeposit ? (
+                        <div className="p-4 bg-yellow-950/20 border border-yellow-500/30 rounded-xl space-y-2 text-left">
+                          <div className="flex items-center gap-2 text-yellow-400 font-mono text-[10px] font-black uppercase tracking-wider animate-pulse">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>{appLang === "HINDI" ? "वॉलेट डिपॉजिट रिकॉर्ड सिंकिंग..." : "SYNCING WALLET DEPOSIT RECORD..."}</span>
+                          </div>
+                          <div className="h-1 bg-purple-950 rounded-full overflow-hidden">
+                            <div className="h-full bg-yellow-500 animate-[pulse_1s_infinite]" style={{ width: "85%" }}></div>
+                          </div>
+                          <p className="text-[9px] text-gray-400 font-mono uppercase">
+                            {appLang === "HINDI" ? "लाइव गेमिंग एपीआई के साथ क्रेडेंशियल्स सिंक किया जा रहा है..." : "SYNCING WALLET DATA WITH GAME SERVER API..."}
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            triggerSound("click");
+                            setIsVerifyingDeposit(true);
+                            setTimeout(() => {
+                              setIsVerifyingDeposit(false);
+                              setIsDepositVerified(true);
+                              triggerSound("unlock");
+                              setTimeout(() => {
+                                setBuyModalStep(3);
+                              }, 1200);
+                            }, 2000);
+                          }}
+                          className="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(234,179,8,0.3)]"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>{appLang === "HINDI" ? "मैंने ₹500+ डिपॉजिट कर दिया है / VERIFY DEPOSIT" : "I DEPOSITED ₹500+ / VERIFY"}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* UPI Copy Box */}
-                <div className="bg-black border border-purple-950 p-3 rounded-xl flex justify-between items-center mb-4 text-xs font-mono">
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">UPI ID (भुगतान पता)</span>
-                    <span className="text-white font-black tracking-wide">Shyamu6@fam</span>
+                {/* STEP 3: SCREENSHOT SUBMIT & VERIFY */}
+                {buyModalStep === 3 && (
+                  <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <div className="bg-purple-950/20 border border-purple-500/20 p-3.5 rounded-xl text-left space-y-1.5">
+                      <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest font-black block">
+                        {appLang === "HINDI" ? "स्टेप ३: रसीद या डिपॉजिट रिकॉर्ड का स्क्रीनशॉट" : "STEP 3: DEPOSIT SCREENSHOT"}
+                      </span>
+                      <p className="text-[11px] text-gray-300 leading-relaxed font-semibold">
+                        {appLang === "HINDI"
+                          ? "अपने गेम अकाउंट के 'Deposit History' का स्क्रीनशॉट लें और उसे नीचे अपलोड करके सत्यापित करें।"
+                          : "Take a screenshot of your Deposit History record and upload it below to verify your payment."}
+                      </p>
+                    </div>
+
+                    <div className="bg-black/40 border border-purple-900/30 p-4 rounded-xl text-left space-y-3">
+                      <label className="block text-[10px] font-mono text-purple-400 uppercase tracking-widest font-black">
+                        {appLang === "HINDI" ? "डिपॉजिट स्क्रीनशॉट अपलोड करें" : "UPLOAD DEPOSIT SCREENSHOT"}
+                      </label>
+
+                      {/* Custom Drag & Drop box */}
+                      <div className="relative border-2 border-dashed border-purple-900/60 hover:border-yellow-500/40 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-black/60 transition-all group">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setUploadedScreenshotName(file.name);
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setUploadedScreenshot(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                              triggerSound("click");
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        {uploadedScreenshot ? (
+                          <div className="space-y-2 flex flex-col items-center z-20">
+                            <div className="w-16 h-16 rounded border border-purple-500/50 overflow-hidden bg-black flex items-center justify-center">
+                              <img src={uploadedScreenshot} alt="Uploaded Receipt" className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-[10px] text-emerald-400 font-mono font-black max-w-[200px] truncate">
+                              {uploadedScreenshotName}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 flex flex-col items-center">
+                            <Upload className="w-8 h-8 text-purple-500 group-hover:text-yellow-400 transition-colors animate-pulse" />
+                            <div className="text-[11px] font-bold text-gray-300">
+                              {appLang === "HINDI" ? "यहाँ क्लिक करें या स्क्रीनशॉट ड्रैग करें" : "Click here or drag image to upload"}
+                            </div>
+                            <span className="text-[9px] text-gray-500 font-mono uppercase">PNG, JPG, JPEG (MAX 5MB)</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {isScreenshotVerified ? (
+                        <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 shrink-0" />
+                          <span>{appLang === "HINDI" ? "स्क्रीनशॉट सत्यापित: रसीद प्रमाण स्वीकार कर लिया गया!" : "SCREENSHOT VERIFIED: DEPOSIT RECORD IS VALID!"}</span>
+                        </div>
+                      ) : isVerifyingScreenshot ? (
+                        <div className="p-4 bg-purple-950/40 border border-purple-500/30 rounded-xl space-y-2">
+                          <div className="flex items-center gap-2 text-cyan-400 font-mono text-[10px] font-black uppercase tracking-wider animate-pulse">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>{appLang === "HINDI" ? "रसीद का एआई-स्कैन किया जा रहा है..." : "RUNNING AI SCREENSHOT DECODER..."}</span>
+                          </div>
+                          <div className="h-1 bg-purple-950 rounded-full overflow-hidden">
+                            <div className="h-full bg-cyan-400 animate-[pulse_1s_infinite]" style={{ width: "90%" }}></div>
+                          </div>
+                          <p className="text-[9px] text-purple-400 font-mono uppercase">
+                            {appLang === "HINDI" ? "लेनदेन तिथि, यूआईडी और राशि का मिलान हो रहा है..." : "CROSS-CHECKING TRANSACTION DETAILS..."}
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (!uploadedScreenshot) {
+                              triggerSound("loss");
+                              alert(appLang === "HINDI" ? "कृपया पहले स्क्रीनशॉट अपलोड करें!" : "Please upload your screenshot first!");
+                              return;
+                            }
+                            triggerSound("click");
+                            setIsVerifyingScreenshot(true);
+                            setTimeout(() => {
+                              setIsVerifyingScreenshot(false);
+                              setIsScreenshotVerified(true);
+                              triggerSound("unlock");
+                              setTimeout(() => {
+                                setBuyModalStep(4);
+                              }, 1200);
+                            }, 2000);
+                          }}
+                          className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-500 hover:to-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(124,58,237,0.3)]"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>{appLang === "HINDI" ? "स्क्रीनशॉट वेरीफाई करें / VERIFY SCREENSHOT" : "VERIFY SCREENSHOT"}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText("Shyamu6@fam");
-                      setCopiedUpi(true);
-                      triggerSound("unlock");
-                      setTimeout(() => setCopiedUpi(false), 2000);
-                    }}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
-                      copiedUpi 
-                        ? "bg-emerald-600 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]" 
-                        : "bg-purple-950/80 border border-purple-500/30 text-purple-300 hover:bg-purple-900"
-                    }`}
-                  >
-                    {copiedUpi ? (appLang === "HINDI" ? "कॉपी हो गया!" : "COPIED!") : (appLang === "HINDI" ? "कॉपी करें" : "COPY ID")}
-                  </button>
-                </div>
+                )}
 
-                {/* Instructions Text */}
-                <div className="bg-yellow-950/20 border border-yellow-500/20 p-3 rounded-xl text-left space-y-1.5 mb-5">
-                  <span className="block text-[10px] font-mono text-yellow-400 font-black uppercase tracking-wider">
-                    {appLang === "HINDI" ? "३. स्क्रीनशॉट भेजें / 3. SUBMIT RECEIPT" : "3. SUBMIT RECEIPT"}
-                  </span>
-                  <p className="text-[11px] text-gray-300 leading-relaxed font-bold">
-                    {appLang === "HINDI" 
-                      ? "पेमेंट करने के बाद, स्क्रीनशॉट हमारे टेलीग्राम यूजरनेम @Monu1359 पर भेजें। आपको तुरंत आपका वीआईपी पासकोड दे दिया जाएगा।" 
-                      : "After payment, send the transaction screenshot to our Telegram username @Monu1359 to receive your active VIP key passcode."}
-                  </p>
-                </div>
+                {/* STEP 4: TELEGRAM SUBMISSION */}
+                {buyModalStep === 4 && (
+                  <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <div className="bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-xl text-center space-y-2">
+                      <div className="flex justify-center">
+                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                          <CheckCircle className="w-6 h-6 animate-pulse" />
+                        </div>
+                      </div>
+                      <h4 className="text-sm font-black text-emerald-400 uppercase tracking-wide">
+                        {appLang === "HINDI" ? "सभी चरण सफलतापूर्वक सत्यापित!" : "ALL STEPS VERIFIED!"}
+                      </h4>
+                      <p className="text-[11px] text-gray-300 leading-relaxed font-bold">
+                        {appLang === "HINDI"
+                          ? "आपका UID और ₹500 डिपॉजिट रिकॉर्ड सफलतापूर्वक सत्यापित किया जा चुका है। अंतिम पुष्टि और लाइव VIP पासकोड प्राप्त करने के लिए नीचे दिए गए बटन पर क्लिक करें और टेलीग्राम पर जाएं।"
+                          : "Your UID and deposit record has been fully validated. Click the button below to go to Telegram and receive your VIP passcode instantly."}
+                      </p>
+                    </div>
 
-                {/* Send Screenshot Link */}
-                <a
-                  href="https://t.me/Monu1359"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 glow-emerald cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] shrink-0"
-                >
-                  <Send className="w-4 h-4 fill-current" />
-                  <span>{appLang === "HINDI" ? "टेलीग्राम पर स्क्रीनशॉट भेजें" : "SEND SCREENSHOT ON TELEGRAM"}</span>
-                </a>
+                    <a
+                      href="https://t.me/Monu1359"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 glow-emerald cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.4)] animate-bounce"
+                    >
+                      <Send className="w-4 h-4 fill-current" />
+                      <span>{appLang === "HINDI" ? "टेलीग्राम पर स्क्रीनशॉट भेजें" : "SEND SCREENSHOT ON TELEGRAM"}</span>
+                    </a>
 
-                <p className="text-[9px] text-gray-500 text-center font-mono mt-3 uppercase tracking-wider">
-                  TELEGRAM ADMIN USERNAME: @Monu1359
-                </p>
+                    <p className="text-[9px] text-gray-500 text-center font-mono uppercase tracking-wider">
+                      TELEGRAM ADMIN USERNAME: @Monu1359
+                    </p>
+                  </div>
+                )}
 
               </div>
             </div>
