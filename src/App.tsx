@@ -33,7 +33,8 @@ import {
   ShieldAlert,
   Upload,
   Check,
-  User
+  User,
+  ExternalLink
 } from "lucide-react";
 import { playSound } from "./utils/audio";
 
@@ -2722,7 +2723,7 @@ export default function App() {
         <>
           {/* PERSISTENT FULL-SCREEN REGISTRATION IFRAME IN GAME VIEW */}
           <div 
-            className={`absolute inset-0 w-full h-full transition-all duration-700 ${
+            className={`absolute inset-0 w-full h-full pt-[105px] sm:pt-[58px] transition-all duration-700 ${
               activeTab === "game" ? "z-0 opacity-100 pointer-events-auto scale-100" : "-z-50 opacity-0 pointer-events-none scale-95"
             }`}
             id="gaming-iframe-wrapper"
@@ -2732,7 +2733,7 @@ export default function App() {
               src={PARTITION_URLS[activePartition] || PARTITION_URLS["bdg"]}
               className="w-full h-full border-none"
               title="Game Server Register Link"
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"
             />
           </div>
 
@@ -3390,40 +3391,94 @@ export default function App() {
           {/* ----------------- ACTIVE GAME MODE OVERLAY CONTROL BAR ----------------- */}
           {activeTab === "game" && (
             <>
-              <div className="absolute top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-md border-b border-purple-500/30 flex items-center justify-between px-4 py-3 shadow-[0_4px_25px_rgba(0,0,0,0.85)]">
-                {/* Premium Live Status Badge on the left */}
-                <div className="flex items-center gap-2 pl-2">
-                  <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
-                  <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest font-mono">
-                    RAMU VIP: LIVE
-                  </span>
+              <div className="absolute top-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-b border-purple-500/30 flex flex-col gap-2 p-2.5 sm:flex-row sm:items-center sm:justify-between px-4 shadow-[0_4px_25px_rgba(0,0,0,0.85)]">
+                {/* Left side: VIP badge & Live Status */}
+                <div className="flex items-center justify-between sm:justify-start gap-4">
+                  <div className="flex items-center gap-1.5 pl-1">
+                    <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
+                    <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest font-mono">
+                      RAMU VIP: LIVE
+                    </span>
+                  </div>
+
+                  {/* Partition Server Selector */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[8px] font-mono font-bold text-gray-400 uppercase hidden xs:inline">{appLang === "HINDI" ? "सर्वर:" : "SRV:"}</span>
+                    <select
+                      value={activePartition}
+                      onChange={(e) => {
+                        triggerSound("click");
+                        setActivePartition(e.target.value);
+                      }}
+                      className="bg-purple-950/40 border border-purple-500/40 text-purple-300 text-[10px] font-black rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:border-purple-400 transition-all uppercase"
+                    >
+                      {Object.entries(PARTITION_NAMES).map(([key, val]) => (
+                        <option key={key} value={key} className="bg-slate-950 text-white">
+                          {val}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                {/* Center Toggle Overlays Panel */}
-                <button 
-                  onClick={() => { triggerSound("click"); setPanelVisible(!panelVisible); }}
-                  className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest border transition-all duration-300 glow-purple cursor-pointer ${
-                    panelVisible 
-                      ? "bg-purple-600 border-purple-400 text-white hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]" 
-                      : "bg-black/60 border-purple-500/40 text-purple-400 hover:text-purple-300 hover:border-purple-500"
-                  }`}
-                  id="toggle-overlay-panel-btn"
-                >
-                  <Layers className="w-4 h-4 animate-pulse" />
-                  {panelVisible ? "P_PANEL: ON" : "P_PANEL: OFF"}
-                </button>
+                {/* Center / Right side Actions */}
+                <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+                  {/* Panel Toggle */}
+                  <button 
+                    onClick={() => { triggerSound("click"); setPanelVisible(!panelVisible); }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all duration-300 cursor-pointer ${
+                      panelVisible 
+                        ? "bg-purple-600 border-purple-400 text-white hover:bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.4)]" 
+                        : "bg-black/60 border-purple-500/40 text-purple-400 hover:text-purple-300 hover:border-purple-500"
+                    }`}
+                    id="toggle-overlay-panel-btn"
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    {panelVisible ? "PANEL: ON" : "PANEL: OFF"}
+                  </button>
 
-                {/* Join Telegram Button */}
-                <a 
-                  href="https://t.me/paneladhacksale001" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/10 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
-                  id="telegram-link-navbar-btn"
-                >
-                  <Send className="w-3.5 h-3.5 fill-current" />
-                  TELEGRAM
-                </a>
+                  {/* Manual Reload Button */}
+                  <button
+                    onClick={() => {
+                      triggerSound("click");
+                      const iframe = document.getElementById("bdg-register-iframe") as HTMLIFrameElement;
+                      if (iframe) {
+                        const currentSrc = iframe.src;
+                        iframe.src = "";
+                        setTimeout(() => { iframe.src = currentSrc; }, 50);
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-yellow-500/30 bg-yellow-950/10 hover:bg-yellow-950/30 text-yellow-400 text-[10px] font-bold font-mono transition-all cursor-pointer"
+                    title="Reload Iframe"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
+                    {appLang === "HINDI" ? "रीफ्रेश" : "RELOAD"}
+                  </button>
+
+                  {/* Direct New Tab Fallback Link (Crucial for bypassing white iframe blocks) */}
+                  <a 
+                    href={PARTITION_URLS[activePartition] || PARTITION_URLS["bdg"]}
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-950/20 hover:bg-emerald-900/40 text-emerald-300 text-[10px] font-black font-mono tracking-wider transition-all animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]"
+                    id="open-external-game-btn"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    {appLang === "HINDI" ? "नया टैब" : "NEW TAB"}
+                  </a>
+
+                  {/* Join Telegram Button */}
+                  <a 
+                    href="https://t.me/paneladhacksale001" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/10 text-cyan-400 hover:text-cyan-300 transition-all text-[10px] font-bold font-mono tracking-wider"
+                    id="telegram-link-navbar-btn"
+                  >
+                    <Send className="w-3.5 h-3.5 fill-current" />
+                    TELEGRAM
+                  </a>
+                </div>
               </div>
 
               {/* Back Button Positioned beautifully and prominently at the bottom center */}
@@ -3637,56 +3692,45 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Prediction Outputs - Unified Single Compact Beautiful Container */}
-                        <div className={`p-2 rounded-xl border transition-all duration-300 ${
+                        {/* Prediction Outputs - Unified Single Center Indicator Box */}
+                        <div className={`p-3 rounded-xl border-2 text-center transition-all duration-300 ${
                           wingoCurrentPrediction.color === "RED"
-                            ? "bg-gradient-to-r from-red-950/45 via-red-900/10 to-black/60 border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.25)] animate-pulse"
-                            : "bg-gradient-to-r from-emerald-950/45 via-emerald-900/10 to-black/60 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)] animate-pulse"
+                            ? "bg-gradient-to-r from-red-950/85 via-red-900/40 to-black/90 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.45)] animate-pulse"
+                            : "bg-gradient-to-r from-emerald-950/85 via-emerald-900/40 to-black/90 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.45)] animate-pulse"
                         }`}>
-                          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-                            {/* Combined label */}
-                            <div className="flex flex-col text-left">
-                              <span className="text-[7.5px] font-mono uppercase text-gray-400 tracking-wider font-black">
-                                {appLang === "HINDI" ? "रामू भाई संयुक्त अनुमान" : "JOINT FORECAST"}
-                              </span>
-                              <span className="text-[6px] font-mono text-gray-500">LIVE HACK SECURE v4.9</span>
-                            </div>
-
-                            {/* Elements row */}
-                            <div className="flex flex-wrap items-center justify-center gap-1.5 w-full sm:w-auto">
-                              {/* Big / Small Signal */}
-                              <div className="bg-black/50 border border-white/5 px-2 py-1 rounded-md flex items-center gap-1">
-                                <span className="text-[6.5px] font-mono text-gray-400">SIG:</span>
-                                <span className={`text-[10px] font-black tracking-wide ${
-                                  wingoCurrentPrediction.type === "BIG" 
-                                    ? "text-rose-500 [text-shadow:0_0_5px_rgba(244,63,94,0.5)]" 
-                                    : "text-emerald-400 [text-shadow:0_0_5px_rgba(52,211,153,0.5)]"
-                                }`}>
-                                  {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
-                                </span>
-                              </div>
-
-                              {/* Combined Color Indicator */}
-                              <div className={`px-2 py-1 rounded-md border text-white font-mono text-[10px] flex items-center gap-1 ${
-                                wingoCurrentPrediction.color === "RED" 
-                                  ? "bg-red-950/40 border-red-500/25" 
-                                  : "bg-emerald-950/40 border-emerald-500/25"
+                          <div className="flex flex-col items-center justify-center space-y-2">
+                            <span className="text-[8px] font-mono uppercase text-gray-400 tracking-widest font-black">
+                              {appLang === "HINDI" ? "रामू भाई लाइव संयुक्त अनुमान / LIVE FORECAST" : "RAMU BHAI LIVE JOINT FORECAST"}
+                            </span>
+                            
+                            {/* Giant Unified Prediction Row */}
+                            <div className="flex items-center justify-center gap-2">
+                              <span className={`text-2xl sm:text-3xl font-black tracking-widest uppercase flex items-center gap-2 ${
+                                wingoCurrentPrediction.color === "RED"
+                                  ? "text-red-500 [text-shadow:0_0_12px_rgba(239,68,68,0.6)]"
+                                  : "text-emerald-400 [text-shadow:0_0_12px_rgba(16,185,129,0.6)]"
                               }`}>
-                                <span className="text-[6.5px] text-gray-400">COL:</span>
-                                <span className={`font-black flex items-center gap-0.5 text-[10px] ${
-                                  wingoCurrentPrediction.color === "RED" ? "text-red-400" : "text-emerald-400"
-                                }`}>
+                                {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
+                                <span className="text-gray-500 font-normal mx-1 sm:mx-2">|</span>
+                                <span className="text-lg sm:text-xl font-black">
                                   {wingoCurrentPrediction.color === "RED" ? "🟥 RED" : "🟩 GREEN"}
                                 </span>
-                              </div>
+                              </span>
+                            </div>
 
-                              {/* Jackpot Number */}
-                              <div className="bg-cyan-950/30 border border-cyan-500/25 px-2 py-1 rounded-md flex items-center gap-1">
-                                <span className="text-[6.5px] font-mono text-cyan-400">JKPT:</span>
-                                <span className="text-[10px] font-black text-cyan-300 font-mono [text-shadow:0_0_5px_rgba(34,211,238,0.5)]">
+                            {/* Supplementary Jackpot & Confidence Row */}
+                            <div className="flex items-center gap-4 text-[9px] sm:text-[10px] font-mono text-gray-400 pt-1.5 border-t border-white/5 w-full justify-center">
+                              <span>
+                                {appLang === "HINDI" ? "जैकपॉट नंबर:" : "JACKPOT NO:"}{" "}
+                                <span className="text-cyan-400 font-black text-sm sm:text-base [text-shadow:0_0_6px_rgba(34,211,238,0.5)]">
                                   {wingoCurrentPrediction.num}
                                 </span>
-                              </div>
+                              </span>
+                              <span className="text-gray-700">|</span>
+                              <span>
+                                {appLang === "HINDI" ? "विश्वास:" : "CONFIDENCE:"}{" "}
+                                <span className="text-pink-400 font-bold">{wingoCurrentPrediction.confidence}%</span>
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -3950,56 +3994,45 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Prediction Outputs - Unified Single Compact Beautiful Container */}
-                        <div className={`p-2 rounded-xl border transition-all duration-300 ${
+                        {/* Prediction Outputs - Unified Single Center Indicator Box */}
+                        <div className={`p-3 rounded-xl border-2 text-center transition-all duration-300 ${
                           wingo30CurrentPrediction.color === "RED"
-                            ? "bg-gradient-to-r from-red-950/45 via-red-900/10 to-black/60 border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.25)] animate-pulse"
-                            : "bg-gradient-to-r from-emerald-950/45 via-emerald-900/10 to-black/60 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)] animate-pulse"
+                            ? "bg-gradient-to-r from-red-950/85 via-red-900/40 to-black/90 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.45)] animate-pulse"
+                            : "bg-gradient-to-r from-emerald-950/85 via-emerald-900/40 to-black/90 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.45)] animate-pulse"
                         }`}>
-                          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-                            {/* Combined label */}
-                            <div className="flex flex-col text-left">
-                              <span className="text-[7.5px] font-mono uppercase text-gray-400 tracking-wider font-black">
-                                {appLang === "HINDI" ? "रामू भाई संयुक्त अनुमान" : "JOINT FORECAST"}
-                              </span>
-                              <span className="text-[6px] font-mono text-gray-500">LIVE HACK SECURE v4.9</span>
-                            </div>
-
-                            {/* Elements row */}
-                            <div className="flex flex-wrap items-center justify-center gap-1.5 w-full sm:w-auto">
-                              {/* Big / Small Signal */}
-                              <div className="bg-black/50 border border-white/5 px-2 py-1 rounded-md flex items-center gap-1">
-                                <span className="text-[6.5px] font-mono text-gray-400">SIG:</span>
-                                <span className={`text-[10px] font-black tracking-wide ${
-                                  wingo30CurrentPrediction.type === "BIG" 
-                                    ? "text-rose-500 [text-shadow:0_0_5px_rgba(244,63,94,0.5)]" 
-                                    : "text-emerald-400 [text-shadow:0_0_5px_rgba(52,211,153,0.5)]"
-                                }`}>
-                                  {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
-                                </span>
-                              </div>
-
-                              {/* Combined Color Indicator */}
-                              <div className={`px-2 py-1 rounded-md border text-white font-mono text-[10px] flex items-center gap-1 ${
-                                wingo30CurrentPrediction.color === "RED" 
-                                  ? "bg-red-950/40 border-red-500/25" 
-                                  : "bg-emerald-950/40 border-emerald-500/25"
+                          <div className="flex flex-col items-center justify-center space-y-2">
+                            <span className="text-[8px] font-mono uppercase text-gray-400 tracking-widest font-black">
+                              {appLang === "HINDI" ? "रामू भाई लाइव संयुक्त अनुमान / LIVE FORECAST" : "RAMU BHAI LIVE JOINT FORECAST"}
+                            </span>
+                            
+                            {/* Giant Unified Prediction Row */}
+                            <div className="flex items-center justify-center gap-2">
+                              <span className={`text-2xl sm:text-3xl font-black tracking-widest uppercase flex items-center gap-2 ${
+                                wingo30CurrentPrediction.color === "RED"
+                                  ? "text-red-500 [text-shadow:0_0_12px_rgba(239,68,68,0.6)]"
+                                  : "text-emerald-400 [text-shadow:0_0_12px_rgba(16,185,129,0.6)]"
                               }`}>
-                                <span className="text-[6.5px] text-gray-400">COL:</span>
-                                <span className={`font-black flex items-center gap-0.5 text-[10px] ${
-                                  wingo30CurrentPrediction.color === "RED" ? "text-red-400" : "text-emerald-400"
-                                }`}>
+                                {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
+                                <span className="text-gray-500 font-normal mx-1 sm:mx-2">|</span>
+                                <span className="text-lg sm:text-xl font-black">
                                   {wingo30CurrentPrediction.color === "RED" ? "🟥 RED" : "🟩 GREEN"}
                                 </span>
-                              </div>
+                              </span>
+                            </div>
 
-                              {/* Jackpot Number */}
-                              <div className="bg-cyan-950/30 border border-cyan-500/25 px-2 py-1 rounded-md flex items-center gap-1">
-                                <span className="text-[6.5px] font-mono text-cyan-400">JKPT:</span>
-                                <span className="text-[10px] font-black text-cyan-300 font-mono [text-shadow:0_0_5px_rgba(34,211,238,0.5)]">
+                            {/* Supplementary Jackpot & Confidence Row */}
+                            <div className="flex items-center gap-4 text-[9px] sm:text-[10px] font-mono text-gray-400 pt-1.5 border-t border-white/5 w-full justify-center">
+                              <span>
+                                {appLang === "HINDI" ? "जैकपॉट नंबर:" : "JACKPOT NO:"}{" "}
+                                <span className="text-cyan-400 font-black text-sm sm:text-base [text-shadow:0_0_6px_rgba(34,211,238,0.5)]">
                                   {wingo30CurrentPrediction.num}
                                 </span>
-                              </div>
+                              </span>
+                              <span className="text-gray-700">|</span>
+                              <span>
+                                {appLang === "HINDI" ? "विश्वास:" : "CONFIDENCE:"}{" "}
+                                <span className="text-pink-400 font-bold">{wingo30CurrentPrediction.confidence}%</span>
+                              </span>
                             </div>
                           </div>
                         </div>
