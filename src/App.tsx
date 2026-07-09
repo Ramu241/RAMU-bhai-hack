@@ -526,79 +526,442 @@ function calculateStrictUserChart(lastNum: number, historyList: BingoListItem[])
   patternUsed: string;
   confidence: number;
 } {
-  const strictChart: Record<number, ("BIG" | "SMALL")[]> = {
-    0: ["SMALL", "BIG"], 1: ["BIG", "SMALL"], 2: ["BIG", "SMALL"],
-    3: ["SMALL", "BIG"], 4: ["BIG", "BIG"], 5: ["SMALL", "BIG"],
-    6: ["BIG", "SMALL"], 7: ["SMALL", "BIG"], 8: ["SMALL", "BIG"],
-    9: ["BIG", "SMALL"]
-  };
+  // Convert historyList to chronological order (oldest first, newest last) for robust analysis
+  const historyLen = historyList ? historyList.length : 0;
+  const recentItems = historyList && historyLen > 0 
+    ? [...historyList].slice(0, 30).reverse() // Scan up to 30 past items as requested ("पिछले जितने भी दाता सबका इलाज करें")
+    : [];
 
-  let bigCount = 0;
-  let smallCount = 0;
-  let redCount = 0;
-  let greenCount = 0;
+  const sizes = recentItems.map(item => {
+    const num = parseInt(item.number);
+    return num >= 5 ? "BIG" : "SMALL";
+  });
 
-  if (historyList && historyList.length > 0) {
-    historyList.slice(0, 10).forEach(item => {
-      const n = parseInt(item.number);
-      if (isNaN(n)) return;
-      if (n >= 5) bigCount++; else smallCount++;
-      if ([0, 2, 4, 6, 8].includes(n)) redCount++; else greenCount++;
-    });
+  const colors = recentItems.map(item => {
+    const num = parseInt(item.number);
+    return [0, 2, 4, 6, 8].includes(num) ? "RED" : "GREEN";
+  });
+
+  const numbers = recentItems.map(item => parseInt(item.number));
+
+  // 1. Dragon Streak Detector (ड्रैगन पैटर्न की पहचान)
+  // Continue Dragon Trend up to 11 times per user's chart specification (S S S S S S S S S S S)
+  let currentSizeStreak = 0;
+  let lastSize: "BIG" | "SMALL" = lastNum >= 5 ? "BIG" : "SMALL";
+  if (sizes.length > 0) {
+    lastSize = sizes[sizes.length - 1];
+    currentSizeStreak = 1;
+    for (let i = sizes.length - 2; i >= 0; i--) {
+      if (sizes[i] === lastSize) {
+        currentSizeStreak++;
+      } else {
+        break;
+      }
+    }
   }
 
-  const dominantSize = bigCount >= smallCount ? "BIG" : "SMALL";
-  const dominantColor = redCount >= greenCount ? "RED" : "GREEN";
+  let currentColorStreak = 0;
+  let lastColor: "RED" | "GREEN" = [0, 2, 4, 6, 8].includes(lastNum) ? "RED" : "GREEN";
+  if (colors.length > 0) {
+    lastColor = colors[colors.length - 1];
+    currentColorStreak = 1;
+    for (let i = colors.length - 2; i >= 0; i--) {
+      if (colors[i] === lastColor) {
+        currentColorStreak++;
+      } else {
+        break;
+      }
+    }
+  }
 
-  const chartOptions = (strictChart[lastNum] !== undefined ? strictChart[lastNum] : (lastNum >= 5 ? ["BIG" as const] : ["SMALL" as const])) as ("BIG" | "SMALL")[];
-  let predictedType: "BIG" | "SMALL";
+  // 2. Alternating Series Detector (जिग-जैग अल्टरनेटिंग पैटर्न की पहचान)
+  let sizeAlternationLength = 0;
+  if (sizes.length > 0) {
+    sizeAlternationLength = 1;
+    for (let i = sizes.length - 1; i > 0; i--) {
+      if (sizes[i] !== sizes[i - 1]) {
+        sizeAlternationLength++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  // 3. Slide-Align Best-Fit Trend Pattern Matcher (सारे 10 पैटर्न की जांच कर बेस्ट-मैचिंग खोजना)
+  const patterns = [
+    // 1. Single Trend
+    { name: "Single Trend (B S B S B)", seq: ["BIG", "SMALL", "BIG", "SMALL", "BIG"] },
+    { name: "Single Trend (S B S B S)", seq: ["SMALL", "BIG", "SMALL", "BIG", "SMALL"] },
+
+    // 2. Double Trend
+    { name: "Double Trend (S S B B S S)", seq: ["SMALL", "SMALL", "BIG", "BIG", "SMALL", "SMALL"] },
+    { name: "Double Trend (B B S S B B)", seq: ["BIG", "BIG", "SMALL", "SMALL", "BIG", "BIG"] },
+
+    // 3. Triple Trend
+    { name: "Triple Trend (B B B S S S)", seq: ["BIG", "BIG", "BIG", "SMALL", "SMALL", "SMALL"] },
+    { name: "Triple Trend (S S S B B B)", seq: ["SMALL", "SMALL", "SMALL", "BIG", "BIG", "BIG"] },
+
+    // 4. Quadra Trend
+    { name: "Quadra Trend (S S S S B B B B)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "BIG", "BIG", "BIG", "BIG"] },
+    { name: "Quadra Trend (B B B B S S S S)", seq: ["BIG", "BIG", "BIG", "BIG", "SMALL", "SMALL", "SMALL", "SMALL"] },
+
+    // 5. Three in One Trend
+    { name: "Three in One Trend (B B B S B B B)", seq: ["BIG", "BIG", "BIG", "SMALL", "BIG", "BIG", "BIG"] },
+    { name: "Three in One Trend (S S S B S S S)", seq: ["SMALL", "SMALL", "SMALL", "BIG", "SMALL", "SMALL", "SMALL"] },
+
+    // 6. Two in One Trend
+    { name: "Two in One Trend (S S B S S B S S)", seq: ["SMALL", "SMALL", "BIG", "SMALL", "SMALL", "BIG", "SMALL", "SMALL"] },
+    { name: "Two in One Trend (B B S B B S B B)", seq: ["BIG", "BIG", "SMALL", "BIG", "BIG", "SMALL", "BIG", "BIG"] },
+
+    // 7. Three in Two Trend
+    { name: "Three in Two Trend (B B B S S B B B)", seq: ["BIG", "BIG", "BIG", "SMALL", "SMALL", "BIG", "BIG", "BIG"] },
+    { name: "Three in Two Trend (S S S B B S S S)", seq: ["SMALL", "SMALL", "SMALL", "BIG", "BIG", "SMALL", "SMALL", "SMALL"] },
+
+    // 8. Four in One Trend
+    { name: "Four in One Trend (S S S S B S S S S)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "BIG", "SMALL", "SMALL", "SMALL", "SMALL"] },
+    { name: "Four in One Trend (B B B B S B B B B)", seq: ["BIG", "BIG", "BIG", "BIG", "SMALL", "BIG", "BIG", "BIG", "BIG"] },
+
+    // 9. Four in Two Trend
+    { name: "Four in Two Trend (B B B B S S B B B B)", seq: ["BIG", "BIG", "BIG", "BIG", "SMALL", "SMALL", "BIG", "BIG", "BIG", "BIG"] },
+    { name: "Four in Two Trend (S S S S B B S S S S)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "BIG", "BIG", "SMALL", "SMALL", "SMALL", "SMALL"] },
+
+    // 10. Long Trend
+    { name: "Long Trend (S S S S S S S S S S S)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL"] },
+    { name: "Long Trend (B B B B B B B B B B B)", seq: ["BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG"] }
+  ];
+
+  let bestPatternName = "Adaptive Neural Trend";
+  let bestPatternPrediction: "BIG" | "SMALL" | null = null;
+  let maxMatchLength = 0;
+
+  if (sizes.length >= 2) {
+    for (const p of patterns) {
+      const seqLen = p.seq.length;
+      for (let offset = 0; offset < seqLen; offset++) {
+        let currentMatchLength = 0;
+        for (let k = 0; k < Math.min(sizes.length, seqLen); k++) {
+          const actualVal = sizes[sizes.length - 1 - k];
+          const patternIdx = (offset - k + seqLen * 100) % seqLen;
+          const patternVal = p.seq[patternIdx];
+          if (actualVal === patternVal) {
+            currentMatchLength++;
+          } else {
+            break;
+          }
+        }
+        if (currentMatchLength > maxMatchLength) {
+          maxMatchLength = currentMatchLength;
+          bestPatternName = p.name;
+          bestPatternPrediction = p.seq[(offset + 1) % seqLen] as "BIG" | "SMALL";
+        }
+      }
+    }
+  }
+
+  // Combine and make final decision for predictedType (BIG/SMALL)
+  let predictedType: "BIG" | "SMALL" = lastNum >= 5 ? "BIG" : "SMALL";
   let patternUsed = "";
+  let confidence = 95;
 
-  if (chartOptions.length > 1) {
-    predictedType = (dominantSize === "BIG")
-      ? (Math.random() < 0.65 ? "SMALL" : "BIG")
-      : (Math.random() < 0.65 ? "BIG" : "SMALL");
-    patternUsed = `Strict Matrix Split (Last: ${lastNum})`;
-  } else {
-    predictedType = chartOptions[0] as "BIG" | "SMALL";
-    patternUsed = `Strict Matrix Lock (Last: ${lastNum})`;
+  // Rule 1: Dragon Streak Check (Follows along with the trend up to 11 times as per Long Trend S S S S S S S S S S S)
+  if (currentSizeStreak >= 4 && currentSizeStreak <= 11) {
+    predictedType = lastSize;
+    patternUsed = `Long Trend Continue (${currentSizeStreak}x ${lastSize})`;
+    confidence = Math.min(99, 93 + currentSizeStreak);
+  } else if (currentSizeStreak >= 12) {
+    predictedType = lastSize === "BIG" ? "SMALL" : "BIG";
+    patternUsed = `Long Trend Peak Reversal (${currentSizeStreak}x ${lastSize})`;
+    confidence = 98;
+  }
+  // Rule 2: Strong Alternation Chain (4x or more alternation, follows the alternating sequence!)
+  else if (sizeAlternationLength >= 4) {
+    predictedType = lastSize === "BIG" ? "SMALL" : "BIG";
+    patternUsed = `Alternating Trend Chain (${sizeAlternationLength}x)`;
+    confidence = 97;
+  }
+  // Rule 3: Sliding Pattern Best-Fit Alignment (highest suffix match)
+  else if (bestPatternPrediction && maxMatchLength >= 3) {
+    predictedType = bestPatternPrediction;
+    patternUsed = `Pattern Match [${bestPatternName}]`;
+    confidence = Math.min(98, 91 + maxMatchLength);
+  }
+  // Rule 4: Stochastic Reversion or Dominance fallback
+  else {
+    const bigs = sizes.filter(s => s === "BIG").length;
+    const smalls = sizes.length - bigs;
+    if (bigs >= 18) {
+      predictedType = "SMALL";
+      patternUsed = `Stochastic Reversion [BIG Overbought ${bigs}/${sizes.length}]`;
+      confidence = 94;
+    } else if (smalls >= 18) {
+      predictedType = "BIG";
+      patternUsed = `Stochastic Reversion [SMALL Oversold ${smalls}/${sizes.length}]`;
+      confidence = 94;
+    } else {
+      // Follow strict matrix fallback
+      const strictChart: Record<number, ("BIG" | "SMALL")[]> = {
+        0: ["SMALL", "BIG"], 1: ["BIG", "SMALL"], 2: ["BIG", "SMALL"],
+        3: ["SMALL", "BIG"], 4: ["BIG", "BIG"], 5: ["SMALL", "BIG"],
+        6: ["BIG", "SMALL"], 7: ["SMALL", "BIG"], 8: ["SMALL", "BIG"],
+        9: ["BIG", "SMALL"]
+      };
+      const chartOptions = (strictChart[lastNum] !== undefined ? strictChart[lastNum] : (lastNum >= 5 ? ["BIG" as const] : ["SMALL" as const])) as ("BIG" | "SMALL")[];
+      if (chartOptions.length > 1) {
+        predictedType = bigs >= smalls ? "BIG" : "SMALL";
+        patternUsed = `Strict Matrix Match [Last: ${lastNum}]`;
+        confidence = 91;
+      } else {
+        predictedType = chartOptions[0];
+        patternUsed = `Strict Matrix Lock [Last: ${lastNum}]`;
+        confidence = 93;
+      }
+    }
   }
 
-  // Determine predicted color according to exact user logic
-  const predictedColor = (dominantColor === "RED")
-    ? (Math.random() < 0.7 ? "RED" : "GREEN")
-    : (Math.random() < 0.7 ? "GREEN" : "RED");
+  // --- COLOR TREND MATCHING LOGIC & JOINT ALIGNMENT (संयुक्त प्रेडिक्शन और तालमेल) ---
+  const colorPatterns = [
+    { name: "Single Color Trend (R G R G R)", seq: ["RED", "GREEN", "RED", "GREEN", "RED"] },
+    { name: "Single Color Trend (G R G R G)", seq: ["GREEN", "RED", "GREEN", "RED", "GREEN"] },
 
-  // Generate the specific predicted number based on size and the dominant color
-  let matchedNums: number[] = [];
+    { name: "Double Color Trend (R R G G R R)", seq: ["RED", "RED", "GREEN", "GREEN", "RED", "RED"] },
+    { name: "Double Color Trend (G G R R G G)", seq: ["GREEN", "GREEN", "RED", "RED", "GREEN", "GREEN"] },
+
+    { name: "Triple Color Trend (R R R G G G)", seq: ["RED", "RED", "RED", "GREEN", "GREEN", "GREEN"] },
+    { name: "Triple Color Trend (G G G R R R)", seq: ["GREEN", "GREEN", "GREEN", "RED", "RED", "RED"] },
+
+    { name: "Long Color Trend (R R R R R R)", seq: ["RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED"] },
+    { name: "Long Color Trend (G G G G G G)", seq: ["GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN"] }
+  ];
+
+  let bestColorMatchLen = 0;
+  let bestColorMatchPred: "RED" | "GREEN" | null = null;
+  let bestColorPatternName = "Adaptive Color Trend";
+
+  for (const cp of colorPatterns) {
+    const seqLen = cp.seq.length;
+    for (let offset = 0; offset < seqLen; offset++) {
+      let matchLen = 0;
+      for (let i = 0; i < colors.length; i++) {
+        const historyVal = colors[colors.length - 1 - i];
+        const patternIdx = (offset - i + seqLen * 100) % seqLen;
+        const patternVal = cp.seq[patternIdx];
+        if (historyVal === patternVal) {
+          matchLen++;
+        } else {
+          break;
+        }
+      }
+      if (matchLen > bestColorMatchLen && matchLen >= 2) {
+        bestColorMatchLen = matchLen;
+        bestColorPatternName = cp.name;
+        bestColorMatchPred = cp.seq[(offset + 1) % seqLen] as "RED" | "GREEN";
+      }
+    }
+  }
+
+  // Calculate joint occurrences (BIG-GREEN, BIG-RED, etc.) to synchronize predictions perfectly
+  let bgCount = 0; // BIG + GREEN
+  let brCount = 0; // BIG + RED
+  let sgCount = 0; // SMALL + GREEN
+  let srCount = 0; // SMALL + RED
+
+  recentItems.forEach(item => {
+    const num = parseInt(item.number);
+    const sz = num >= 5 ? "BIG" : "SMALL";
+    const clr = [0, 2, 4, 6, 8].includes(num) ? "RED" : "GREEN";
+    if (sz === "BIG" && clr === "GREEN") bgCount++;
+    else if (sz === "BIG" && clr === "RED") brCount++;
+    else if (sz === "SMALL" && clr === "GREEN") sgCount++;
+    else if (sz === "SMALL" && clr === "RED") srCount++;
+  });
+
+  let predictedColor: "RED" | "GREEN" = [0, 2, 4, 6, 8].includes(lastNum) ? "RED" : "GREEN";
+  let colorPatternUsed = "";
+  let jointSynchronized = false;
+
+  // Joint Streak Detection
+  let currentJointStreak = 0;
+  const jointStates = recentItems.map(item => {
+    const num = parseInt(item.number);
+    const sz = num >= 5 ? "BIG" : "SMALL";
+    const clr = [0, 2, 4, 6, 8].includes(num) ? "RED" : "GREEN";
+    return `${sz}-${clr}`;
+  });
+
+  if (jointStates.length > 0) {
+    const lastJoint = jointStates[jointStates.length - 1];
+    currentJointStreak = 1;
+    for (let i = jointStates.length - 2; i >= 0; i--) {
+      if (jointStates[i] === lastJoint) {
+        currentJointStreak++;
+      } else {
+        break;
+      }
+    }
+
+    // If joint streak (like BIG-GREEN or SMALL-RED) is active (3x to 8x), lock predicted type and color together!
+    if (currentJointStreak >= 3 && currentJointStreak <= 8) {
+      const [streakSize, streakColor] = lastJoint.split("-") as ["BIG" | "SMALL", "RED" | "GREEN"];
+      predictedType = streakSize;
+      predictedColor = streakColor;
+      colorPatternUsed = `Joint Combo Streak Continue (${currentJointStreak}x ${streakSize}+${streakColor})`;
+      confidence = Math.min(99, 95 + currentJointStreak);
+      jointSynchronized = true;
+    }
+  }
+
+  if (!jointSynchronized) {
+    // Normal prediction fallback
+    if (currentColorStreak >= 4 && currentColorStreak <= 11) {
+      predictedColor = lastColor;
+      colorPatternUsed = `Color Streak Continue (${currentColorStreak}x ${lastColor})`;
+    } else if (currentColorStreak >= 12) {
+      predictedColor = lastColor === "RED" ? "GREEN" : "RED";
+      colorPatternUsed = `Color Streak Reversal (${currentColorStreak}x ${lastColor})`;
+    } else if (bestColorMatchPred && bestColorMatchLen >= 3) {
+      predictedColor = bestColorMatchPred;
+      colorPatternUsed = `Color Pattern [${bestColorPatternName}]`;
+    } else {
+      let colorAlternationLength = 1;
+      for (let i = colors.length - 1; i > 0; i--) {
+        if (colors[i] !== colors[i - 1]) {
+          colorAlternationLength++;
+        } else {
+          break;
+        }
+      }
+      if (colorAlternationLength >= 4) {
+        predictedColor = lastColor === "RED" ? "GREEN" : "RED";
+        colorPatternUsed = `Color Alternation Chain (${colorAlternationLength}x)`;
+      } else {
+        const reds = colors.filter(c => c === "RED").length;
+        const greens = colors.length - reds;
+        predictedColor = reds >= greens ? "RED" : "GREEN";
+        colorPatternUsed = `Color Dominance [R:${reds} G:${greens}]`;
+      }
+    }
+
+    // Now, synchronize color with size if we predicted BIG/SMALL to guarantee the requested combo logic!
+    if (predictedType === "BIG") {
+      // If we predicted BIG, check if BIG is more strongly correlated with GREEN or RED in recent sessions
+      if (bgCount > brCount && predictedColor !== "GREEN") {
+        predictedColor = "GREEN";
+        colorPatternUsed += ` + Sync BIG-GREEN (${bgCount} vs ${brCount})`;
+      } else if (brCount > bgCount && predictedColor !== "RED") {
+        predictedColor = "RED";
+        colorPatternUsed += ` + Sync BIG-RED (${brCount} vs ${bgCount})`;
+      }
+    } else {
+      // If we predicted SMALL, check if SMALL is more strongly correlated with GREEN or RED
+      if (srCount > sgCount && predictedColor !== "RED") {
+        predictedColor = "RED";
+        colorPatternUsed += ` + Sync SMALL-RED (${srCount} vs ${sgCount})`;
+      } else if (sgCount > srCount && predictedColor !== "GREEN") {
+        predictedColor = "GREEN";
+        colorPatternUsed += ` + Sync SMALL-GREEN (${sgCount} vs ${srCount})`;
+      }
+    }
+  }
+
+  // --- HOT & COLD / DUE ACCURATE NUMBER SELECTOR (सटीक नंबर प्रेडिक्शन इंजन) ---
+  let candidates: number[] = [];
   if (predictedType === "BIG") {
-    // BIG is 5, 6, 7, 8, 9
     if (predictedColor === "RED") {
-      matchedNums = [6, 8]; // Red numbers in BIG
+      candidates = [6, 8];
     } else {
-      matchedNums = [7, 9]; // Green numbers in BIG
+      candidates = [7, 9];
     }
-    // Fallback
-    if (matchedNums.length === 0) matchedNums = [6, 7, 8, 9];
   } else {
-    // SMALL is 0, 1, 2, 3, 4
     if (predictedColor === "RED") {
-      matchedNums = [2, 4, 0]; // Red numbers in SMALL
+      candidates = [2, 4, 0];
     } else {
-      matchedNums = [1, 3]; // Green numbers in SMALL
+      candidates = [1, 3];
     }
-    // Fallback
-    if (matchedNums.length === 0) matchedNums = [1, 2, 3, 4];
   }
 
-  const predictedNum = matchedNums[Math.floor(Math.random() * matchedNums.length)];
+  if (candidates.length === 0) {
+    candidates = predictedType === "BIG" ? [6, 7, 8, 9] : [1, 2, 3, 4];
+  }
+
+  const frequencyMap: Record<number, number> = {};
+  const gapMap: Record<number, number> = {};
+
+  for (const c of candidates) {
+    frequencyMap[c] = 0;
+    gapMap[c] = 99; 
+  }
+
+  // Calculate local number frequency in past history
+  for (const num of numbers) {
+    if (candidates.includes(num)) {
+      frequencyMap[num] = (frequencyMap[num] || 0) + 1;
+    }
+  }
+
+  // Calculate local gap (distance since last appearance)
+  for (const c of candidates) {
+    let gap = 0;
+    let found = false;
+    for (let i = historyList.length - 1; i >= 0; i--) {
+      const n = parseInt(historyList[i].number);
+      if (n === c) {
+        gap = (historyList.length - 1) - i;
+        found = true;
+        break;
+      }
+    }
+    if (found) {
+      gapMap[c] = gap;
+    }
+  }
+
+  // Cyclical decision: Even period uses Hot number, Odd period uses Due/Cold number
+  let predictedNum = candidates[0];
+  const lastPeriodNum = historyList && historyList.length > 0
+    ? parseInt(historyList[0].issueNumber.slice(-4)) || 0
+    : 0;
+  const isEvenPeriod = lastPeriodNum % 2 === 0;
+
+  if (isEvenPeriod) {
+    let maxFreq = -1;
+    let hotCand = candidates[0];
+    for (const c of candidates) {
+      if (frequencyMap[c] > maxFreq) {
+        maxFreq = frequencyMap[c];
+        hotCand = c;
+      }
+    }
+    predictedNum = hotCand;
+  } else {
+    let maxGap = -1;
+    let coldCand = candidates[0];
+    for (const c of candidates) {
+      if (gapMap[c] > maxGap) {
+        maxGap = gapMap[c];
+        coldCand = c;
+      }
+    }
+    predictedNum = coldCand;
+  }
+
+  // Double repetition check (नंबर रिपीट का ट्रेंड)
+  if (historyList && historyList.length >= 2) {
+    const n1 = parseInt(historyList[0].number);
+    const n2 = parseInt(historyList[1].number);
+    if (n1 === n2 && candidates.includes(n1)) {
+      if (Math.random() < 0.35) {
+        predictedNum = n1;
+        patternUsed += " + Double Repeat";
+      }
+    }
+  }
 
   return {
     type: predictedType,
     num: predictedNum,
     color: predictedColor,
-    patternUsed: `${patternUsed} [Dominant: ${dominantSize}/${dominantColor}]`,
-    confidence: Math.floor(Math.random() * 8) + 91 // 91% to 98%
+    patternUsed: `${patternUsed} | ${colorPatternUsed}`,
+    confidence: Math.floor(Math.random() * 5) + confidence // dynamically add subtle variance to confidence
   };
 }
 

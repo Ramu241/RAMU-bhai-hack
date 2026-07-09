@@ -291,6 +291,31 @@ async function startServer() {
     };
 
     const requestedKeyUpper = key.trim().toUpperCase();
+
+    // 0.1 Inject 2-Hour Temporary Passcode requested by Ramu Bhai (Expirable precisely after 2 hours)
+    if (requestedKeyUpper === "RAMU_VIP_2HOUR") {
+      const now = Date.now();
+      const expiry = 1783588074000; // 2026-07-09T02:07:54-07:00 (Exactly 2 hours from now)
+      if (now < expiry) {
+        return res.json({
+          success: true,
+          key: {
+            key: "RAMU_VIP_2HOUR",
+            game: game,
+            duration: "2 Hour Limited VIP Passcode",
+            expiresAt: expiry,
+            usedByDevice: deviceId || "all",
+            firstUsedAt: now,
+            partition: "bdg"
+          }
+        });
+      } else {
+        return res.status(400).json({ 
+          error: "यह विशेष 2 घंटे का पासकोड समाप्त हो गया है! / This special 2-hour passcode has expired!" 
+        });
+      }
+    }
+
     if (permanentKeys[requestedKeyUpper]) {
       const allowedGame = permanentKeys[requestedKeyUpper];
       if (allowedGame === "all" || allowedGame === game) {
