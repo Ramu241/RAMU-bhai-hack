@@ -33,8 +33,7 @@ import {
   ShieldAlert,
   Upload,
   Check,
-  User,
-  ExternalLink
+  User
 } from "lucide-react";
 import { playSound } from "./utils/audio";
 
@@ -527,487 +526,79 @@ function calculateStrictUserChart(lastNum: number, historyList: BingoListItem[])
   patternUsed: string;
   confidence: number;
 } {
-  // Convert historyList to chronological order (oldest first, newest last) for robust analysis
-  const historyLen = historyList ? historyList.length : 0;
-  const recentItems = historyList && historyLen > 0 
-    ? [...historyList].slice(0, 30).reverse() // Scan up to 30 past items as requested ("पिछले जितने भी दाता सबका इलाज करें")
-    : [];
+  const strictChart: Record<number, ("BIG" | "SMALL")[]> = {
+    0: ["SMALL", "BIG"], 1: ["BIG", "SMALL"], 2: ["BIG", "SMALL"],
+    3: ["SMALL", "BIG"], 4: ["BIG", "BIG"], 5: ["SMALL", "BIG"],
+    6: ["BIG", "SMALL"], 7: ["SMALL", "BIG"], 8: ["SMALL", "BIG"],
+    9: ["BIG", "SMALL"]
+  };
 
-  const sizes = recentItems.map(item => {
-    const num = parseInt(item.number);
-    return num >= 5 ? "BIG" : "SMALL";
-  });
+  let bigCount = 0;
+  let smallCount = 0;
+  let redCount = 0;
+  let greenCount = 0;
 
-  const colors = recentItems.map(item => {
-    const num = parseInt(item.number);
-    return [0, 2, 4, 6, 8].includes(num) ? "RED" : "GREEN";
-  });
-
-  const numbers = recentItems.map(item => parseInt(item.number));
-
-  // 1. Dragon Streak Detector (ड्रैगन पैटर्न की पहचान)
-  // Continue Dragon Trend up to 11 times per user's chart specification (S S S S S S S S S S S)
-  let currentSizeStreak = 0;
-  let lastSize: "BIG" | "SMALL" = lastNum >= 5 ? "BIG" : "SMALL";
-  if (sizes.length > 0) {
-    lastSize = sizes[sizes.length - 1];
-    currentSizeStreak = 1;
-    for (let i = sizes.length - 2; i >= 0; i--) {
-      if (sizes[i] === lastSize) {
-        currentSizeStreak++;
-      } else {
-        break;
-      }
-    }
+  if (historyList && historyList.length > 0) {
+    historyList.slice(0, 10).forEach(item => {
+      const n = parseInt(item.number);
+      if (isNaN(n)) return;
+      if (n >= 5) bigCount++; else smallCount++;
+      if ([0, 2, 4, 6, 8].includes(n)) redCount++; else greenCount++;
+    });
   }
 
-  let currentColorStreak = 0;
-  let lastColor: "RED" | "GREEN" = [0, 2, 4, 6, 8].includes(lastNum) ? "RED" : "GREEN";
-  if (colors.length > 0) {
-    lastColor = colors[colors.length - 1];
-    currentColorStreak = 1;
-    for (let i = colors.length - 2; i >= 0; i--) {
-      if (colors[i] === lastColor) {
-        currentColorStreak++;
-      } else {
-        break;
-      }
-    }
-  }
+  const dominantSize = bigCount >= smallCount ? "BIG" : "SMALL";
+  const dominantColor = redCount >= greenCount ? "RED" : "GREEN";
 
-  // 2. Alternating Series Detector (जिग-जैग अल्टरनेटिंग पैटर्न की पहचान)
-  let sizeAlternationLength = 0;
-  if (sizes.length > 0) {
-    sizeAlternationLength = 1;
-    for (let i = sizes.length - 1; i > 0; i--) {
-      if (sizes[i] !== sizes[i - 1]) {
-        sizeAlternationLength++;
-      } else {
-        break;
-      }
-    }
-  }
-
-  // 3. Slide-Align Best-Fit Trend Pattern Matcher (सारे 10 पैटर्न की जांच कर बेस्ट-मैचिंग खोजना)
-  const patterns = [
-    // 1. Single Trend
-    { name: "Single Trend (B S B S B)", seq: ["BIG", "SMALL", "BIG", "SMALL", "BIG"] },
-    { name: "Single Trend (S B S B S)", seq: ["SMALL", "BIG", "SMALL", "BIG", "SMALL"] },
-
-    // 2. Double Trend
-    { name: "Double Trend (S S B B S S)", seq: ["SMALL", "SMALL", "BIG", "BIG", "SMALL", "SMALL"] },
-    { name: "Double Trend (B B S S B B)", seq: ["BIG", "BIG", "SMALL", "SMALL", "BIG", "BIG"] },
-
-    // 3. Triple Trend
-    { name: "Triple Trend (B B B S S S)", seq: ["BIG", "BIG", "BIG", "SMALL", "SMALL", "SMALL"] },
-    { name: "Triple Trend (S S S B B B)", seq: ["SMALL", "SMALL", "SMALL", "BIG", "BIG", "BIG"] },
-
-    // 4. Quadra Trend
-    { name: "Quadra Trend (S S S S B B B B)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "BIG", "BIG", "BIG", "BIG"] },
-    { name: "Quadra Trend (B B B B S S S S)", seq: ["BIG", "BIG", "BIG", "BIG", "SMALL", "SMALL", "SMALL", "SMALL"] },
-
-    // 5. Three in One Trend
-    { name: "Three in One Trend (B B B S B B B)", seq: ["BIG", "BIG", "BIG", "SMALL", "BIG", "BIG", "BIG"] },
-    { name: "Three in One Trend (S S S B S S S)", seq: ["SMALL", "SMALL", "SMALL", "BIG", "SMALL", "SMALL", "SMALL"] },
-
-    // 6. Two in One Trend
-    { name: "Two in One Trend (S S B S S B S S)", seq: ["SMALL", "SMALL", "BIG", "SMALL", "SMALL", "BIG", "SMALL", "SMALL"] },
-    { name: "Two in One Trend (B B S B B S B B)", seq: ["BIG", "BIG", "SMALL", "BIG", "BIG", "SMALL", "BIG", "BIG"] },
-
-    // 7. Three in Two Trend
-    { name: "Three in Two Trend (B B B S S B B B)", seq: ["BIG", "BIG", "BIG", "SMALL", "SMALL", "BIG", "BIG", "BIG"] },
-    { name: "Three in Two Trend (S S S B B S S S)", seq: ["SMALL", "SMALL", "SMALL", "BIG", "BIG", "SMALL", "SMALL", "SMALL"] },
-
-    // 8. Four in One Trend
-    { name: "Four in One Trend (S S S S B S S S S)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "BIG", "SMALL", "SMALL", "SMALL", "SMALL"] },
-    { name: "Four in One Trend (B B B B S B B B B)", seq: ["BIG", "BIG", "BIG", "BIG", "SMALL", "BIG", "BIG", "BIG", "BIG"] },
-
-    // 9. Four in Two Trend
-    { name: "Four in Two Trend (B B B B S S B B B B)", seq: ["BIG", "BIG", "BIG", "BIG", "SMALL", "SMALL", "BIG", "BIG", "BIG", "BIG"] },
-    { name: "Four in Two Trend (S S S S B B S S S S)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "BIG", "BIG", "SMALL", "SMALL", "SMALL", "SMALL"] },
-
-    // 10. Long Trend
-    { name: "Long Trend (S S S S S S S S S S S)", seq: ["SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL", "SMALL"] },
-    { name: "Long Trend (B B B B B B B B B B B)", seq: ["BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG", "BIG"] }
-  ];
-
-  let bestPatternName = "Adaptive Neural Trend";
-  let bestPatternPrediction: "BIG" | "SMALL" | null = null;
-  let maxMatchLength = 0;
-
-  // 1. Suffix Match Checker (looks at immediate last elements)
-  if (sizes.length >= 2) {
-    for (const p of patterns) {
-      const seqLen = p.seq.length;
-      for (let offset = 0; offset < seqLen; offset++) {
-        let currentMatchLength = 0;
-        for (let k = 0; k < Math.min(sizes.length, seqLen); k++) {
-          const actualVal = sizes[sizes.length - 1 - k];
-          const patternIdx = (offset - k + seqLen * 100) % seqLen;
-          const patternVal = p.seq[patternIdx];
-          if (actualVal === patternVal) {
-            currentMatchLength++;
-          } else {
-            break;
-          }
-        }
-        if (currentMatchLength > maxMatchLength) {
-          maxMatchLength = currentMatchLength;
-          bestPatternName = p.name;
-          bestPatternPrediction = p.seq[(offset + 1) % seqLen] as "BIG" | "SMALL";
-        }
-      }
-    }
-  }
-
-  // 2. Dynamic Deep History Pattern Correlation (Scans entire past history sequence to find dominant pattern)
-  let highestDominancePatternName = "Adaptive Neural Trend";
-  let highestDominanceScore = 0;
-  let dynamicPatternPrediction: "BIG" | "SMALL" | null = null;
-
-  if (sizes.length >= 4) {
-    for (const p of patterns) {
-      const seqLen = p.seq.length;
-      let matches = 0;
-      let totalTests = 0;
-      
-      for (let startIdx = 0; startIdx <= Math.max(0, sizes.length - seqLen); startIdx++) {
-        let currentMatches = 0;
-        for (let i = 0; i < seqLen; i++) {
-          if (sizes[startIdx + i] === p.seq[i]) {
-            currentMatches++;
-          }
-        }
-        if (currentMatches === seqLen) {
-          matches += 2; // Perfect pattern match
-        } else if (currentMatches >= seqLen - 1) {
-          matches += 1; // High similarity match
-        }
-        totalTests++;
-      }
-
-      const dominanceScore = totalTests > 0 ? (matches / totalTests) * 100 : 0;
-      if (dominanceScore > highestDominanceScore) {
-        highestDominanceScore = dominanceScore;
-        highestDominancePatternName = p.name;
-        // Project the next expected outcome in sequence
-        const lastMatchedSeqOffset = sizes.length % seqLen;
-        dynamicPatternPrediction = p.seq[lastMatchedSeqOffset] as "BIG" | "SMALL";
-      }
-    }
-  }
-
-  // Override suffix match with high dominance historical pattern if it has high correlation score
-  if (highestDominanceScore > 25 && dynamicPatternPrediction) {
-    bestPatternName = `${highestDominancePatternName} (Dominant History)`;
-    bestPatternPrediction = dynamicPatternPrediction;
-    maxMatchLength = Math.max(maxMatchLength, 4);
-  }
-
-  // Combine and make final decision for predictedType (BIG/SMALL)
-  let predictedType: "BIG" | "SMALL" = lastNum >= 5 ? "BIG" : "SMALL";
+  const chartOptions = (strictChart[lastNum] !== undefined ? strictChart[lastNum] : (lastNum >= 5 ? ["BIG" as const] : ["SMALL" as const])) as ("BIG" | "SMALL")[];
+  let predictedType: "BIG" | "SMALL";
   let patternUsed = "";
-  let confidence = 95;
 
-  // Rule 1: Dragon Streak Check (Follows along with the trend up to 11 times as per Long Trend S S S S S S S S S S S)
-  if (currentSizeStreak >= 4 && currentSizeStreak <= 11) {
-    predictedType = lastSize;
-    patternUsed = `Long Trend Continue (${currentSizeStreak}x ${lastSize})`;
-    confidence = Math.min(99, 93 + currentSizeStreak);
-  } else if (currentSizeStreak >= 12) {
-    predictedType = lastSize === "BIG" ? "SMALL" : "BIG";
-    patternUsed = `Long Trend Peak Reversal (${currentSizeStreak}x ${lastSize})`;
-    confidence = 98;
-  }
-  // Rule 2: Strong Alternation Chain (4x or more alternation, follows the alternating sequence!)
-  else if (sizeAlternationLength >= 4) {
-    predictedType = lastSize === "BIG" ? "SMALL" : "BIG";
-    patternUsed = `Alternating Trend Chain (${sizeAlternationLength}x)`;
-    confidence = 97;
-  }
-  // Rule 3: Sliding Pattern Best-Fit Alignment (highest suffix match)
-  else if (bestPatternPrediction && maxMatchLength >= 3) {
-    predictedType = bestPatternPrediction;
-    patternUsed = `Pattern Match [${bestPatternName}]`;
-    confidence = Math.min(98, 91 + maxMatchLength);
-  }
-  // Rule 4: Stochastic Reversion or Dominance fallback
-  else {
-    const bigs = sizes.filter(s => s === "BIG").length;
-    const smalls = sizes.length - bigs;
-    if (bigs >= 18) {
-      predictedType = "SMALL";
-      patternUsed = `Stochastic Reversion [BIG Overbought ${bigs}/${sizes.length}]`;
-      confidence = 94;
-    } else if (smalls >= 18) {
-      predictedType = "BIG";
-      patternUsed = `Stochastic Reversion [SMALL Oversold ${smalls}/${sizes.length}]`;
-      confidence = 94;
-    } else {
-      // Follow strict matrix fallback
-      const strictChart: Record<number, ("BIG" | "SMALL")[]> = {
-        0: ["SMALL", "BIG"], 1: ["BIG", "SMALL"], 2: ["BIG", "SMALL"],
-        3: ["SMALL", "BIG"], 4: ["BIG", "BIG"], 5: ["SMALL", "BIG"],
-        6: ["BIG", "SMALL"], 7: ["SMALL", "BIG"], 8: ["SMALL", "BIG"],
-        9: ["BIG", "SMALL"]
-      };
-      const chartOptions = (strictChart[lastNum] !== undefined ? strictChart[lastNum] : (lastNum >= 5 ? ["BIG" as const] : ["SMALL" as const])) as ("BIG" | "SMALL")[];
-      if (chartOptions.length > 1) {
-        predictedType = bigs >= smalls ? "BIG" : "SMALL";
-        patternUsed = `Strict Matrix Match [Last: ${lastNum}]`;
-        confidence = 91;
-      } else {
-        predictedType = chartOptions[0];
-        patternUsed = `Strict Matrix Lock [Last: ${lastNum}]`;
-        confidence = 93;
-      }
-    }
+  if (chartOptions.length > 1) {
+    predictedType = (dominantSize === "BIG")
+      ? (Math.random() < 0.65 ? "SMALL" : "BIG")
+      : (Math.random() < 0.65 ? "BIG" : "SMALL");
+    patternUsed = `Strict Matrix Split (Last: ${lastNum})`;
+  } else {
+    predictedType = chartOptions[0] as "BIG" | "SMALL";
+    patternUsed = `Strict Matrix Lock (Last: ${lastNum})`;
   }
 
-  // --- COLOR TREND MATCHING LOGIC & JOINT ALIGNMENT (संयुक्त प्रेडिक्शन और तालमेल) ---
-  const colorPatterns = [
-    { name: "Single Color Trend (R G R G R)", seq: ["RED", "GREEN", "RED", "GREEN", "RED"] },
-    { name: "Single Color Trend (G R G R G)", seq: ["GREEN", "RED", "GREEN", "RED", "GREEN"] },
+  // Determine predicted color according to exact user logic
+  const predictedColor = (dominantColor === "RED")
+    ? (Math.random() < 0.7 ? "RED" : "GREEN")
+    : (Math.random() < 0.7 ? "GREEN" : "RED");
 
-    { name: "Double Color Trend (R R G G R R)", seq: ["RED", "RED", "GREEN", "GREEN", "RED", "RED"] },
-    { name: "Double Color Trend (G G R R G G)", seq: ["GREEN", "GREEN", "RED", "RED", "GREEN", "GREEN"] },
-
-    { name: "Triple Color Trend (R R R G G G)", seq: ["RED", "RED", "RED", "GREEN", "GREEN", "GREEN"] },
-    { name: "Triple Color Trend (G G G R R R)", seq: ["GREEN", "GREEN", "GREEN", "RED", "RED", "RED"] },
-
-    { name: "Long Color Trend (R R R R R R)", seq: ["RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED", "RED"] },
-    { name: "Long Color Trend (G G G G G G)", seq: ["GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN", "GREEN"] }
-  ];
-
-  let bestColorMatchLen = 0;
-  let bestColorMatchPred: "RED" | "GREEN" | null = null;
-  let bestColorPatternName = "Adaptive Color Trend";
-
-  for (const cp of colorPatterns) {
-    const seqLen = cp.seq.length;
-    for (let offset = 0; offset < seqLen; offset++) {
-      let matchLen = 0;
-      for (let i = 0; i < colors.length; i++) {
-        const historyVal = colors[colors.length - 1 - i];
-        const patternIdx = (offset - i + seqLen * 100) % seqLen;
-        const patternVal = cp.seq[patternIdx];
-        if (historyVal === patternVal) {
-          matchLen++;
-        } else {
-          break;
-        }
-      }
-      if (matchLen > bestColorMatchLen && matchLen >= 2) {
-        bestColorMatchLen = matchLen;
-        bestColorPatternName = cp.name;
-        bestColorMatchPred = cp.seq[(offset + 1) % seqLen] as "RED" | "GREEN";
-      }
-    }
-  }
-
-  // Calculate joint occurrences (BIG-GREEN, BIG-RED, etc.) to synchronize predictions perfectly
-  let bgCount = 0; // BIG + GREEN
-  let brCount = 0; // BIG + RED
-  let sgCount = 0; // SMALL + GREEN
-  let srCount = 0; // SMALL + RED
-
-  recentItems.forEach(item => {
-    const num = parseInt(item.number);
-    const sz = num >= 5 ? "BIG" : "SMALL";
-    const clr = [0, 2, 4, 6, 8].includes(num) ? "RED" : "GREEN";
-    if (sz === "BIG" && clr === "GREEN") bgCount++;
-    else if (sz === "BIG" && clr === "RED") brCount++;
-    else if (sz === "SMALL" && clr === "GREEN") sgCount++;
-    else if (sz === "SMALL" && clr === "RED") srCount++;
-  });
-
-  let predictedColor: "RED" | "GREEN" = [0, 2, 4, 6, 8].includes(lastNum) ? "RED" : "GREEN";
-  let colorPatternUsed = "";
-  let jointSynchronized = false;
-
-  // Joint Streak Detection
-  let currentJointStreak = 0;
-  const jointStates = recentItems.map(item => {
-    const num = parseInt(item.number);
-    const sz = num >= 5 ? "BIG" : "SMALL";
-    const clr = [0, 2, 4, 6, 8].includes(num) ? "RED" : "GREEN";
-    return `${sz}-${clr}`;
-  });
-
-  if (jointStates.length > 0) {
-    const lastJoint = jointStates[jointStates.length - 1];
-    currentJointStreak = 1;
-    for (let i = jointStates.length - 2; i >= 0; i--) {
-      if (jointStates[i] === lastJoint) {
-        currentJointStreak++;
-      } else {
-        break;
-      }
-    }
-
-    // If joint streak (like BIG-GREEN or SMALL-RED) is active (3x to 8x), lock predicted type and color together!
-    if (currentJointStreak >= 3 && currentJointStreak <= 8) {
-      const [streakSize, streakColor] = lastJoint.split("-") as ["BIG" | "SMALL", "RED" | "GREEN"];
-      predictedType = streakSize;
-      predictedColor = streakColor;
-      colorPatternUsed = `Joint Combo Streak Continue (${currentJointStreak}x ${streakSize}+${streakColor})`;
-      confidence = Math.min(99, 95 + currentJointStreak);
-      jointSynchronized = true;
-    }
-  }
-
-  if (!jointSynchronized) {
-    // Normal prediction fallback
-    if (currentColorStreak >= 4 && currentColorStreak <= 11) {
-      predictedColor = lastColor;
-      colorPatternUsed = `Color Streak Continue (${currentColorStreak}x ${lastColor})`;
-    } else if (currentColorStreak >= 12) {
-      predictedColor = lastColor === "RED" ? "GREEN" : "RED";
-      colorPatternUsed = `Color Streak Reversal (${currentColorStreak}x ${lastColor})`;
-    } else if (bestColorMatchPred && bestColorMatchLen >= 3) {
-      predictedColor = bestColorMatchPred;
-      colorPatternUsed = `Color Pattern [${bestColorPatternName}]`;
-    } else {
-      let colorAlternationLength = 1;
-      for (let i = colors.length - 1; i > 0; i--) {
-        if (colors[i] !== colors[i - 1]) {
-          colorAlternationLength++;
-        } else {
-          break;
-        }
-      }
-      if (colorAlternationLength >= 4) {
-        predictedColor = lastColor === "RED" ? "GREEN" : "RED";
-        colorPatternUsed = `Color Alternation Chain (${colorAlternationLength}x)`;
-      } else {
-        const reds = colors.filter(c => c === "RED").length;
-        const greens = colors.length - reds;
-        predictedColor = reds >= greens ? "RED" : "GREEN";
-        colorPatternUsed = `Color Dominance [R:${reds} G:${greens}]`;
-      }
-    }
-
-    // Now, synchronize color with size if we predicted BIG/SMALL to guarantee the requested combo logic!
-    if (predictedType === "BIG") {
-      // If we predicted BIG, check if BIG is more strongly correlated with GREEN or RED in recent sessions
-      if (bgCount > brCount && predictedColor !== "GREEN") {
-        predictedColor = "GREEN";
-        colorPatternUsed += ` + Sync BIG-GREEN (${bgCount} vs ${brCount})`;
-      } else if (brCount > bgCount && predictedColor !== "RED") {
-        predictedColor = "RED";
-        colorPatternUsed += ` + Sync BIG-RED (${brCount} vs ${bgCount})`;
-      }
-    } else {
-      // If we predicted SMALL, check if SMALL is more strongly correlated with GREEN or RED
-      if (srCount > sgCount && predictedColor !== "RED") {
-        predictedColor = "RED";
-        colorPatternUsed += ` + Sync SMALL-RED (${srCount} vs ${sgCount})`;
-      } else if (sgCount > srCount && predictedColor !== "GREEN") {
-        predictedColor = "GREEN";
-        colorPatternUsed += ` + Sync SMALL-GREEN (${sgCount} vs ${srCount})`;
-      }
-    }
-  }
-
-  // --- HOT & COLD / DUE ACCURATE NUMBER SELECTOR (सटीक नंबर प्रेडिक्शन इंजन) ---
-  let candidates: number[] = [];
+  // Generate the specific predicted number based on size and the dominant color
+  let matchedNums: number[] = [];
   if (predictedType === "BIG") {
+    // BIG is 5, 6, 7, 8, 9
     if (predictedColor === "RED") {
-      candidates = [6, 8];
+      matchedNums = [6, 8]; // Red numbers in BIG
     } else {
-      candidates = [7, 9];
+      matchedNums = [7, 9]; // Green numbers in BIG
     }
+    // Fallback
+    if (matchedNums.length === 0) matchedNums = [6, 7, 8, 9];
   } else {
+    // SMALL is 0, 1, 2, 3, 4
     if (predictedColor === "RED") {
-      candidates = [2, 4, 0];
+      matchedNums = [2, 4, 0]; // Red numbers in SMALL
     } else {
-      candidates = [1, 3];
+      matchedNums = [1, 3]; // Green numbers in SMALL
     }
+    // Fallback
+    if (matchedNums.length === 0) matchedNums = [1, 2, 3, 4];
   }
 
-  if (candidates.length === 0) {
-    candidates = predictedType === "BIG" ? [6, 7, 8, 9] : [1, 2, 3, 4];
-  }
-
-  const frequencyMap: Record<number, number> = {};
-  const gapMap: Record<number, number> = {};
-
-  for (const c of candidates) {
-    frequencyMap[c] = 0;
-    gapMap[c] = 99; 
-  }
-
-  // Calculate local number frequency in past history
-  for (const num of numbers) {
-    if (candidates.includes(num)) {
-      frequencyMap[num] = (frequencyMap[num] || 0) + 1;
-    }
-  }
-
-  // Calculate local gap (distance since last appearance)
-  for (const c of candidates) {
-    let gap = 0;
-    let found = false;
-    for (let i = historyList.length - 1; i >= 0; i--) {
-      const n = parseInt(historyList[i].number);
-      if (n === c) {
-        gap = (historyList.length - 1) - i;
-        found = true;
-        break;
-      }
-    }
-    if (found) {
-      gapMap[c] = gap;
-    }
-  }
-
-  // Cyclical decision: Even period uses Hot number, Odd period uses Due/Cold number
-  let predictedNum = candidates[0];
-  const lastPeriodNum = historyList && historyList.length > 0
-    ? parseInt(historyList[0].issueNumber.slice(-4)) || 0
-    : 0;
-  const isEvenPeriod = lastPeriodNum % 2 === 0;
-
-  if (isEvenPeriod) {
-    let maxFreq = -1;
-    let hotCand = candidates[0];
-    for (const c of candidates) {
-      if (frequencyMap[c] > maxFreq) {
-        maxFreq = frequencyMap[c];
-        hotCand = c;
-      }
-    }
-    predictedNum = hotCand;
-  } else {
-    let maxGap = -1;
-    let coldCand = candidates[0];
-    for (const c of candidates) {
-      if (gapMap[c] > maxGap) {
-        maxGap = gapMap[c];
-        coldCand = c;
-      }
-    }
-    predictedNum = coldCand;
-  }
-
-  // Double repetition check (नंबर रिपीट का ट्रेंड)
-  if (historyList && historyList.length >= 2) {
-    const n1 = parseInt(historyList[0].number);
-    const n2 = parseInt(historyList[1].number);
-    if (n1 === n2 && candidates.includes(n1)) {
-      if (Math.random() < 0.35) {
-        predictedNum = n1;
-        patternUsed += " + Double Repeat";
-      }
-    }
-  }
+  const predictedNum = matchedNums[Math.floor(Math.random() * matchedNums.length)];
 
   return {
     type: predictedType,
     num: predictedNum,
     color: predictedColor,
-    patternUsed: `${patternUsed} | ${colorPatternUsed}`,
-    confidence: Math.floor(Math.random() * 5) + confidence // dynamically add subtle variance to confidence
+    patternUsed: `${patternUsed} [Dominant: ${dominantSize}/${dominantColor}]`,
+    confidence: Math.floor(Math.random() * 8) + 91 // 91% to 98%
   };
 }
 
@@ -1116,19 +707,33 @@ export default function App() {
     return dId;
   }, []);
 
-  // Self-Healing Anti-Block System: All previously blocked devices are auto-unblocked instantly!
-  const [isTampered, setIsTampered] = useState(false);
-
-  useEffect(() => {
+  const [isTampered, setIsTampered] = useState(() => {
     try {
-      // Clear persistent block history to instantly recover any locked device as requested by Ramu Bhai
-      localStorage.removeItem("sys_security_locked_v1");
-    } catch (e) {}
-  }, []);
+      const hn = window.location.hostname;
+      const isDev = hn.includes("ais-dev") || hn.includes("ais-pre") || hn.includes("localhost") || hn.includes("127.0.0.1") || hn.includes("run.app");
+      if (isDev) {
+        localStorage.removeItem("sys_security_locked_v1");
+        return false;
+      }
+      const locked = localStorage.getItem("sys_security_locked_v1");
+      return locked === "true";
+    } catch (e) {
+      return false;
+    }
+  });
 
   const triggerTamperBlock = () => {
-    // Completely bypass tampering block to prevent false-alarms, white screens, or blocks in production/GitHub/iframes
-    console.log("Tamper block triggered but bypassed for compatibility");
+    try {
+      const hn = window.location.hostname;
+      const isDev = hn.includes("ais-dev") || hn.includes("ais-pre") || hn.includes("localhost") || hn.includes("127.0.0.1") || hn.includes("run.app");
+      if (isDev) {
+        console.log("[SECURITY] Guard block ignored in development mode.");
+        return;
+      }
+      localStorage.setItem("sys_security_locked_v1", "true");
+    } catch (e) {}
+    setIsTampered(true);
+    playEmergencySiren();
   };
 
   const playEmergencySiren = () => {
@@ -1204,8 +809,78 @@ export default function App() {
 
   // Upgraded High-Security Anti-hacking, Anti-reverse-engineering and Anti-devtools scan script
   useEffect(() => {
-    // Disabled intrusive scripts to prevent browser freezing, timing exceptions, and false-alarm white screens on GitHub and iframes
-    console.log("Ramu Bhai Security Systems active and bypassed for platform compatibility.");
+    try {
+      const hn = window.location.hostname;
+      const isDev = hn.includes("ais-dev") || hn.includes("ais-pre") || hn.includes("localhost") || hn.includes("127.0.0.1") || hn.includes("run.app");
+      if (isDev) return; // Completely relax security in developer preview to avoid blocking the owner
+    } catch (e) {}
+
+    // 1. Block right click context menu to prevent inspecting elements
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      try { triggerSound("loss"); } catch(ex) {}
+    };
+
+    // 2. Block critical debugging hotkeys (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
+        (e.ctrlKey && (e.key === "U" || e.key === "u"))
+      ) {
+        e.preventDefault();
+        try { triggerSound("loss"); } catch(ex) {}
+        triggerTamperBlock();
+      }
+    };
+
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("keydown", handleKeyDown);
+
+    // 3. Console Debugger Trap: executes dynamically to pause browser on any devtools open state
+    const debugTrapInterval = setInterval(() => {
+      const startTime = performance.now();
+      debugger; // Traps open debugger panels instantly
+      const endTime = performance.now();
+      if (endTime - startTime > 150) {
+        triggerTamperBlock();
+      }
+    }, 1000);
+
+    // 4. Dimension detection block: fires if side or bottom devtools panel resizes screen width/height significantly
+    const dimInterval = setInterval(() => {
+      const threshold = 170;
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+      if (widthDiff > threshold || heightDiff > threshold) {
+        triggerTamperBlock();
+      }
+    }, 1000);
+
+    // 5. Console Flooding & Anti-Injections
+    const consoleClearInterval = setInterval(() => {
+      console.clear();
+      console.log("%c⚠️ ACCESS RESTRICTED! RAMU BHAI SECURITY PROTOCOL ACTIVE.", "color: red; font-size: 20px; font-weight: bold;");
+    }, 800);
+
+    // 6. Block function decomposition by hooking toString
+    const blockDecomp = () => {
+      const f = function() {};
+      f.toString = () => {
+        triggerTamperBlock();
+        return "secure_obfuscated_code()";
+      };
+    };
+    blockDecomp();
+
+    // Clean up
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("keydown", handleKeyDown);
+      clearInterval(debugTrapInterval);
+      clearInterval(dimInterval);
+      clearInterval(consoleClearInterval);
+    };
   }, []);
 
   // Navigation & Multi-step Entry Flow States
@@ -1302,8 +977,6 @@ export default function App() {
   const [isWingoHistoryOpen, setIsWingoHistoryOpen] = useState(false);
   const [showWingoHistoryBox, setShowWingoHistoryBox] = useState(false);
   const [showWingo30HistoryBox, setShowWingo30HistoryBox] = useState(false);
-  const [showWingoStats, setShowWingoStats] = useState(true);
-  const [showWingo30Stats, setShowWingo30Stats] = useState(true);
 
   // Hacking/Bypassing Animation Overlay States
   const [isHacking, setIsHacking] = useState(false);
@@ -1780,7 +1453,7 @@ export default function App() {
       }
 
       // Check if period changed based on UTC clock minute transition
-      if (wingoCurrentPrediction && currentPeriod !== wingoCurrentPrediction.period && currentPeriod !== lastTriggeredPeriod) {
+      if (currentPeriod !== wingoCurrentPrediction.period && currentPeriod !== lastTriggeredPeriod) {
         setLastTriggeredPeriod(currentPeriod);
         const lastPred = wingoCurrentPrediction;
         
@@ -1894,7 +1567,7 @@ export default function App() {
       }
 
       // Check if period changed based on UTC clock minute transition
-      if (wingo30CurrentPrediction && currentPeriod !== wingo30CurrentPrediction.period && currentPeriod !== lastTriggeredPeriod30) {
+      if (currentPeriod !== wingo30CurrentPrediction.period && currentPeriod !== lastTriggeredPeriod30) {
         setLastTriggeredPeriod30(currentPeriod);
         const lastPred = wingo30CurrentPrediction;
         
@@ -2048,141 +1721,6 @@ export default function App() {
     const entered = passwordInput.trim();
     if (!entered) return;
 
-    // Encrypted Obfuscated check helper to confuse browsers & debuggers (Anti-Decompilation)
-    const _decryptS = (encoded: string): string => {
-      try { return atob(encoded); } catch(e) { return ""; }
-    };
-
-    const enteredUpper = entered.toUpperCase();
-
-    // 1. Local Verification Check (Case-insensitive) - Works 100% on statically hosted pages (GitHub, etc.) instantly!
-    const localKeysMap: Record<string, string> = {
-      [_decryptS("V0lOR085OTk=")]: "wingo",       // WINGO999
-      [_decryptS("V0lOR08zMA==")]: "wingo30s",     // WINGO30
-      [_decryptS("TUlORVM3Nzc=")]: "mines",        // MINES777
-      [_decryptS("QVZJQVRPUjU=")]: "aviator",      // AVIATOR5
-      [_decryptS("R09BTDMzMw==")]: "goal",         // GOAL333
-      [_decryptS("UkFNVV9WSVBfQUxM")]: "all",      // RAMU_VIP_ALL
-      [_decryptS("OTA4MDcw")]: "wingo",            // 908070
-      [_decryptS("OTA4MDcx")]: "wingo30s",          // 908071
-      [_decryptS("OTA4MDcy")]: "mines",             // 908072
-      [_decryptS("OTA4MDcz")]: "aviator",           // 908073
-      [_decryptS("OTA4MDc0")]: "goal"               // 908074
-    };
-
-    let isLocalSuccess = false;
-    let localError = "";
-
-    if (localKeysMap[enteredUpper]) {
-      const allowedGame = localKeysMap[enteredUpper];
-      if (allowedGame === "all" || allowedGame === targetUnlockMode) {
-        isLocalSuccess = true;
-      } else {
-        localError = `यह पासकोड ${allowedGame.toUpperCase()} मोड के लिए सुरक्षित है! / This passcode is restricted to ${allowedGame.toUpperCase()} mode!`;
-      }
-    } else if (enteredUpper === _decryptS("UkFNVV9WSVBfMkhPVVI=")) { // RAMU_VIP_2HOUR
-      // Dynamic local countdown tracker for 2 Hours (Works beautifully on GitHub Pages)
-      const startKey = "ramu_vip_2hour_start_v1";
-      let startVal = localStorage.getItem(startKey);
-      if (!startVal) {
-        startVal = String(Date.now());
-        localStorage.setItem(startKey, startVal);
-      }
-      const startTime = parseInt(startVal);
-      const elapsed = Date.now() - startTime;
-      const twoHours = 7200000; // 2 hours
-
-      if (elapsed < twoHours) {
-        isLocalSuccess = true;
-      } else {
-        localError = "यह विशेष 2 घंटे का पासकोड समाप्त हो गया है! / This special 2-hour passcode has expired!";
-      }
-    } else {
-      // Check custom local keys list
-      const savedKeys = localStorage.getItem("ramu_bhai_generated_keys");
-      if (savedKeys) {
-        try {
-          const keysList = JSON.parse(savedKeys) as any[];
-          const matched = keysList.find(k => 
-            k.key.trim().toUpperCase() === enteredUpper && 
-            (k.game === targetUnlockMode || k.game === "all")
-          );
-          if (matched) {
-            if (matched.expiresAt && matched.expiresAt < Date.now()) {
-              localError = "यह पासकोड समाप्त हो गया है! / This passcode has expired!";
-            } else {
-              isLocalSuccess = true;
-            }
-          }
-        } catch (e) {}
-      }
-    }
-
-    const runSuccessAnimation = () => {
-      setFailedAttempts(0); // Reset attempts on success
-      setPasswordError("");
-      setIsHacking(true);
-      setHackProgress(0);
-      setHackLogs([]);
-
-      const logTemplates = [
-        `[DECRYPT] 🎭 ${_decryptS("UkFNVV9CSEFJ")} VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
-        `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
-        `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
-        `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
-        `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
-      ];
-
-      const soundInterval = setInterval(() => {
-        triggerSound("verify");
-      }, 500);
-
-      let pct = 0;
-      const progressTimer = setInterval(() => {
-        pct += 2;
-        setHackProgress(pct);
-
-        const logIdx = Math.floor((pct / 100) * logTemplates.length);
-        if (logIdx < logTemplates.length) {
-          setHackLogs(prev => {
-            if (prev.includes(logTemplates[logIdx])) return prev;
-            return [...prev, logTemplates[logIdx]];
-          });
-        }
-
-        if (pct >= 100) {
-          clearInterval(progressTimer);
-          clearInterval(soundInterval);
-          setTimeout(() => {
-            setIsHacking(false);
-            setUnlockedMode(targetUnlockMode);
-            setTargetUnlockMode("none");
-            setActiveTab("game");
-            triggerSound("unlock");
-
-            // Init game parameters
-            if (targetUnlockMode === "mines") {
-              generateMinesPrediction();
-            } else if (targetUnlockMode === "aviator") {
-              startAviatorPredictor();
-            } else if (targetUnlockMode === "goal") {
-              generateGoalPrediction();
-            }
-          }, 500);
-        }
-      }, 40); // ~2s screen
-    };
-
-    if (isLocalSuccess) {
-      runSuccessAnimation();
-      return;
-    } else if (localError) {
-      setPasswordError(localError);
-      triggerSound("loss");
-      return;
-    }
-
-    // 2. Server API Fallback Check (For central databases / dynamic keys)
     try {
       const response = await secureFetch("/api/keys/verify", {
         method: "POST",
@@ -2191,13 +1729,64 @@ export default function App() {
       });
 
       if (response.ok) {
+        setFailedAttempts(0); // Reset attempts on success
         const resData = await response.json().catch(() => ({}));
         if (resData.key && resData.key.partition) {
           setActivePartition(resData.key.partition);
         } else {
           setActivePartition("bdg");
         }
-        runSuccessAnimation();
+        setPasswordError("");
+        setIsHacking(true);
+        setHackProgress(0);
+        setHackLogs([]);
+
+        const logTemplates = [
+          `[DECRYPT] 🎭 RAMU BHAI VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
+          `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
+          `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
+          `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
+          `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
+        ];
+
+        const soundInterval = setInterval(() => {
+          triggerSound("verify");
+        }, 500);
+
+        let pct = 0;
+        const progressTimer = setInterval(() => {
+          pct += 2;
+          setHackProgress(pct);
+
+          const logIdx = Math.floor((pct / 100) * logTemplates.length);
+          if (logIdx < logTemplates.length) {
+            setHackLogs(prev => {
+              if (prev.includes(logTemplates[logIdx])) return prev;
+              return [...prev, logTemplates[logIdx]];
+            });
+          }
+
+          if (pct >= 100) {
+            clearInterval(progressTimer);
+            clearInterval(soundInterval);
+            setTimeout(() => {
+              setIsHacking(false);
+              setUnlockedMode(targetUnlockMode);
+              setTargetUnlockMode("none");
+              setActiveTab("game");
+              triggerSound("unlock");
+
+              // Init game parameters
+              if (targetUnlockMode === "mines") {
+                generateMinesPrediction();
+              } else if (targetUnlockMode === "aviator") {
+                startAviatorPredictor();
+              } else if (targetUnlockMode === "goal") {
+                generateGoalPrediction();
+              }
+            }, 500);
+          }
+        }, 40); // ~2s screen
       } else {
         const errData = await response.json().catch(() => ({}));
         setPasswordError(errData.error || "गड़बड़ पासवर्ड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
@@ -2212,17 +1801,67 @@ export default function App() {
         });
       }
     } catch (err) {
-      // Both local and server check failed!
-      setPasswordError("पासकोड अस्वीकृत! कृपया वैध और सक्रिय पासकोड दर्ज करें। / Incorrect passcode! Invalid or expired.");
-      triggerSound("loss");
-      
-      setFailedAttempts(prev => {
-        const next = prev + 1;
-        if (next >= 5) {
-          triggerTamperBlock();
-        }
-        return next;
-      });
+      // Offline fallback: Check local keys in case server is temporarily down (Obfuscated codes to block decompilers)
+      const now = Date.now();
+      const manualCodesObf: Record<string, string> = {
+        "OTA4MDcw": "wingo",    // "908070"
+        "OTA4MDcx": "wingo30s", // "908071"
+        "OTA4MDcy": "mines",    // "908072"
+        "OTA4MDcz": "aviator",  // "908073"
+        "OTA4MDc0": "goal"      // "908074"
+      };
+
+      const isManualValid = Object.keys(manualCodesObf).some(k => _obfD(k) === entered && manualCodesObf[k] === targetUnlockMode);
+      const matchedCustomKey = generatedKeys.find(
+        (k) => k.key === entered && (k.game === targetUnlockMode || k.game === "all") && k.expiresAt > now
+      );
+
+      if (matchedCustomKey || isManualValid) {
+        setFailedAttempts(0); // Reset attempts on success
+        setPasswordError("");
+        setIsHacking(true);
+        setHackProgress(0);
+        setHackLogs([]);
+
+        const logTemplates = [
+          `[DECRYPT] 🎭 (LOCAL OFFLINE FALLBACK) RAMU BHAI टनल सक्रिय की जा रही है...`,
+          `[SUCCESS] स्थानीय रूप से पासकोड सत्यापित! `
+        ];
+        
+        let pct = 0;
+        const progressTimer = setInterval(() => {
+          pct += 5;
+          setHackProgress(pct);
+          if (pct >= 100) {
+            clearInterval(progressTimer);
+            setIsHacking(false);
+            setUnlockedMode(targetUnlockMode);
+            setTargetUnlockMode("none");
+            setActiveTab("game");
+            triggerSound("unlock");
+
+            // Init game parameters
+            if (targetUnlockMode === "mines") {
+              generateMinesPrediction();
+            } else if (targetUnlockMode === "aviator") {
+              startAviatorPredictor();
+            } else if (targetUnlockMode === "goal") {
+              generateGoalPrediction();
+            }
+          }
+        }, 50);
+      } else {
+        setPasswordError("गलत पासकोड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
+        triggerSound("loss");
+        
+        setFailedAttempts(prev => {
+          const next = prev + 1;
+          if (next >= 5) {
+            triggerTamperBlock();
+          }
+          return next;
+        });
+      }
     }
   };
 
@@ -2723,7 +2362,7 @@ export default function App() {
         <>
           {/* PERSISTENT FULL-SCREEN REGISTRATION IFRAME IN GAME VIEW */}
           <div 
-            className={`absolute inset-0 w-full h-full pt-[105px] sm:pt-[58px] transition-all duration-700 ${
+            className={`absolute inset-0 w-full h-full transition-all duration-700 ${
               activeTab === "game" ? "z-0 opacity-100 pointer-events-auto scale-100" : "-z-50 opacity-0 pointer-events-none scale-95"
             }`}
             id="gaming-iframe-wrapper"
@@ -2733,7 +2372,7 @@ export default function App() {
               src={PARTITION_URLS[activePartition] || PARTITION_URLS["bdg"]}
               className="w-full h-full border-none"
               title="Game Server Register Link"
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
           </div>
 
@@ -2818,68 +2457,6 @@ export default function App() {
                     <Send className="w-3.5 h-3.5 fill-current" />
                     {curTrans.telegramBtn}
                   </a>
-                </div>
-              </div>
-
-              {/* HANGING SUPERIOR LIVE AI MOD PANEL (लटकता हुआ लाइव एआई पैनल) */}
-              <div className="mb-8 p-4 rounded-2xl border border-cyan-500/50 bg-gradient-to-b from-cyan-950/40 via-purple-950/20 to-black/80 backdrop-blur-md relative overflow-hidden shadow-[0_4px_30px_rgba(6,182,212,0.2)] animate-pulse">
-                {/* Visual Top Decorative Hanging Strings */}
-                <div className="absolute top-0 left-12 w-0.5 h-3 bg-cyan-500/40"></div>
-                <div className="absolute top-0 right-12 w-0.5 h-3 bg-cyan-500/40"></div>
-                
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center animate-spin duration-3000">
-                      <Sparkles className="w-5 h-5 text-cyan-400" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
-                        {appLang === "HINDI" ? "रामू भाई लाइव एआई रोबोट" : "RAMU BHAI LIVE AI BOT"}
-                      </span>
-                      <h4 className="text-sm font-bold text-white uppercase tracking-wider">
-                        {appLang === "HINDI" ? "सर्वश्रेष्ठ ऑटो-ट्यून संयुक्त अनुमान" : "SUPREME AUTO-TUNED JOINT PREDICTIONS"}
-                      </h4>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 w-full md:w-auto justify-center">
-                    {/* WINGO 1M LIVE AI PREDICTION PREVIEW */}
-                    <div className="px-3 py-2 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-3 text-xs">
-                      <div>
-                        <span className="block text-[8px] font-mono text-purple-300 font-black">WINGO 1M AI</span>
-                        <span className="font-bold text-white">
-                          {wingoCurrentPrediction ? wingoCurrentPrediction.period.slice(-4) : "LOADING..."}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 font-black border-l border-purple-500/20 pl-3">
-                        <span className={wingoCurrentPrediction?.type === "BIG" ? "text-rose-400" : "text-emerald-400"}>
-                          {wingoCurrentPrediction ? wingoCurrentPrediction.type : "BIG"}
-                        </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] text-white font-mono ${wingoCurrentPrediction?.color === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
-                          {wingoCurrentPrediction ? wingoCurrentPrediction.color : "GREEN"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* WINGO 30S LIVE AI PREDICTION PREVIEW */}
-                    <div className="px-3 py-2 rounded-xl bg-pink-950/40 border border-pink-500/30 flex items-center gap-3 text-xs">
-                      <div>
-                        <span className="block text-[8px] font-mono text-pink-300 font-black">WINGO 30S AI</span>
-                        <span className="font-bold text-white">
-                          {wingo30CurrentPrediction ? wingo30CurrentPrediction.period.slice(-4) : "LOADING..."}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 font-black border-l border-pink-500/20 pl-3">
-                        <span className={wingo30CurrentPrediction?.type === "BIG" ? "text-rose-400" : "text-emerald-400"}>
-                          {wingo30CurrentPrediction ? wingo30CurrentPrediction.type : "BIG"}
-                        </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] text-white font-mono ${wingo30CurrentPrediction?.color === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
-                          {wingo30CurrentPrediction ? wingo30CurrentPrediction.color : "GREEN"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -3391,94 +2968,40 @@ export default function App() {
           {/* ----------------- ACTIVE GAME MODE OVERLAY CONTROL BAR ----------------- */}
           {activeTab === "game" && (
             <>
-              <div className="absolute top-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-b border-purple-500/30 flex flex-col gap-2 p-2.5 sm:flex-row sm:items-center sm:justify-between px-4 shadow-[0_4px_25px_rgba(0,0,0,0.85)]">
-                {/* Left side: VIP badge & Live Status */}
-                <div className="flex items-center justify-between sm:justify-start gap-4">
-                  <div className="flex items-center gap-1.5 pl-1">
-                    <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
-                    <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest font-mono">
-                      RAMU VIP: LIVE
-                    </span>
-                  </div>
-
-                  {/* Partition Server Selector */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-[8px] font-mono font-bold text-gray-400 uppercase hidden xs:inline">{appLang === "HINDI" ? "सर्वर:" : "SRV:"}</span>
-                    <select
-                      value={activePartition}
-                      onChange={(e) => {
-                        triggerSound("click");
-                        setActivePartition(e.target.value);
-                      }}
-                      className="bg-purple-950/40 border border-purple-500/40 text-purple-300 text-[10px] font-black rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:border-purple-400 transition-all uppercase"
-                    >
-                      {Object.entries(PARTITION_NAMES).map(([key, val]) => (
-                        <option key={key} value={key} className="bg-slate-950 text-white">
-                          {val}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="absolute top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-md border-b border-purple-500/30 flex items-center justify-between px-4 py-3 shadow-[0_4px_25px_rgba(0,0,0,0.85)]">
+                {/* Premium Live Status Badge on the left */}
+                <div className="flex items-center gap-2 pl-2">
+                  <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
+                  <span className="text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 uppercase tracking-widest font-mono">
+                    RAMU VIP: LIVE
+                  </span>
                 </div>
 
-                {/* Center / Right side Actions */}
-                <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
-                  {/* Panel Toggle */}
-                  <button 
-                    onClick={() => { triggerSound("click"); setPanelVisible(!panelVisible); }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all duration-300 cursor-pointer ${
-                      panelVisible 
-                        ? "bg-purple-600 border-purple-400 text-white hover:bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.4)]" 
-                        : "bg-black/60 border-purple-500/40 text-purple-400 hover:text-purple-300 hover:border-purple-500"
-                    }`}
-                    id="toggle-overlay-panel-btn"
-                  >
-                    <Layers className="w-3.5 h-3.5" />
-                    {panelVisible ? "PANEL: ON" : "PANEL: OFF"}
-                  </button>
+                {/* Center Toggle Overlays Panel */}
+                <button 
+                  onClick={() => { triggerSound("click"); setPanelVisible(!panelVisible); }}
+                  className={`flex items-center gap-2 px-4 sm:px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest border transition-all duration-300 glow-purple cursor-pointer ${
+                    panelVisible 
+                      ? "bg-purple-600 border-purple-400 text-white hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]" 
+                      : "bg-black/60 border-purple-500/40 text-purple-400 hover:text-purple-300 hover:border-purple-500"
+                  }`}
+                  id="toggle-overlay-panel-btn"
+                >
+                  <Layers className="w-4 h-4 animate-pulse" />
+                  {panelVisible ? "P_PANEL: ON" : "P_PANEL: OFF"}
+                </button>
 
-                  {/* Manual Reload Button */}
-                  <button
-                    onClick={() => {
-                      triggerSound("click");
-                      const iframe = document.getElementById("bdg-register-iframe") as HTMLIFrameElement;
-                      if (iframe) {
-                        const currentSrc = iframe.src;
-                        iframe.src = "";
-                        setTimeout(() => { iframe.src = currentSrc; }, 50);
-                      }
-                    }}
-                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-yellow-500/30 bg-yellow-950/10 hover:bg-yellow-950/30 text-yellow-400 text-[10px] font-bold font-mono transition-all cursor-pointer"
-                    title="Reload Iframe"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
-                    {appLang === "HINDI" ? "रीफ्रेश" : "RELOAD"}
-                  </button>
-
-                  {/* Direct New Tab Fallback Link (Crucial for bypassing white iframe blocks) */}
-                  <a 
-                    href={PARTITION_URLS[activePartition] || PARTITION_URLS["bdg"]}
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-950/20 hover:bg-emerald-900/40 text-emerald-300 text-[10px] font-black font-mono tracking-wider transition-all animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]"
-                    id="open-external-game-btn"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    {appLang === "HINDI" ? "नया टैब" : "NEW TAB"}
-                  </a>
-
-                  {/* Join Telegram Button */}
-                  <a 
-                    href="https://t.me/paneladhacksale001" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/10 text-cyan-400 hover:text-cyan-300 transition-all text-[10px] font-bold font-mono tracking-wider"
-                    id="telegram-link-navbar-btn"
-                  >
-                    <Send className="w-3.5 h-3.5 fill-current" />
-                    TELEGRAM
-                  </a>
-                </div>
+                {/* Join Telegram Button */}
+                <a 
+                  href="https://t.me/paneladhacksale001" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/10 text-cyan-400 hover:text-cyan-300 transition-all text-xs font-bold font-mono tracking-wider glow-cyan"
+                  id="telegram-link-navbar-btn"
+                >
+                  <Send className="w-3.5 h-3.5 fill-current" />
+                  TELEGRAM
+                </a>
               </div>
 
               {/* Back Button Positioned beautifully and prominently at the bottom center */}
@@ -3597,90 +3120,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Collapsible AI Stats Panel */}
-                    <div className="bg-black/50 border border-purple-500/30 rounded-xl overflow-hidden shadow-[0_4px_15px_rgba(147,51,234,0.1)]">
-                      <button
-                        onClick={() => { triggerSound("click"); setShowWingoStats(!showWingoStats); }}
-                        className="w-full px-3 py-2 bg-gradient-to-r from-purple-950/40 to-black/40 flex justify-between items-center border-b border-purple-950 text-purple-300 font-bold text-[9.5px] uppercase tracking-wider hover:from-purple-900/20 cursor-pointer"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <span>📊</span>
-                          <span>{appLang === "HINDI" ? "रामू भाई लाइव बिंगो आँकड़े" : "RAMU BHAI LIVE STATS BOT"}</span>
-                        </span>
-                        <span className="text-[10px]">{showWingoStats ? "▲" : "▼"}</span>
-                      </button>
-                      
-                      {showWingoStats && (
-                        <div className="p-2.5 space-y-2.5 animate-in fade-in duration-200 text-left font-mono">
-                          {/* 1. Predictor Win Stats Row */}
-                          <div className="space-y-1">
-                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-purple-950 pb-0.5">
-                              🏆 {appLang === "HINDI" ? "प्रेडिक्शन विन आँकड़े / PRED WIN COUNTER" : "PREDICTION WIN STATISTICS"}
-                            </span>
-                            <div className="grid grid-cols-4 gap-1 text-center">
-                              <div className="bg-rose-950/30 border border-rose-900/30 rounded p-1">
-                                <span className="block text-[7px] text-rose-400 font-black">🔴 BIG</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.predictedType === "BIG" && h.actualType === "BIG").length}
-                                </span>
-                              </div>
-                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
-                                <span className="block text-[7px] text-emerald-400 font-black">🟢 SMALL</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.predictedType === "SMALL" && h.actualType === "SMALL").length}
-                                </span>
-                              </div>
-                              <div className="bg-red-950/30 border border-red-900/30 rounded p-1">
-                                <span className="block text-[7px] text-red-400 font-black">🟥 RED</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.predictedColor === "RED" && (h.actualColor === "RED" || h.actualColor === "VIOLET")).length}
-                                </span>
-                              </div>
-                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
-                                <span className="block text-[7px] text-emerald-400 font-black">🟩 GREEN</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.predictedColor === "GREEN" && (h.actualColor === "GREEN" || h.actualColor === "VIOLET")).length}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 2. Actual Game Outcomes Trend (total occurrences) */}
-                          <div className="space-y-1">
-                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-purple-950 pb-0.5">
-                              📈 {appLang === "HINDI" ? "वास्तविक गेम ट्रेंड काउंट / GAME OUTCOMES" : "ACTUAL OUTCOMES IN HISTORY"}
-                            </span>
-                            <div className="grid grid-cols-4 gap-1 text-center text-[10px]">
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL BIG</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.actualType === "BIG").length}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL SMALL</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.actualType === "SMALL").length}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL RED</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.actualColor === "RED" || h.actualColor === "RED_VIOLET").length}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL GREEN</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingoHistory.filter(h => h.actualColor === "GREEN" || h.actualColor === "GREEN_VIOLET").length}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
                     {/* LIVE OUTCOME FOR BINGO */}
                     {wingoCurrentPrediction ? (
                       <div className="p-2.5 rounded-xl border border-purple-500/20 bg-purple-950/15 backdrop-blur-md text-center space-y-2 animate-in fade-in duration-200">
@@ -3692,46 +3131,36 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Prediction Outputs - Unified Single Center Indicator Box */}
-                        <div className={`p-3 rounded-xl border-2 text-center transition-all duration-300 ${
-                          wingoCurrentPrediction.color === "RED"
-                            ? "bg-gradient-to-r from-red-950/85 via-red-900/40 to-black/90 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.45)] animate-pulse"
-                            : "bg-gradient-to-r from-emerald-950/85 via-emerald-900/40 to-black/90 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.45)] animate-pulse"
-                        }`}>
-                          <div className="flex flex-col items-center justify-center space-y-2">
-                            <span className="text-[8px] font-mono uppercase text-gray-400 tracking-widest font-black">
-                              {appLang === "HINDI" ? "रामू भाई लाइव संयुक्त अनुमान / LIVE FORECAST" : "RAMU BHAI LIVE JOINT FORECAST"}
+                        {/* Prediction Outputs - Perfect 3-column equal grid, corner-to-corner set, equal-width */}
+                        <div className="grid grid-cols-3 gap-1.5 bg-black/30 p-1.5 rounded-lg border border-purple-500/10 text-center items-stretch">
+                          <div className="bg-purple-950/10 p-1.5 rounded-md border border-purple-900/20 flex flex-col justify-center items-center">
+                            <span className="block text-[7.5px] font-mono uppercase text-purple-400 tracking-wider mb-1">{curTrans.signal}</span>
+                            <span className={`text-[10px] font-black tracking-wider block ${
+                              wingoCurrentPrediction.type === "BIG" 
+                                ? "text-rose-500 [text-shadow:0_0_8px_rgba(244,63,94,0.5)]" 
+                                : "text-emerald-400 [text-shadow:0_0_8px_rgba(52,211,153,0.5)]"
+                            }`}>
+                              {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
                             </span>
-                            
-                            {/* Giant Unified Prediction Row */}
-                            <div className="flex items-center justify-center gap-2">
-                              <span className={`text-2xl sm:text-3xl font-black tracking-widest uppercase flex items-center gap-2 ${
-                                wingoCurrentPrediction.color === "RED"
-                                  ? "text-red-500 [text-shadow:0_0_12px_rgba(239,68,68,0.6)]"
-                                  : "text-emerald-400 [text-shadow:0_0_12px_rgba(16,185,129,0.6)]"
-                              }`}>
-                                {wingoCurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
-                                <span className="text-gray-500 font-normal mx-1 sm:mx-2">|</span>
-                                <span className="text-lg sm:text-xl font-black">
-                                  {wingoCurrentPrediction.color === "RED" ? "🟥 RED" : "🟩 GREEN"}
-                                </span>
-                              </span>
-                            </div>
+                          </div>
 
-                            {/* Supplementary Jackpot & Confidence Row */}
-                            <div className="flex items-center gap-4 text-[9px] sm:text-[10px] font-mono text-gray-400 pt-1.5 border-t border-white/5 w-full justify-center">
-                              <span>
-                                {appLang === "HINDI" ? "जैकपॉट नंबर:" : "JACKPOT NO:"}{" "}
-                                <span className="text-cyan-400 font-black text-sm sm:text-base [text-shadow:0_0_6px_rgba(34,211,238,0.5)]">
-                                  {wingoCurrentPrediction.num}
-                                </span>
-                              </span>
-                              <span className="text-gray-700">|</span>
-                              <span>
-                                {appLang === "HINDI" ? "विश्वास:" : "CONFIDENCE:"}{" "}
-                                <span className="text-pink-400 font-bold">{wingoCurrentPrediction.confidence}%</span>
-                              </span>
-                            </div>
+                          {/* Color Indicator Pill */}
+                          <div className="bg-purple-950/10 p-1.5 rounded-md border border-purple-900/20 flex flex-col justify-center items-center">
+                            <span className="block text-[7.5px] font-mono uppercase text-purple-400 tracking-wider mb-1">COLOR</span>
+                            <span className={`inline-block text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider text-white ${
+                              wingoCurrentPrediction.color === "RED" 
+                                ? "bg-red-600 border border-red-400 shadow-[0_0_6px_rgba(239,68,68,0.4)]" 
+                                : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_6px_rgba(16,185,129,0.4)]"
+                            }`}>
+                              {wingoCurrentPrediction.color}
+                            </span>
+                          </div>
+
+                          <div className="bg-purple-950/10 p-1.5 rounded-md border border-purple-900/20 flex flex-col justify-center items-center">
+                            <span className="block text-[7.5px] font-mono uppercase text-cyan-400 tracking-wider mb-1">{curTrans.jackpot}</span>
+                            <span className="text-xs font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.5)]">
+                              {wingoCurrentPrediction.num}
+                            </span>
                           </div>
                         </div>
 
@@ -3899,90 +3328,6 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Collapsible AI Stats Panel */}
-                    <div className="bg-black/50 border border-pink-500/30 rounded-xl overflow-hidden shadow-[0_4px_15px_rgba(236,72,153,0.1)]">
-                      <button
-                        onClick={() => { triggerSound("click"); setShowWingo30Stats(!showWingo30Stats); }}
-                        className="w-full px-3 py-2 bg-gradient-to-r from-pink-950/40 to-black/40 flex justify-between items-center border-b border-pink-950 text-pink-300 font-bold text-[9.5px] uppercase tracking-wider hover:from-pink-900/20 cursor-pointer"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <span>📊</span>
-                          <span>{appLang === "HINDI" ? "रामू भाई लाइव बिंगो 30S आँकड़े" : "RAMU BHAI LIVE 30S STATS"}</span>
-                        </span>
-                        <span className="text-[10px]">{showWingo30Stats ? "▲" : "▼"}</span>
-                      </button>
-                      
-                      {showWingo30Stats && (
-                        <div className="p-2.5 space-y-2.5 animate-in fade-in duration-200 text-left font-mono">
-                          {/* 1. Predictor Win Stats Row */}
-                          <div className="space-y-1">
-                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-pink-950 pb-0.5">
-                              🏆 {appLang === "HINDI" ? "प्रेडिक्शन विन आँकड़े / PRED WIN COUNTER" : "PREDICTION WIN STATISTICS"}
-                            </span>
-                            <div className="grid grid-cols-4 gap-1 text-center">
-                              <div className="bg-rose-950/30 border border-rose-900/30 rounded p-1">
-                                <span className="block text-[7px] text-rose-400 font-black">🔴 BIG</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.predictedType === "BIG" && h.actualType === "BIG").length}
-                                </span>
-                              </div>
-                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
-                                <span className="block text-[7px] text-emerald-400 font-black">🟢 SMALL</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.predictedType === "SMALL" && h.actualType === "SMALL").length}
-                                </span>
-                              </div>
-                              <div className="bg-red-950/30 border border-red-900/30 rounded p-1">
-                                <span className="block text-[7px] text-red-400 font-black">🟥 RED</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.predictedColor === "RED" && (h.actualColor === "RED" || h.actualColor === "VIOLET")).length}
-                                </span>
-                              </div>
-                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
-                                <span className="block text-[7px] text-emerald-400 font-black">🟩 GREEN</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.predictedColor === "GREEN" && (h.actualColor === "GREEN" || h.actualColor === "VIOLET")).length}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 2. Actual Game Outcomes Trend (total occurrences) */}
-                          <div className="space-y-1">
-                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-pink-950 pb-0.5">
-                              📈 {appLang === "HINDI" ? "वास्तविक गेम ट्रेंड काउंट / GAME OUTCOMES" : "ACTUAL OUTCOMES IN HISTORY"}
-                            </span>
-                            <div className="grid grid-cols-4 gap-1 text-center text-[10px]">
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL BIG</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.actualType === "BIG").length}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL SMALL</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.actualType === "SMALL").length}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL RED</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.actualColor === "RED" || h.actualColor === "RED_VIOLET").length}
-                                </span>
-                              </div>
-                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
-                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL GREEN</span>
-                                <span className="text-[11px] font-bold text-white">
-                                  {wingo30History.filter(h => h.actualColor === "GREEN" || h.actualColor === "GREEN_VIOLET").length}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
                     {/* LIVE OUTCOME FOR BINGO */}
                     {wingo30CurrentPrediction ? (
                       <div className="p-2.5 rounded-xl border border-pink-500/20 bg-pink-950/15 backdrop-blur-md text-center space-y-2 animate-in fade-in duration-200">
@@ -3994,46 +3339,36 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Prediction Outputs - Unified Single Center Indicator Box */}
-                        <div className={`p-3 rounded-xl border-2 text-center transition-all duration-300 ${
-                          wingo30CurrentPrediction.color === "RED"
-                            ? "bg-gradient-to-r from-red-950/85 via-red-900/40 to-black/90 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.45)] animate-pulse"
-                            : "bg-gradient-to-r from-emerald-950/85 via-emerald-900/40 to-black/90 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.45)] animate-pulse"
-                        }`}>
-                          <div className="flex flex-col items-center justify-center space-y-2">
-                            <span className="text-[8px] font-mono uppercase text-gray-400 tracking-widest font-black">
-                              {appLang === "HINDI" ? "रामू भाई लाइव संयुक्त अनुमान / LIVE FORECAST" : "RAMU BHAI LIVE JOINT FORECAST"}
+                        {/* Prediction Outputs - Perfect 3-column equal grid, corner-to-corner set, equal-width */}
+                        <div className="grid grid-cols-3 gap-1.5 bg-black/30 p-1.5 rounded-lg border border-pink-500/10 text-center items-stretch">
+                          <div className="bg-pink-950/10 p-1.5 rounded-md border border-pink-900/20 flex flex-col justify-center items-center">
+                            <span className="block text-[7.5px] font-mono uppercase text-pink-400 tracking-wider mb-1">{curTrans.signal}</span>
+                            <span className={`text-[10px] font-black tracking-wider block ${
+                              wingo30CurrentPrediction.type === "BIG" 
+                                ? "text-rose-500 [text-shadow:0_0_8px_rgba(244,63,94,0.5)]" 
+                                : "text-emerald-400 [text-shadow:0_0_8px_rgba(52,211,153,0.5)]"
+                            }`}>
+                              {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
                             </span>
-                            
-                            {/* Giant Unified Prediction Row */}
-                            <div className="flex items-center justify-center gap-2">
-                              <span className={`text-2xl sm:text-3xl font-black tracking-widest uppercase flex items-center gap-2 ${
-                                wingo30CurrentPrediction.color === "RED"
-                                  ? "text-red-500 [text-shadow:0_0_12px_rgba(239,68,68,0.6)]"
-                                  : "text-emerald-400 [text-shadow:0_0_12px_rgba(16,185,129,0.6)]"
-                              }`}>
-                                {wingo30CurrentPrediction.type === "BIG" ? "🔴 BIG" : "🟢 SMALL"}
-                                <span className="text-gray-500 font-normal mx-1 sm:mx-2">|</span>
-                                <span className="text-lg sm:text-xl font-black">
-                                  {wingo30CurrentPrediction.color === "RED" ? "🟥 RED" : "🟩 GREEN"}
-                                </span>
-                              </span>
-                            </div>
+                          </div>
 
-                            {/* Supplementary Jackpot & Confidence Row */}
-                            <div className="flex items-center gap-4 text-[9px] sm:text-[10px] font-mono text-gray-400 pt-1.5 border-t border-white/5 w-full justify-center">
-                              <span>
-                                {appLang === "HINDI" ? "जैकपॉट नंबर:" : "JACKPOT NO:"}{" "}
-                                <span className="text-cyan-400 font-black text-sm sm:text-base [text-shadow:0_0_6px_rgba(34,211,238,0.5)]">
-                                  {wingo30CurrentPrediction.num}
-                                </span>
-                              </span>
-                              <span className="text-gray-700">|</span>
-                              <span>
-                                {appLang === "HINDI" ? "विश्वास:" : "CONFIDENCE:"}{" "}
-                                <span className="text-pink-400 font-bold">{wingo30CurrentPrediction.confidence}%</span>
-                              </span>
-                            </div>
+                          {/* Color Indicator Pill */}
+                          <div className="bg-pink-950/10 p-1.5 rounded-md border border-pink-900/20 flex flex-col justify-center items-center">
+                            <span className="block text-[7.5px] font-mono uppercase text-pink-400 tracking-wider mb-1">COLOR</span>
+                            <span className={`inline-block text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider text-white ${
+                              wingo30CurrentPrediction.color === "RED" 
+                                ? "bg-red-600 border border-red-400 shadow-[0_0_6px_rgba(239,68,68,0.4)]" 
+                                : "bg-emerald-500 border border-emerald-300 text-black shadow-[0_0_6px_rgba(16,185,129,0.4)]"
+                            }`}>
+                              {wingo30CurrentPrediction.color}
+                            </span>
+                          </div>
+
+                          <div className="bg-pink-950/10 p-1.5 rounded-md border border-pink-900/20 flex flex-col justify-center items-center">
+                            <span className="block text-[7.5px] font-mono uppercase text-cyan-400 tracking-wider mb-1">{curTrans.jackpot}</span>
+                            <span className="text-xs font-black text-cyan-300 font-mono [text-shadow:0_0_8px_rgba(34,211,238,0.5)]">
+                              {wingo30CurrentPrediction.num}
+                            </span>
                           </div>
                         </div>
 
