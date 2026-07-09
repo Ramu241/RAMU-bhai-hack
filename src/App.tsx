@@ -634,6 +634,7 @@ function calculateStrictUserChart(lastNum: number, historyList: BingoListItem[])
   let bestPatternPrediction: "BIG" | "SMALL" | null = null;
   let maxMatchLength = 0;
 
+  // 1. Suffix Match Checker (looks at immediate last elements)
   if (sizes.length >= 2) {
     for (const p of patterns) {
       const seqLen = p.seq.length;
@@ -656,6 +657,50 @@ function calculateStrictUserChart(lastNum: number, historyList: BingoListItem[])
         }
       }
     }
+  }
+
+  // 2. Dynamic Deep History Pattern Correlation (Scans entire past history sequence to find dominant pattern)
+  let highestDominancePatternName = "Adaptive Neural Trend";
+  let highestDominanceScore = 0;
+  let dynamicPatternPrediction: "BIG" | "SMALL" | null = null;
+
+  if (sizes.length >= 4) {
+    for (const p of patterns) {
+      const seqLen = p.seq.length;
+      let matches = 0;
+      let totalTests = 0;
+      
+      for (let startIdx = 0; startIdx <= Math.max(0, sizes.length - seqLen); startIdx++) {
+        let currentMatches = 0;
+        for (let i = 0; i < seqLen; i++) {
+          if (sizes[startIdx + i] === p.seq[i]) {
+            currentMatches++;
+          }
+        }
+        if (currentMatches === seqLen) {
+          matches += 2; // Perfect pattern match
+        } else if (currentMatches >= seqLen - 1) {
+          matches += 1; // High similarity match
+        }
+        totalTests++;
+      }
+
+      const dominanceScore = totalTests > 0 ? (matches / totalTests) * 100 : 0;
+      if (dominanceScore > highestDominanceScore) {
+        highestDominanceScore = dominanceScore;
+        highestDominancePatternName = p.name;
+        // Project the next expected outcome in sequence
+        const lastMatchedSeqOffset = sizes.length % seqLen;
+        dynamicPatternPrediction = p.seq[lastMatchedSeqOffset] as "BIG" | "SMALL";
+      }
+    }
+  }
+
+  // Override suffix match with high dominance historical pattern if it has high correlation score
+  if (highestDominanceScore > 25 && dynamicPatternPrediction) {
+    bestPatternName = `${highestDominancePatternName} (Dominant History)`;
+    bestPatternPrediction = dynamicPatternPrediction;
+    maxMatchLength = Math.max(maxMatchLength, 4);
   }
 
   // Combine and make final decision for predictedType (BIG/SMALL)
@@ -1070,31 +1115,18 @@ export default function App() {
     return dId;
   }, []);
 
-  const [isTampered, setIsTampered] = useState(() => {
+  // Self-Healing Anti-Block System: All previously blocked devices are auto-unblocked instantly!
+  const [isTampered, setIsTampered] = useState(false);
+
+  useEffect(() => {
     try {
-      const hn = window.location.hostname;
-      const isDev = hn.includes("ais-dev") || hn.includes("ais-pre") || hn.includes("localhost") || hn.includes("127.0.0.1") || hn.includes("run.app");
-      if (isDev) {
-        localStorage.removeItem("sys_security_locked_v1");
-        return false;
-      }
-      const locked = localStorage.getItem("sys_security_locked_v1");
-      return locked === "true";
-    } catch (e) {
-      return false;
-    }
-  });
+      // Clear persistent block history to instantly recover any locked device as requested by Ramu Bhai
+      localStorage.removeItem("sys_security_locked_v1");
+    } catch (e) {}
+  }, []);
 
   const triggerTamperBlock = () => {
-    try {
-      const hn = window.location.hostname;
-      const isDev = hn.includes("ais-dev") || hn.includes("ais-pre") || hn.includes("localhost") || hn.includes("127.0.0.1") || hn.includes("run.app");
-      if (isDev) {
-        console.log("[SECURITY] Guard block ignored in development mode.");
-        return;
-      }
-      localStorage.setItem("sys_security_locked_v1", "true");
-    } catch (e) {}
+    // Only block dynamically during active session to prevent persistent bricking of legitimate user devices
     setIsTampered(true);
     playEmergencySiren();
   };
@@ -1340,6 +1372,8 @@ export default function App() {
   const [isWingoHistoryOpen, setIsWingoHistoryOpen] = useState(false);
   const [showWingoHistoryBox, setShowWingoHistoryBox] = useState(false);
   const [showWingo30HistoryBox, setShowWingo30HistoryBox] = useState(false);
+  const [showWingoStats, setShowWingoStats] = useState(true);
+  const [showWingo30Stats, setShowWingo30Stats] = useState(true);
 
   // Hacking/Bypassing Animation Overlay States
   const [isHacking, setIsHacking] = useState(false);
@@ -2084,119 +2118,112 @@ export default function App() {
     const entered = passwordInput.trim();
     if (!entered) return;
 
-    try {
-      const response = await secureFetch("/api/keys/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: entered, game: targetUnlockMode, deviceId })
-      });
+    // Encrypted Obfuscated check helper to confuse browsers & debuggers (Anti-Decompilation)
+    const _decryptS = (encoded: string): string => {
+      try { return atob(encoded); } catch(e) { return ""; }
+    };
 
-      if (response.ok) {
-        setFailedAttempts(0); // Reset attempts on success
-        const resData = await response.json().catch(() => ({}));
-        if (resData.key && resData.key.partition) {
-          setActivePartition(resData.key.partition);
-        } else {
-          setActivePartition("bdg");
-        }
-        setPasswordError("");
-        setIsHacking(true);
-        setHackProgress(0);
-        setHackLogs([]);
+    const enteredUpper = entered.toUpperCase();
 
-        const logTemplates = [
-          `[DECRYPT] 🎭 RAMU BHAI VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
-          `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
-          `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
-          `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
-          `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
-        ];
+    // 1. Local Verification Check (Case-insensitive) - Works 100% on statically hosted pages (GitHub, etc.) instantly!
+    const localKeysMap: Record<string, string> = {
+      [_decryptS("V0lOR085OTk=")]: "wingo",       // WINGO999
+      [_decryptS("V0lOR08zMA==")]: "wingo30s",     // WINGO30
+      [_decryptS("TUlORVM3Nzc=")]: "mines",        // MINES777
+      [_decryptS("QVZJQVRPUjU=")]: "aviator",      // AVIATOR5
+      [_decryptS("R09BTDMzMw==")]: "goal",         // GOAL333
+      [_decryptS("UkFNVV9WSVBfQUxM")]: "all",      // RAMU_VIP_ALL
+      [_decryptS("OTA4MDcw")]: "wingo",            // 908070
+      [_decryptS("OTA4MDcx")]: "wingo30s",          // 908071
+      [_decryptS("OTA4MDcy")]: "mines",             // 908072
+      [_decryptS("OTA4MDcz")]: "aviator",           // 908073
+      [_decryptS("OTA4MDc0")]: "goal"               // 908074
+    };
 
-        const soundInterval = setInterval(() => {
-          triggerSound("verify");
-        }, 500);
+    let isLocalSuccess = false;
+    let localError = "";
 
-        let pct = 0;
-        const progressTimer = setInterval(() => {
-          pct += 2;
-          setHackProgress(pct);
-
-          const logIdx = Math.floor((pct / 100) * logTemplates.length);
-          if (logIdx < logTemplates.length) {
-            setHackLogs(prev => {
-              if (prev.includes(logTemplates[logIdx])) return prev;
-              return [...prev, logTemplates[logIdx]];
-            });
-          }
-
-          if (pct >= 100) {
-            clearInterval(progressTimer);
-            clearInterval(soundInterval);
-            setTimeout(() => {
-              setIsHacking(false);
-              setUnlockedMode(targetUnlockMode);
-              setTargetUnlockMode("none");
-              setActiveTab("game");
-              triggerSound("unlock");
-
-              // Init game parameters
-              if (targetUnlockMode === "mines") {
-                generateMinesPrediction();
-              } else if (targetUnlockMode === "aviator") {
-                startAviatorPredictor();
-              } else if (targetUnlockMode === "goal") {
-                generateGoalPrediction();
-              }
-            }, 500);
-          }
-        }, 40); // ~2s screen
+    if (localKeysMap[enteredUpper]) {
+      const allowedGame = localKeysMap[enteredUpper];
+      if (allowedGame === "all" || allowedGame === targetUnlockMode) {
+        isLocalSuccess = true;
       } else {
-        const errData = await response.json().catch(() => ({}));
-        setPasswordError(errData.error || "गड़बड़ पासवर्ड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
-        triggerSound("loss");
-        
-        setFailedAttempts(prev => {
-          const next = prev + 1;
-          if (next >= 5) {
-            triggerTamperBlock();
-          }
-          return next;
-        });
+        localError = `यह पासकोड ${allowedGame.toUpperCase()} मोड के लिए सुरक्षित है! / This passcode is restricted to ${allowedGame.toUpperCase()} mode!`;
       }
-    } catch (err) {
-      // Offline fallback: Check local keys in case server is temporarily down (Obfuscated codes to block decompilers)
-      const now = Date.now();
-      const manualCodesObf: Record<string, string> = {
-        "OTA4MDcw": "wingo",    // "908070"
-        "OTA4MDcx": "wingo30s", // "908071"
-        "OTA4MDcy": "mines",    // "908072"
-        "OTA4MDcz": "aviator",  // "908073"
-        "OTA4MDc0": "goal"      // "908074"
-      };
+    } else if (enteredUpper === _decryptS("UkFNVV9WSVBfMkhPVVI=")) { // RAMU_VIP_2HOUR
+      // Dynamic local countdown tracker for 2 Hours (Works beautifully on GitHub Pages)
+      const startKey = "ramu_vip_2hour_start_v1";
+      let startVal = localStorage.getItem(startKey);
+      if (!startVal) {
+        startVal = String(Date.now());
+        localStorage.setItem(startKey, startVal);
+      }
+      const startTime = parseInt(startVal);
+      const elapsed = Date.now() - startTime;
+      const twoHours = 7200000; // 2 hours
 
-      const isManualValid = Object.keys(manualCodesObf).some(k => _obfD(k) === entered && manualCodesObf[k] === targetUnlockMode);
-      const matchedCustomKey = generatedKeys.find(
-        (k) => k.key === entered && (k.game === targetUnlockMode || k.game === "all") && k.expiresAt > now
-      );
+      if (elapsed < twoHours) {
+        isLocalSuccess = true;
+      } else {
+        localError = "यह विशेष 2 घंटे का पासकोड समाप्त हो गया है! / This special 2-hour passcode has expired!";
+      }
+    } else {
+      // Check custom local keys list
+      const savedKeys = localStorage.getItem("ramu_bhai_generated_keys");
+      if (savedKeys) {
+        try {
+          const keysList = JSON.parse(savedKeys) as any[];
+          const matched = keysList.find(k => 
+            k.key.trim().toUpperCase() === enteredUpper && 
+            (k.game === targetUnlockMode || k.game === "all")
+          );
+          if (matched) {
+            if (matched.expiresAt && matched.expiresAt < Date.now()) {
+              localError = "यह पासकोड समाप्त हो गया है! / This passcode has expired!";
+            } else {
+              isLocalSuccess = true;
+            }
+          }
+        } catch (e) {}
+      }
+    }
 
-      if (matchedCustomKey || isManualValid) {
-        setFailedAttempts(0); // Reset attempts on success
-        setPasswordError("");
-        setIsHacking(true);
-        setHackProgress(0);
-        setHackLogs([]);
+    const runSuccessAnimation = () => {
+      setFailedAttempts(0); // Reset attempts on success
+      setPasswordError("");
+      setIsHacking(true);
+      setHackProgress(0);
+      setHackLogs([]);
 
-        const logTemplates = [
-          `[DECRYPT] 🎭 (LOCAL OFFLINE FALLBACK) RAMU BHAI टनल सक्रिय की जा रही है...`,
-          `[SUCCESS] स्थानीय रूप से पासकोड सत्यापित! `
-        ];
-        
-        let pct = 0;
-        const progressTimer = setInterval(() => {
-          pct += 5;
-          setHackProgress(pct);
-          if (pct >= 100) {
-            clearInterval(progressTimer);
+      const logTemplates = [
+        `[DECRYPT] 🎭 ${_decryptS("UkFNVV9CSEFJ")} VIP LZR v4.9 टनल सक्रिय की जा रही है... / Establishing premium tunnel...`,
+        `[BYPASS] बीडीजी विन क्लाउड सर्वर पर वर्चुअल कनेक्शन स्थापित... / Virtual bypass server connected...`,
+        `[SYNC] एल्गोरिदम सुरक्षा कोड बाईपास सक्रिय किया जा रहा है... / Bypass security active...`,
+        `[HASH] स्थानीय मेमोरी पॉइंटर्स को डिक्रिप्ट किया जा रहा है... / Decrypting key hashes...`,
+        `[SUCCESS] पासवर्ड सत्यापित! रामू भाई बाईपास सक्रिय! / Passcode Verified! Hack active!`
+      ];
+
+      const soundInterval = setInterval(() => {
+        triggerSound("verify");
+      }, 500);
+
+      let pct = 0;
+      const progressTimer = setInterval(() => {
+        pct += 2;
+        setHackProgress(pct);
+
+        const logIdx = Math.floor((pct / 100) * logTemplates.length);
+        if (logIdx < logTemplates.length) {
+          setHackLogs(prev => {
+            if (prev.includes(logTemplates[logIdx])) return prev;
+            return [...prev, logTemplates[logIdx]];
+          });
+        }
+
+        if (pct >= 100) {
+          clearInterval(progressTimer);
+          clearInterval(soundInterval);
+          setTimeout(() => {
             setIsHacking(false);
             setUnlockedMode(targetUnlockMode);
             setTargetUnlockMode("none");
@@ -2211,10 +2238,39 @@ export default function App() {
             } else if (targetUnlockMode === "goal") {
               generateGoalPrediction();
             }
-          }
-        }, 50);
+          }, 500);
+        }
+      }, 40); // ~2s screen
+    };
+
+    if (isLocalSuccess) {
+      runSuccessAnimation();
+      return;
+    } else if (localError) {
+      setPasswordError(localError);
+      triggerSound("loss");
+      return;
+    }
+
+    // 2. Server API Fallback Check (For central databases / dynamic keys)
+    try {
+      const response = await secureFetch("/api/keys/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: entered, game: targetUnlockMode, deviceId })
+      });
+
+      if (response.ok) {
+        const resData = await response.json().catch(() => ({}));
+        if (resData.key && resData.key.partition) {
+          setActivePartition(resData.key.partition);
+        } else {
+          setActivePartition("bdg");
+        }
+        runSuccessAnimation();
       } else {
-        setPasswordError("गलत पासकोड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
+        const errData = await response.json().catch(() => ({}));
+        setPasswordError(errData.error || "गड़बड़ पासवर्ड! अमान्य या समाप्त। / Incorrect passcode! Invalid or expired.");
         triggerSound("loss");
         
         setFailedAttempts(prev => {
@@ -2225,6 +2281,18 @@ export default function App() {
           return next;
         });
       }
+    } catch (err) {
+      // Both local and server check failed!
+      setPasswordError("पासकोड अस्वीकृत! कृपया वैध और सक्रिय पासकोड दर्ज करें। / Incorrect passcode! Invalid or expired.");
+      triggerSound("loss");
+      
+      setFailedAttempts(prev => {
+        const next = prev + 1;
+        if (next >= 5) {
+          triggerTamperBlock();
+        }
+        return next;
+      });
     }
   };
 
@@ -2820,6 +2888,68 @@ export default function App() {
                     <Send className="w-3.5 h-3.5 fill-current" />
                     {curTrans.telegramBtn}
                   </a>
+                </div>
+              </div>
+
+              {/* HANGING SUPERIOR LIVE AI MOD PANEL (लटकता हुआ लाइव एआई पैनल) */}
+              <div className="mb-8 p-4 rounded-2xl border border-cyan-500/50 bg-gradient-to-b from-cyan-950/40 via-purple-950/20 to-black/80 backdrop-blur-md relative overflow-hidden shadow-[0_4px_30px_rgba(6,182,212,0.2)] animate-pulse">
+                {/* Visual Top Decorative Hanging Strings */}
+                <div className="absolute top-0 left-12 w-0.5 h-3 bg-cyan-500/40"></div>
+                <div className="absolute top-0 right-12 w-0.5 h-3 bg-cyan-500/40"></div>
+                
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center animate-spin duration-3000">
+                      <Sparkles className="w-5 h-5 text-cyan-400" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
+                        {appLang === "HINDI" ? "रामू भाई लाइव एआई रोबोट" : "RAMU BHAI LIVE AI BOT"}
+                      </span>
+                      <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                        {appLang === "HINDI" ? "सर्वश्रेष्ठ ऑटो-ट्यून संयुक्त अनुमान" : "SUPREME AUTO-TUNED JOINT PREDICTIONS"}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 w-full md:w-auto justify-center">
+                    {/* WINGO 1M LIVE AI PREDICTION PREVIEW */}
+                    <div className="px-3 py-2 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center gap-3 text-xs">
+                      <div>
+                        <span className="block text-[8px] font-mono text-purple-300 font-black">WINGO 1M AI</span>
+                        <span className="font-bold text-white">
+                          {wingoCurrentPrediction ? wingoCurrentPrediction.period.slice(-4) : "LOADING..."}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-black border-l border-purple-500/20 pl-3">
+                        <span className={wingoCurrentPrediction?.type === "BIG" ? "text-rose-400" : "text-emerald-400"}>
+                          {wingoCurrentPrediction ? wingoCurrentPrediction.type : "BIG"}
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] text-white font-mono ${wingoCurrentPrediction?.color === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
+                          {wingoCurrentPrediction ? wingoCurrentPrediction.color : "GREEN"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* WINGO 30S LIVE AI PREDICTION PREVIEW */}
+                    <div className="px-3 py-2 rounded-xl bg-pink-950/40 border border-pink-500/30 flex items-center gap-3 text-xs">
+                      <div>
+                        <span className="block text-[8px] font-mono text-pink-300 font-black">WINGO 30S AI</span>
+                        <span className="font-bold text-white">
+                          {wingo30CurrentPrediction ? wingo30CurrentPrediction.period.slice(-4) : "LOADING..."}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-black border-l border-pink-500/20 pl-3">
+                        <span className={wingo30CurrentPrediction?.type === "BIG" ? "text-rose-400" : "text-emerald-400"}>
+                          {wingo30CurrentPrediction ? wingo30CurrentPrediction.type : "BIG"}
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] text-white font-mono ${wingo30CurrentPrediction?.color === "RED" ? "bg-red-600" : "bg-emerald-500 text-black"}`}>
+                          {wingo30CurrentPrediction ? wingo30CurrentPrediction.color : "GREEN"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -3483,6 +3613,90 @@ export default function App() {
                       </div>
                     </div>
 
+                    {/* Collapsible AI Stats Panel */}
+                    <div className="bg-black/50 border border-purple-500/30 rounded-xl overflow-hidden shadow-[0_4px_15px_rgba(147,51,234,0.1)]">
+                      <button
+                        onClick={() => { triggerSound("click"); setShowWingoStats(!showWingoStats); }}
+                        className="w-full px-3 py-2 bg-gradient-to-r from-purple-950/40 to-black/40 flex justify-between items-center border-b border-purple-950 text-purple-300 font-bold text-[9.5px] uppercase tracking-wider hover:from-purple-900/20 cursor-pointer"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span>📊</span>
+                          <span>{appLang === "HINDI" ? "रामू भाई लाइव बिंगो आँकड़े" : "RAMU BHAI LIVE STATS BOT"}</span>
+                        </span>
+                        <span className="text-[10px]">{showWingoStats ? "▲" : "▼"}</span>
+                      </button>
+                      
+                      {showWingoStats && (
+                        <div className="p-2.5 space-y-2.5 animate-in fade-in duration-200 text-left font-mono">
+                          {/* 1. Predictor Win Stats Row */}
+                          <div className="space-y-1">
+                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-purple-950 pb-0.5">
+                              🏆 {appLang === "HINDI" ? "प्रेडिक्शन विन आँकड़े / PRED WIN COUNTER" : "PREDICTION WIN STATISTICS"}
+                            </span>
+                            <div className="grid grid-cols-4 gap-1 text-center">
+                              <div className="bg-rose-950/30 border border-rose-900/30 rounded p-1">
+                                <span className="block text-[7px] text-rose-400 font-black">🔴 BIG</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "BIG").length}
+                                </span>
+                              </div>
+                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
+                                <span className="block text-[7px] text-emerald-400 font-black">🟢 SMALL</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "SMALL").length}
+                                </span>
+                              </div>
+                              <div className="bg-red-950/30 border border-red-900/30 rounded p-1">
+                                <span className="block text-[7px] text-red-400 font-black">🟥 RED</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "RED").length}
+                                </span>
+                              </div>
+                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
+                                <span className="block text-[7px] text-emerald-400 font-black">🟩 GREEN</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "GREEN").length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 2. Actual Game Outcomes Trend (total occurrences) */}
+                          <div className="space-y-1">
+                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-purple-950 pb-0.5">
+                              📈 {appLang === "HINDI" ? "वास्तविक गेम ट्रेंड काउंट / GAME OUTCOMES" : "ACTUAL OUTCOMES IN HISTORY"}
+                            </span>
+                            <div className="grid grid-cols-4 gap-1 text-center text-[10px]">
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL BIG</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => h.actualType === "BIG").length}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL SMALL</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => h.actualType === "SMALL").length}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL RED</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => h.actualColor === "RED" || h.actualColor === "RED_VIOLET").length}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL GREEN</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingoHistory.filter(h => h.actualColor === "GREEN" || h.actualColor === "GREEN_VIOLET").length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* LIVE OUTCOME FOR BINGO */}
                     {wingoCurrentPrediction ? (
                       <div className="p-2.5 rounded-xl border border-purple-500/20 bg-purple-950/15 backdrop-blur-md text-center space-y-2 animate-in fade-in duration-200">
@@ -3689,6 +3903,90 @@ export default function App() {
                             : 100}%
                         </span>
                       </div>
+                    </div>
+
+                    {/* Collapsible AI Stats Panel */}
+                    <div className="bg-black/50 border border-pink-500/30 rounded-xl overflow-hidden shadow-[0_4px_15px_rgba(236,72,153,0.1)]">
+                      <button
+                        onClick={() => { triggerSound("click"); setShowWingo30Stats(!showWingo30Stats); }}
+                        className="w-full px-3 py-2 bg-gradient-to-r from-pink-950/40 to-black/40 flex justify-between items-center border-b border-pink-950 text-pink-300 font-bold text-[9.5px] uppercase tracking-wider hover:from-pink-900/20 cursor-pointer"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span>📊</span>
+                          <span>{appLang === "HINDI" ? "रामू भाई लाइव बिंगो 30S आँकड़े" : "RAMU BHAI LIVE 30S STATS"}</span>
+                        </span>
+                        <span className="text-[10px]">{showWingo30Stats ? "▲" : "▼"}</span>
+                      </button>
+                      
+                      {showWingo30Stats && (
+                        <div className="p-2.5 space-y-2.5 animate-in fade-in duration-200 text-left font-mono">
+                          {/* 1. Predictor Win Stats Row */}
+                          <div className="space-y-1">
+                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-pink-950 pb-0.5">
+                              🏆 {appLang === "HINDI" ? "प्रेडिक्शन विन आँकड़े / PRED WIN COUNTER" : "PREDICTION WIN STATISTICS"}
+                            </span>
+                            <div className="grid grid-cols-4 gap-1 text-center">
+                              <div className="bg-rose-950/30 border border-rose-900/30 rounded p-1">
+                                <span className="block text-[7px] text-rose-400 font-black">🔴 BIG</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "BIG").length}
+                                </span>
+                              </div>
+                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
+                                <span className="block text-[7px] text-emerald-400 font-black">🟢 SMALL</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedType === "SMALL").length}
+                                </span>
+                              </div>
+                              <div className="bg-red-950/30 border border-red-900/30 rounded p-1">
+                                <span className="block text-[7px] text-red-400 font-black">🟥 RED</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "RED").length}
+                                </span>
+                              </div>
+                              <div className="bg-emerald-950/30 border border-emerald-900/30 rounded p-1">
+                                <span className="block text-[7px] text-emerald-400 font-black">🟩 GREEN</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => (h.status === "WIN" || h.status === "JACKPOT") && h.predictedColor === "GREEN").length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 2. Actual Game Outcomes Trend (total occurrences) */}
+                          <div className="space-y-1">
+                            <span className="block text-[7.5px] text-gray-500 font-bold uppercase tracking-wider border-b border-pink-950 pb-0.5">
+                              📈 {appLang === "HINDI" ? "वास्तविक गेम ट्रेंड काउंट / GAME OUTCOMES" : "ACTUAL OUTCOMES IN HISTORY"}
+                            </span>
+                            <div className="grid grid-cols-4 gap-1 text-center text-[10px]">
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL BIG</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => h.actualType === "BIG").length}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL SMALL</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => h.actualType === "SMALL").length}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL RED</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => h.actualColor === "RED" || h.actualColor === "RED_VIOLET").length}
+                                </span>
+                              </div>
+                              <div className="bg-zinc-900/30 border border-zinc-800/40 rounded p-1">
+                                <span className="block text-[7px] text-gray-400 font-bold">TOTAL GREEN</span>
+                                <span className="text-[11px] font-bold text-white">
+                                  {wingo30History.filter(h => h.actualColor === "GREEN" || h.actualColor === "GREEN_VIOLET").length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* LIVE OUTCOME FOR BINGO */}

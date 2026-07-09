@@ -292,30 +292,6 @@ async function startServer() {
 
     const requestedKeyUpper = key.trim().toUpperCase();
 
-    // 0.1 Inject 2-Hour Temporary Passcode requested by Ramu Bhai (Expirable precisely after 2 hours)
-    if (requestedKeyUpper === "RAMU_VIP_2HOUR") {
-      const now = Date.now();
-      const expiry = 1783588074000; // 2026-07-09T02:07:54-07:00 (Exactly 2 hours from now)
-      if (now < expiry) {
-        return res.json({
-          success: true,
-          key: {
-            key: "RAMU_VIP_2HOUR",
-            game: game,
-            duration: "2 Hour Limited VIP Passcode",
-            expiresAt: expiry,
-            usedByDevice: deviceId || "all",
-            firstUsedAt: now,
-            partition: "bdg"
-          }
-        });
-      } else {
-        return res.status(400).json({ 
-          error: "यह विशेष 2 घंटे का पासकोड समाप्त हो गया है! / This special 2-hour passcode has expired!" 
-        });
-      }
-    }
-
     if (permanentKeys[requestedKeyUpper]) {
       const allowedGame = permanentKeys[requestedKeyUpper];
       if (allowedGame === "all" || allowedGame === game) {
@@ -341,10 +317,29 @@ async function startServer() {
     const keys = loadKeys();
     const now = Date.now();
 
-    // Verify if passcode matches active keys list (including "all")
-    const matchedKeyIndex = keys.findIndex(
-      k => k.key === key && (k.game === game || k.game === "all")
+    // Dynamically insert or find RAMU_VIP_2HOUR in the dynamic keys list so it has state! (Case-insensitive verification)
+    let matchedKeyIndex = keys.findIndex(
+      k => k.key.trim().toUpperCase() === requestedKeyUpper && (k.game === game || k.game === "all")
     );
+
+    if (requestedKeyUpper === "RAMU_VIP_2HOUR") {
+      if (matchedKeyIndex === -1) {
+        // Create it dynamically as a 2-hour countdown key!
+        // It has no firstUsedAt and no usedByDevice initially.
+        const newKey: GeneratedKey = {
+          key: "RAMU_VIP_2HOUR",
+          game: "all",
+          duration: "2 Hours",
+          expiresAt: now + 3153600000000, // Practically never expires administratively
+          usedByDevice: null,
+          firstUsedAt: null,
+          partition: "bdg"
+        };
+        keys.push(newKey);
+        saveKeys(keys);
+        matchedKeyIndex = keys.length - 1;
+      }
+    }
 
     if (matchedKeyIndex !== -1) {
       const matchedKey = keys[matchedKeyIndex];
@@ -358,7 +353,8 @@ async function startServer() {
       if (matchedKey.firstUsedAt) {
         const elapsed = now - matchedKey.firstUsedAt;
         let durationLimit = 3600000; // Default 1 hour
-        if (matchedKey.duration === "1 Day") durationLimit = 86400000;
+        if (matchedKey.duration === "2 Hours" || matchedKey.duration === "2 Hour Limited VIP Passcode") durationLimit = 7200000;
+        else if (matchedKey.duration === "1 Day") durationLimit = 86400000;
         else if (matchedKey.duration === "3 Days") durationLimit = 259200000;
         else if (matchedKey.duration === "7 Days") durationLimit = 604800000;
         else if (matchedKey.duration === "1 Month") durationLimit = 2592000000;
